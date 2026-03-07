@@ -1,0 +1,33 @@
+# core/migrations/XXXX_add_department_city_to_mentor.py
+# Renomme ce fichier selon ton prochain numéro de migration (ex: 0005_add_department_city_to_mentor.py)
+
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        # Remplace par ta dernière migration existante
+        ('core', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='mentor',
+            name='city',
+            field=models.CharField(blank=True, max_length=100, verbose_name='Ville'),
+        ),
+        migrations.AddField(
+            model_name='mentor',
+            name='department',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='mentors',
+                to='core.department',
+                verbose_name='Département',
+            ),
+        ),
+    ]

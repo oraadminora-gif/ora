@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ora-blue: #003DA5;
+  --color-ora-dark: #002A75;
+  --color-ora-light: #0052D9;
+  --color-ora-green: #B8D430;
+  --color-ora-orange: #F05A28;
+  --color-ora-cyan: #8DC8E8;
+
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+}

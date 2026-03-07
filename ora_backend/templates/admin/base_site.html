@@ -1,0 +1,255 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | Administration ORA{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  /* ── Palette ORA ─────────────────────────────────────── */
+  :root {
+    --primary:               #003DA5;
+    --secondary:             #002A75;
+    --accent:                #B8D430;
+    --header-bg:             #002A75;
+    --header-color:          #ffffff;
+    --header-branding-color: #ffffff;
+    --header-link-color:     rgba(255,255,255,0.82);
+    --breadcrumbs-bg:        #003DA5;
+    --breadcrumbs-fg:        rgba(255,255,255,0.75);
+    --breadcrumbs-link-fg:   #B8D430;
+    --breadcrumbs-current:   #ffffff;
+    --link-fg:               #003DA5;
+    --link-hover-color:      #002A75;
+    --object-tools-bg:       #003DA5;
+    --object-tools-hover-bg: #002A75;
+  }
+
+  /* ── En-tête ─────────────────────────────────────────── */
+  #header {
+    background: linear-gradient(120deg, #002A75 0%, #003DA5 100%);
+    border-bottom: 3px solid #B8D430;
+    padding: 10px 16px;
+  }
+
+  #branding {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #branding h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  #branding h1 a:link,
+  #branding h1 a:visited {
+    color: #ffffff !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #branding h1 a:hover {
+    color: #B8D430 !important;
+  }
+
+  .ora-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #B8D430;
+    color: #002A75;
+    font-weight: 900;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    letter-spacing: -0.03em;
+  }
+
+  .ora-subtitle {
+    display: block;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.55);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    margin-left: 40px;
+  }
+
+  /* Outils utilisateur */
+  #user-tools {
+    font-size: 0.8rem;
+  }
+  #user-tools a:link,
+  #user-tools a:visited {
+    color: rgba(255,255,255,0.8) !important;
+    border-bottom: 1px solid transparent;
+  }
+  #user-tools a:hover {
+    color: #B8D430 !important;
+    border-bottom-color: #B8D430;
+    text-decoration: none;
+  }
+
+  /* ── Fil d'Ariane ────────────────────────────────────── */
+  #breadcrumbs {
+    background: #003DA5;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+  }
+  #breadcrumbs a {
+    color: #B8D430;
+  }
+  #breadcrumbs a:hover {
+    color: #fff;
+  }
+
+  /* ── Boutons ─────────────────────────────────────────── */
+  .button,
+  input[type="submit"],
+  input[type="button"],
+  .submit-row input,
+  a.button {
+    background: #003DA5 !important;
+    border-color: #002A75 !important;
+    color: #ffffff !important;
+  }
+  .button:hover,
+  input[type="submit"]:hover,
+  input[type="button"]:hover,
+  a.button:hover {
+    background: #002A75 !important;
+    color: #ffffff !important;
+  }
+  /* Bouton "Enregistrer" principal (classe .default) */
+  .button.default,
+  input[type="submit"].default,
+  .submit-row input.default {
+    background: #B8D430 !important;
+    border-color: #9ab520 !important;
+    color: #1c2e00 !important;
+  }
+  .button.default:hover {
+    background: #a5c228 !important;
+    color: #1c2e00 !important;
+  }
+  /* Bouton de recherche dans les listes */
+  #changelist-search input[type="submit"],
+  #toolbar input[type="submit"] {
+    background: #003DA5 !important;
+    color: #ffffff !important;
+    border-color: #002A75 !important;
+  }
+  /* Bouton "Supprimer" (rouge Django) */
+  .deletelink,
+  .submit-row a.deletelink {
+    color: #ffffff !important;
+  }
+
+  /* ── Liens ───────────────────────────────────────────── */
+  a:link, a:visited { color: #003DA5; }
+  a:hover { color: #002A75; }
+
+  /* ── En-têtes de modules ─────────────────────────────── */
+  .module h2,
+  .module caption,
+  .inline-group h2 {
+    background: #003DA5;
+  }
+
+  /* ── Page d'accueil — icônes d'application ───────────── */
+  #content-main .module caption,
+  #content-main .module h2 {
+    background: linear-gradient(90deg, #003DA5, #0052D9);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+  }
+
+  /* ── Lignes alternées ────────────────────────────────── */
+  tr.row1 { background: #f7faff; }
+  tr.row2 { background: #ffffff; }
+
+  /* ── Filtres ─────────────────────────────────────────── */
+  #changelist-filter h2 {
+    background: #003DA5;
+    color: #fff;
+    padding: 6px 12px;
+  }
+  #changelist-filter h3 {
+    color: #002A75;
+    border-top: 1px solid #dde8ff;
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+  #changelist-filter li.selected a {
+    color: #003DA5;
+    font-weight: 700;
+  }
+
+  /* ── Object-tools (boutons en haut à droite) ─────────── */
+  ul.object-tools li > a {
+    background: #003DA5;
+  }
+  ul.object-tools li > a:hover {
+    background: #002A75;
+  }
+
+  /* ── Barre de recherche ──────────────────────────────── */
+  #searchbar {
+    border: 1px solid #003DA5;
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+  #searchbar:focus {
+    outline: 2px solid #B8D430;
+    border-color: #003DA5;
+  }
+
+  /* ── Pagination ──────────────────────────────────────── */
+  .paginator a:link,
+  .paginator a:visited {
+    color: #003DA5;
+  }
+  .paginator .this-page {
+    background: #003DA5;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+
+  /* ── Messages de succès / erreur ─────────────────────── */
+  .messagelist li.success {
+    border-left: 4px solid #B8D430;
+    background: #f3fadd;
+    color: #2a4400;
+  }
+  .messagelist li.error {
+    border-left: 4px solid #F05A28;
+  }
+  .messagelist li.warning {
+    border-left: 4px solid #F05A28;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <span class="ora-logo">ORA</span>
+    Administration ORA
+  </a>
+</h1>
+<span class="ora-subtitle">Plateforme de mentorat des jeunes</span>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
