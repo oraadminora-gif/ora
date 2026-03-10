@@ -47,7 +47,11 @@ class YoungRequest(models.Model):
     gender     = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
 
     # ── Localisation ─────────────────────────────────────────
-    city       = models.CharField(max_length=100)
+    city       = models.CharField(max_length=100, blank=True)  # conservé pour compatibilité
+    commune    = models.CharField(max_length=200, blank=True, verbose_name='Commune')
+    code_postal = models.CharField(max_length=10, blank=True, verbose_name='Code postal')
+    latitude   = models.FloatField(null=True, blank=True, verbose_name='Latitude')
+    longitude  = models.FloatField(null=True, blank=True, verbose_name='Longitude')
     department = models.ForeignKey(
         'Department',
         on_delete=models.SET_NULL,

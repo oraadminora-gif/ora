@@ -41,6 +41,7 @@ interface MentorSuggestion {
   score: number;
   city_match: boolean;
   department_match: boolean;
+  distance_km: number | null;
   priority: 'high' | 'medium';
 }
 
@@ -123,8 +124,17 @@ function ScoreBadge({ score }: { score: number }) {
 
 function MatchReasons({ m }: { m: MentorSuggestion }) {
   const reasons: { label: string; icon: React.ReactNode; color: string }[] = [];
-  if (m.city_match)       reasons.push({ label: `Même ville (${m.city})`, icon: <MapPin className="w-2.5 h-2.5" />,        color: 'text-emerald-600' });
-  if (m.department_match) reasons.push({ label: 'Même département',       icon: <MapPin className="w-2.5 h-2.5" />,        color: 'text-sky-600'     });
+  if (m.distance_km !== null && m.distance_km !== undefined) {
+    const distLabel = m.distance_km < 1
+      ? '< 1 km'
+      : `${m.distance_km.toFixed(0)} km`;
+    const color = m.distance_km < 20 ? 'text-emerald-600' : m.distance_km < 100 ? 'text-sky-600' : 'text-slate-500';
+    reasons.push({ label: distLabel, icon: <MapPin className="w-2.5 h-2.5" />, color });
+  } else if (m.city_match) {
+    reasons.push({ label: `Même ville (${m.city})`, icon: <MapPin className="w-2.5 h-2.5" />, color: 'text-emerald-600' });
+  } else if (m.department_match) {
+    reasons.push({ label: 'Même département', icon: <MapPin className="w-2.5 h-2.5" />, color: 'text-sky-600' });
+  }
   if (m.is_trained)       reasons.push({ label: 'Mentor formé',           icon: <GraduationCap className="w-2.5 h-2.5" />, color: 'text-amber-600'   });
   if (m.nb_termines > 0)     reasons.push({
     label: `${m.nb_termines} mentorat${m.nb_termines > 1 ? 's' : ''} terminé${m.nb_termines > 1 ? 's' : ''}`,
@@ -225,7 +235,11 @@ function SuggestionCard({ mentor, selected, onClick }: {
     >
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5 ${
-          mentor.city_match ? 'bg-emerald-500' : mentor.department_match ? 'bg-sky-500' : 'bg-slate-400'
+          mentor.city_match || (mentor.distance_km !== null && mentor.distance_km !== undefined && mentor.distance_km < 20)
+            ? 'bg-emerald-500'
+            : mentor.department_match || (mentor.distance_km !== null && mentor.distance_km !== undefined && mentor.distance_km < 100)
+              ? 'bg-sky-500'
+              : 'bg-slate-400'
         }`}>
           {initials}
         </div>

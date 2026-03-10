@@ -34,6 +34,9 @@ class Mentor(models.Model):
     )
     city        = models.CharField(max_length=100, blank=True, verbose_name='Ville')
     code_postal = models.CharField(max_length=10,  blank=True, verbose_name='Code postal')
+    commune     = models.CharField(max_length=200, blank=True, verbose_name='Commune')
+    latitude    = models.FloatField(null=True, blank=True, verbose_name='Latitude')
+    longitude   = models.FloatField(null=True, blank=True, verbose_name='Longitude')
 
     # Infos personnelles
     first_name = models.CharField(max_length=100)

@@ -41,6 +41,7 @@ class MatchingSuggestionsView(APIView):
                 "score":                s["score"],
                 "city_match":           s["city_match"],
                 "department_match":     s["department_match"],
+                "distance_km":          s.get("distance_km"),
                 "priority":             "high" if s["score"] >= 80 else "medium",
             })
 

@@ -1,10 +1,17 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, MapPin } from 'lucide-react';
 import axios from 'axios';
 
-interface PoleOption { id: number; name: string; code: string; }
+interface PoleOption {
+  id: number;
+  name: string;
+  code: string;
+  dept_codes: string;
+  dept_names: string;
+  hint: string;
+}
 
 const DIPLOME_OPTIONS = [
   { group: 'Niveau 3', options: [
@@ -45,10 +52,10 @@ const NEEDS_OPTIONS = [
 
 export function ApprenticeRegistration() {
   const navigate = useNavigate();
-  const [loading, setLoading]     = useState(false);
-  const [success, setSuccess]     = useState(false);
-  const [error, setError]         = useState('');
-  const [poles, setPoles]         = useState<PoleOption[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [success, setSuccess]   = useState(false);
+  const [error, setError]       = useState('');
+  const [poles, setPoles]       = useState<PoleOption[]>([]);
 
   useEffect(() => {
     api.get<PoleOption[]>('/public/poles/').then(r => setPoles(r.data)).catch(() => {});
@@ -62,8 +69,8 @@ export function ApprenticeRegistration() {
     birthDate:        '',
     gender:           '',
     poleId:           '',
-    city:             '',
-    departmentCode:   '',
+    commune:          '',
+    codePostal:       '',
     nomEtablissement: '',
     diplomePrepare:   '',
     situation:        '' as '' | 'apprentissage' | 'recherche',
@@ -71,6 +78,21 @@ export function ApprenticeRegistration() {
     otherNeeds:       '',
     consentGiven:     false,
   });
+
+  // Pôle sélectionné (pour afficher le hint)
+  const selectedPole = poles.find(p => String(p.id) === formData.poleId) ?? null;
+
+  // Auto-suggestion pôle depuis le code postal
+  const handleCodePostalChange = (val: string) => {
+    setFormData(prev => ({ ...prev, codePostal: val }));
+    if (val.length >= 2 && !formData.poleId) {
+      const deptCode = val.startsWith('97') ? val.slice(0, 3) : val.slice(0, 2);
+      const match = poles.find(p =>
+        p.dept_codes.split(', ').some(c => c === deptCode)
+      );
+      if (match) setFormData(prev => ({ ...prev, codePostal: val, poleId: String(match.id) }));
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -99,8 +121,8 @@ export function ApprenticeRegistration() {
         birth_date:        formData.birthDate || undefined,
         gender:            formData.gender || undefined,
         pole_id:           formData.poleId ? Number(formData.poleId) : undefined,
-        city:              formData.city,
-        department_code:   formData.departmentCode || undefined,
+        commune:           formData.commune,
+        code_postal:       formData.codePostal,
         nom_etablissement: formData.nomEtablissement,
         diplome_prepare:   formData.diplomePrepare || undefined,
         situation:         formData.situation || undefined,
@@ -225,11 +247,46 @@ export function ApprenticeRegistration() {
               </div>
             </div>
 
+            {/* Localisation : code postal + commune */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Code postal *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex : 75013, 69001…"
+                  value={formData.codePostal}
+                  onChange={e => handleCodePostalChange(e.target.value)}
+                  maxLength={5}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Commune *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex : Paris, Lyon, Marseille…"
+                  value={formData.commune}
+                  onChange={e => setFormData({ ...formData, commune: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+
             {/* Pôle */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Pôle ORA de rattachement *
               </label>
+              <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                Choisis le pôle qui couvre ton département. Le code postal est utilisé pour t'orienter automatiquement.
+              </p>
               <select
                 required
                 value={formData.poleId}
@@ -238,9 +295,17 @@ export function ApprenticeRegistration() {
               >
                 <option value="">— Sélectionne ton pôle —</option>
                 {poles.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id}>
+                    {p.name}{p.dept_codes ? ` — Dép. ${p.dept_codes}` : ''}
+                  </option>
                 ))}
               </select>
+              {selectedPole?.dept_names && (
+                <p className="mt-1.5 text-xs text-slate-500 flex items-start gap-1">
+                  <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  {selectedPole.dept_names}
+                </p>
+              )}
             </div>
 
             {/* Diplôme préparé */}
@@ -285,24 +350,6 @@ export function ApprenticeRegistration() {
                     <span className="text-slate-700 font-medium">{sit.label}</span>
                   </label>
                 ))}
-              </div>
-            </div>
-
-            {/* Ville / Département */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Ville *</label>
-                <input type="text" required value={formData.city}
-                  onChange={e => setFormData({ ...formData, city: e.target.value })}
-                  className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Département (code)
-                </label>
-                <input type="text" placeholder="Ex : 75, 69, 13…" value={formData.departmentCode}
-                  onChange={e => setFormData({ ...formData, departmentCode: e.target.value })}
-                  className={inputCls} />
               </div>
             </div>
 

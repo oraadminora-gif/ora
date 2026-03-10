@@ -1,15 +1,42 @@
 // src/layouts/HeaderCN.tsx
-import { LogOut, Bell, Globe, Users, BarChart3, Settings, Shield, BookOpen, MapPin, TrendingUp } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  LogOut, Bell, Globe, Users, BarChart3, Settings, Shield,
+  BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown, GraduationCap,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
 export function HeaderCN() {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const [adminOpen, setAdminOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const fullAccess = user?.cn_acces_complet ?? false;
+
+  // Ferme le dropdown si clic en dehors
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAdminOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   if (!user) return null;
 
-  const fullAccess = user.cn_acces_complet ?? false;
+  const adminRoutes = [
+    { to: '/member/cn/retribution',  icon: <DollarSign className="w-4 h-4" />,     label: 'Rétribution' },
+    { to: '/member/cn/mentors',      icon: <Users className="w-4 h-4" />,           label: 'Mentors' },
+    { to: '/member/cn/poles',        icon: <BarChart3 className="w-4 h-4" />,       label: 'Pôles' },
+    { to: '/member/cn/animateurs',   icon: <GraduationCap className="w-4 h-4" />,   label: 'Animateurs' },
+    { to: '/member/cn/configuration',icon: <Settings className="w-4 h-4" />,        label: 'Configuration' },
+  ];
+
+  const adminActive = adminRoutes.some(r => location.pathname.startsWith(r.to));
 
   return (
     <header className="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-4 lg:px-8 py-4">
@@ -41,7 +68,7 @@ export function HeaderCN() {
           <NavLink
             to="/member/cn/annuaire"
             icon={<BookOpen className="w-4 h-4" />}
-            label="Annuaire ORA"
+            label="Annuaire"
             active={location.pathname === '/member/cn/annuaire'}
           />
           <NavLink
@@ -53,32 +80,46 @@ export function HeaderCN() {
           <NavLink
             to="/member/cn/kpis"
             icon={<TrendingUp className="w-4 h-4" />}
-            label="KPIs nationaux"
+            label="KPIs"
             active={location.pathname === '/member/cn/kpis'}
           />
 
-          {/* Accès complet uniquement */}
+          {/* Dropdown Administration (accès complet uniquement) */}
           {fullAccess && (
-            <>
-              <NavLink
-                to="/member/cn/mentors"
-                icon={<Users className="w-4 h-4" />}
-                label="Mentors"
-                active={location.pathname.startsWith('/member/cn/mentors')}
-              />
-              <NavLink
-                to="/member/cn/poles"
-                icon={<BarChart3 className="w-4 h-4" />}
-                label="Pôles"
-                active={location.pathname.startsWith('/member/cn/poles')}
-              />
-              <NavLink
-                to="/member/cn/configuration"
-                icon={<Settings className="w-4 h-4" />}
-                label="Configuration"
-                active={location.pathname.startsWith('/member/cn/configuration')}
-              />
-            </>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setAdminOpen(o => !o)}
+                className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  adminActive || adminOpen
+                    ? 'bg-amber-500/25 text-amber-200 font-semibold'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                Administration
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adminOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {adminOpen && (
+                <div className="absolute left-0 top-full mt-1 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                  {adminRoutes.map(route => (
+                    <Link
+                      key={route.to}
+                      to={route.to}
+                      onClick={() => setAdminOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        location.pathname.startsWith(route.to)
+                          ? 'bg-amber-500/20 text-amber-200 font-semibold'
+                          : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      {route.icon}
+                      {route.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </nav>
 

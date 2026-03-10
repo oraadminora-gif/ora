@@ -35,6 +35,7 @@ import { AnnuaireORA } from './pages/member/cn/AnnuaireORA';
 import { NationalKPIs } from './pages/member/cn/NationalKPIs';
 import { CNConfiguration } from './pages/member/cn/CNConfiguration';
 import { ImplantationsPoles } from './pages/member/cn/ImplantationsPoles';
+import { RetributionCN } from './pages/member/cn/RetributionCN';
 
 import { APDashboard } from './pages/member/ap/APDashboard';
 import { ACPDashboard } from './pages/member/acp/ACPDashboard';
@@ -129,6 +130,7 @@ function App() {
 
               {/* CN - Accès complet (cn_acces_complet uniquement) */}
               <Route element={<ProtectedCNAdminRoute />}>
+                <Route path="cn/retribution"   element={<RetributionCN />} />
                 <Route path="cn/mentors"       element={<CNMentors />} />
                 <Route path="cn/poles"         element={<CNPoles />} />
                 <Route path="cn/animateurs"    element={<GestionAnimateursNational />} />
