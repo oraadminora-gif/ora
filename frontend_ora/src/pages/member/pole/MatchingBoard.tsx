@@ -5,8 +5,11 @@ import {
   Users, MapPin, Flame, Building2, CheckCircle,
   Loader2, AlertCircle, Clock, ArrowRight, X, Star,
   GraduationCap, Trophy, LayoutList, Shuffle, Search,
-  UserPlus,
+  UserPlus, Scale,
 } from 'lucide-react';
+
+// Constante module-level pour éviter Date.now() dans le render (impure)
+const NOW_MS = new Date().getTime();
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -35,6 +38,7 @@ interface MentorSuggestion {
   city: string;
   department: string | null;
   is_trained: boolean;
+  training_date: string | null;   // ISO date ou null
   disponibilite_reelle: number;
   max_capacity: number;
   nb_termines: number;
@@ -42,7 +46,13 @@ interface MentorSuggestion {
   city_match: boolean;
   department_match: boolean;
   distance_km: number | null;
-  priority: 'high' | 'medium';
+  priority: 'high' | 'medium' | 'low';
+  // Équité associations
+  equite_score:    number;
+  assoc_count:     number;   // mentorats actifs de son association
+  assoc_min_count: number;   // minimum dans le pôle
+  // Formation
+  formation_score: number;
 }
 
 interface SuggestionsData {
@@ -110,9 +120,10 @@ function UrgenceBadge({ level }: { level: number }) {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 120
+  // Nouveau max : 370 pts
+  const color = score >= 200
     ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-    : score >= 80
+    : score >= 120
       ? 'text-sky-700 bg-sky-50 border-sky-200'
       : 'text-slate-500 bg-slate-50 border-slate-200';
   return (
@@ -122,33 +133,82 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-function MatchReasons({ m }: { m: MentorSuggestion }) {
-  const reasons: { label: string; icon: React.ReactNode; color: string }[] = [];
-  if (m.distance_km !== null && m.distance_km !== undefined) {
-    const distLabel = m.distance_km < 1
-      ? '< 1 km'
-      : `${m.distance_km.toFixed(0)} km`;
-    const color = m.distance_km < 20 ? 'text-emerald-600' : m.distance_km < 100 ? 'text-sky-600' : 'text-slate-500';
-    reasons.push({ label: distLabel, icon: <MapPin className="w-2.5 h-2.5" />, color });
-  } else if (m.city_match) {
-    reasons.push({ label: `Même ville (${m.city})`, icon: <MapPin className="w-2.5 h-2.5" />, color: 'text-emerald-600' });
-  } else if (m.department_match) {
-    reasons.push({ label: 'Même département', icon: <MapPin className="w-2.5 h-2.5" />, color: 'text-sky-600' });
-  }
-  if (m.is_trained)       reasons.push({ label: 'Mentor formé',           icon: <GraduationCap className="w-2.5 h-2.5" />, color: 'text-amber-600'   });
-  if (m.nb_termines > 0)     reasons.push({
-    label: `${m.nb_termines} mentorat${m.nb_termines > 1 ? 's' : ''} terminé${m.nb_termines > 1 ? 's' : ''}`,
-    icon: <Trophy className="w-2.5 h-2.5" />, color: 'text-slate-500',
-  });
-  if (reasons.length === 0) return null;
+function EquiteBadge({ assocCount, minCount }: { assocCount: number; minCount: number }) {
+  const isMin = assocCount === minCount;
+  const delta = assocCount - minCount;
+  if (isMin) return (
+    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-violet-700">
+      <Scale className="w-2.5 h-2.5" />Équité ✓ ({assocCount} actif{assocCount !== 1 ? 's' : ''})
+    </span>
+  );
   return (
-    <div className="flex flex-wrap gap-1 mt-1.5">
-      {reasons.map((r, i) => (
-        <span key={i} className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${r.color}`}>
-          {r.icon}{r.label}
-          {i < reasons.length - 1 && <span className="mx-0.5 text-slate-200">·</span>}
+    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-orange-500">
+      <Scale className="w-2.5 h-2.5" />+{delta} vs min ({assocCount} actif{assocCount !== 1 ? 's' : ''})
+    </span>
+  );
+}
+
+function FormationBadge({ isTraining, trainingDate, formationScore }: {
+  isTraining: boolean; trainingDate: string | null; formationScore: number;
+}) {
+  if (!isTraining) return null;
+  let label = 'Formé';
+  let cls   = 'text-amber-600';
+  if (trainingDate) {
+    const months = Math.floor(
+      (NOW_MS - new Date(trainingDate).getTime()) / (1000 * 60 * 60 * 24 * 30)
+    );
+    if (months < 6)  { label = 'Formé récemment (<6 mois)';  cls = 'text-emerald-600'; }
+    else if (months < 12) { label = 'Formé (<12 mois)';      cls = 'text-emerald-500'; }
+    else if (months < 24) { label = 'Formé (<2 ans)';         cls = 'text-amber-600'; }
+    else { label = `Formé (${Math.floor(months/12)} ans)`; cls = 'text-slate-500'; }
+  }
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${cls}`}>
+      <GraduationCap className="w-2.5 h-2.5" />{label} · +{formationScore}pts
+    </span>
+  );
+}
+
+function MatchReasons({ m }: { m: MentorSuggestion }) {
+  return (
+    <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1.5">
+
+      {/* Équité association — critère principal */}
+      <EquiteBadge assocCount={m.assoc_count} minCount={m.assoc_min_count} />
+
+      {/* Distance / géographie */}
+      {m.distance_km != null ? (
+        <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${
+          m.distance_km < 20 ? 'text-emerald-600' : m.distance_km < 100 ? 'text-sky-600' : 'text-slate-500'
+        }`}>
+          <MapPin className="w-2.5 h-2.5" />
+          {m.distance_km < 1 ? '< 1 km' : `${m.distance_km.toFixed(0)} km`}
         </span>
-      ))}
+      ) : m.city_match ? (
+        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600">
+          <MapPin className="w-2.5 h-2.5" />Même ville
+        </span>
+      ) : m.department_match ? (
+        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-sky-600">
+          <MapPin className="w-2.5 h-2.5" />Même département
+        </span>
+      ) : null}
+
+      {/* Formation récente */}
+      <FormationBadge
+        isTraining={m.is_trained}
+        trainingDate={m.training_date}
+        formationScore={m.formation_score}
+      />
+
+      {/* Expérience */}
+      {m.nb_termines > 0 && (
+        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-slate-500">
+          <Trophy className="w-2.5 h-2.5" />
+          {m.nb_termines} terminé{m.nb_termines > 1 ? 's' : ''}
+        </span>
+      )}
     </div>
   );
 }

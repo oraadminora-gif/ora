@@ -35,6 +35,7 @@ class MatchingSuggestionsView(APIView):
                 "city":                 mentor.city,
                 "department":           mentor.department.name if mentor.department else None,
                 "is_trained":           mentor.is_trained,
+                "training_date":        mentor.training_date.isoformat() if mentor.training_date else None,
                 "disponibilite_reelle": mentor.disponibilite_reelle,
                 "max_capacity":         mentor.max_capacity,
                 "nb_termines":          mentor.closed_mentorats,
@@ -42,7 +43,14 @@ class MatchingSuggestionsView(APIView):
                 "city_match":           s["city_match"],
                 "department_match":     s["department_match"],
                 "distance_km":          s.get("distance_km"),
-                "priority":             "high" if s["score"] >= 80 else "medium",
+                # Équité associations
+                "equite_score":         s.get("equite_score", 0),
+                "assoc_count":          s.get("assoc_count", 0),
+                "assoc_min_count":      s.get("assoc_min_count", 0),
+                # Formation
+                "formation_score":      s.get("formation_score", 0),
+                # Seuil "haute priorité" adapté au nouveau score max (370 pts)
+                "priority":             "high" if s["score"] >= 200 else "medium" if s["score"] >= 120 else "low",
             })
 
         data.sort(key=lambda x: -x['score'])

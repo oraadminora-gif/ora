@@ -54,6 +54,11 @@ class Mentor(models.Model):
     # Statut
     is_active = models.BooleanField(default=True)
     is_trained = models.BooleanField(default=False, help_text="Formation validée")
+    training_date = models.DateField(
+        null=True, blank=True,
+        verbose_name='Date de formation',
+        help_text="Date à laquelle le mentor a validé sa formation ORA"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
