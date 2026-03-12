@@ -1,10 +1,23 @@
+import threading
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
 from core.models import YoungRequest, Pole, Etablissement, Department
+from core.services.geocoding import geocode_commune
 from api.permissions import IsACP, IsCN, IsAnimateur
+
+
+def _geocode_and_save(young_request_id: int, commune: str, code_postal: str):
+    """Géocode en arrière-plan et met à jour la demande."""
+    coords = geocode_commune(commune, code_postal)
+    if coords:
+        YoungRequest.objects.filter(id=young_request_id).update(
+            latitude=coords[0],
+            longitude=coords[1],
+        )
 
 
 class PendingRequestsView(APIView):
@@ -158,23 +171,17 @@ class CreateDemandeView(APIView):
         # ── Champs requis ─────────────────────────────────────
         first_name        = (data.get('first_name') or '').strip()
         last_name         = (data.get('last_name') or '').strip()
-        city              = (data.get('city') or '').strip()
         needs_description = (data.get('needs_description') or '').strip()
 
-        if not first_name or not last_name or not city or not needs_description:
+        if not first_name or not last_name or not needs_description:
             return Response(
-                {"error": "Champs requis : first_name, last_name, city, needs_description"},
+                {"error": "Champs requis : first_name, last_name, needs_description"},
                 status=400,
             )
 
-        # ── Département ───────────────────────────────────────
-        department = None
-        dept_id = data.get('department_id')
-        if dept_id:
-            try:
-                department = Department.objects.get(pk=dept_id)
-            except Department.DoesNotExist:
-                return Response({"error": "Département introuvable"}, status=404)
+        # ── Localisation ──────────────────────────────────────
+        commune     = (data.get('commune') or '').strip()
+        code_postal = (data.get('code_postal') or '').strip()
 
         # ── Urgence (valider 1-5) ─────────────────────────────
         try:
@@ -190,8 +197,9 @@ class CreateDemandeView(APIView):
             phone             = (data.get('phone') or '').strip(),
             birth_date        = data.get('birth_date') or None,
             gender            = (data.get('gender') or '').strip(),
-            city              = city,
-            department        = department,
+            commune           = commune,
+            code_postal       = code_postal,
+            city              = commune,  # city = commune pour compatibilité
             nom_etablissement = (data.get('nom_etablissement') or '').strip(),
             diplome_prepare   = (data.get('diplome_prepare') or '').strip(),
             situation         = (data.get('situation') or '').strip(),
@@ -200,6 +208,15 @@ class CreateDemandeView(APIView):
             pole              = pole,
             status            = 'NEW',
         )
+
+        # ── Géocodage asynchrone ──────────────────────────────
+        if commune or code_postal:
+            t = threading.Thread(
+                target=_geocode_and_save,
+                args=(demande.id, commune, code_postal),
+                daemon=True,
+            )
+            t.start()
 
         return Response({
             "success": True,

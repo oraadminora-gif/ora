@@ -35,6 +35,7 @@ interface Mentorat {
   jeune_diplome_label: string;
   jeune_situation: string;
   jeune_situation_label: string;
+  jeune_urgency_level: number;
   jeune_etablissement_id: number | null;
   jeune_nom_etablissement: string;
   ap_responsable_id: number | null;
@@ -321,6 +322,7 @@ function MentoratModal({
   const mentorChanged = mentorId !== String(mentorat.mentor_id);
 
   const [jeuneSituation, setJeuneSituation] = useState(mentorat.jeune_situation ?? '');
+  const [jeuneUrgency, setJeuneUrgency]     = useState<number>(mentorat.jeune_urgency_level ?? 1);
   const [jeuneEtabId, setJeuneEtabId]       = useState<number | null>(mentorat.jeune_etablissement_id ?? null);
   const [jeuneAutreNom, setJeuneAutreNom]   = useState(mentorat.jeune_etablissement_id ? '' : (mentorat.jeune_nom_etablissement ?? ''));
   const [etabs, setEtabs]                   = useState<EtabOption[]>([]);
@@ -376,7 +378,8 @@ function MentoratModal({
       payload.gender          = jeuneGender;
       payload.birth_date      = jeuneBirthDate || null;
       payload.diplome_prepare = jeuneDiplome;
-      payload.situation = jeuneSituation;
+      payload.situation       = jeuneSituation;
+      payload.urgency_level   = jeuneUrgency;
       if (jeuneEtabId) {
         payload.etablissement_id = jeuneEtabId;
       } else {
@@ -659,6 +662,33 @@ function MentoratModal({
                 ))}
               </div>
             </Field>
+            {/* Niveau d'urgence */}
+            <Field label="Niveau d'urgence">
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map(lvl => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setJeuneUrgency(lvl)}
+                    className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      jeuneUrgency === lvl
+                        ? lvl >= 4
+                          ? 'bg-red-500 border-red-500 text-white'
+                          : lvl === 3
+                            ? 'bg-amber-400 border-amber-400 text-white'
+                            : 'bg-green-500 border-green-500 text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+                    }`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {jeuneUrgency <= 2 ? 'Faible urgence' : jeuneUrgency === 3 ? 'Urgence modérée' : jeuneUrgency === 4 ? 'Urgence élevée' : 'Urgence critique'}
+              </p>
+            </Field>
+
             <Field label="Établissement / CFA">
               <div className="space-y-2">
                 <div className="flex gap-2">

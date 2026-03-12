@@ -38,7 +38,7 @@ class MentorSerializer(serializers.ModelSerializer):
             'id', 'user', 'first_name', 'last_name', 'full_name', 'email', 'phone',
             'pole', 'pole_name', 'association',
             'max_capacity', 'disponibilite_reelle', 'taux_occupation',
-            'is_active', 'is_trained', 'created_at', 'updated_at'
+            'is_active', 'is_trained', 'training_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
     
@@ -62,7 +62,7 @@ class MentorCreateSerializer(serializers.ModelSerializer):
             'email', 'first_name', 'last_name', 'password', 'create_user',
             'pole', 'association', 'phone',
             'max_capacity', 'disponibilite_reelle',
-            'is_trained', 'is_active'
+            'is_trained', 'training_date', 'is_active'
         ]
     
     def create(self, validated_data):

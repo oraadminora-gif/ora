@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count, Q
 
 from core.models import Mentor, Association, Department, User
-from api.permissions import IsACP, IsAnimateur
+from api.permissions import IsAnimateur
 
 
 def _generate_temp_password(length=12):
@@ -35,6 +35,7 @@ def _serialize_mentor(m):
         "association":     m.association.name,
         "association_id":  m.association_id,
         "is_trained":      m.is_trained,
+        "training_date":   m.training_date.isoformat() if m.training_date else None,
         "is_active":       m.is_active,
         "disponibilite":   m.disponibilite_reelle,
         "capacite_max":    m.max_capacity,
@@ -189,22 +190,29 @@ class PoleMentorsView(APIView):
 class PoleMentorDetailView(APIView):
     """
     GET   /pole/mentors/{id}/  – détail d'un mentor
-    PATCH /pole/mentors/{id}/  – modifier un mentor
+    PATCH /pole/mentors/{id}/  – modifier un mentor (ACP : tous ; AP : seulement son association)
 
     Champ compte (PATCH) :
     - link_user_email: "email"  → lie à un User existant
     - link_user_email: ""       → délie le compte
     """
-    permission_classes = [IsAuthenticated, IsACP]
+    permission_classes = [IsAuthenticated, IsAnimateur]
 
     def _get_mentor_and_pole(self, request, mentor_id):
         if not hasattr(request.user, 'animateur'):
             return None, None, Response({"error": "Pas de pôle"}, status=400)
-        pole_id = request.user.animateur.pole_id
+        animateur = request.user.animateur
+        pole_id = animateur.pole_id
         mentor = get_object_or_404(
             Mentor.objects.select_related('association', 'department', 'user'),
             id=mentor_id, pole_id=pole_id,
         )
+        # AP : peut uniquement modifier les mentors de sa propre association
+        if not animateur.is_coordinator and mentor.association_id != animateur.association_id:
+            return None, None, Response(
+                {"error": "Vous ne pouvez modifier que les mentors de votre association."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return mentor, pole_id, None
 
     def get(self, request, mentor_id):
@@ -221,8 +229,16 @@ class PoleMentorDetailView(APIView):
             return err
 
         data = request.data
+        animateur = request.user.animateur
+        is_ap = not animateur.is_coordinator
 
         if 'association_id' in data:
+            if is_ap:
+                # AP ne peut pas changer l'association d'un mentor
+                return Response(
+                    {"error": "Vous n'êtes pas autorisé à changer l'association d'un mentor."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             try:
                 mentor.association = Association.objects.get(
                     id=data['association_id'], is_active=True
@@ -255,9 +271,15 @@ class PoleMentorDetailView(APIView):
             mentor.is_trained = bool(data['is_trained'])
 
         if 'is_active' in data:
-            mentor.is_active = bool(data['is_active'])
-            if not mentor.is_active:
-                mentor.disponibilite_reelle = 0
+            new_active = bool(data['is_active'])
+            if mentor.is_active != new_active:
+                mentor.is_active = new_active
+                if not new_active:
+                    mentor.disponibilite_reelle = 0
+                else:
+                    # Réactivation : recalcule depuis le vrai nombre de mentorats actifs
+                    actifs = mentor.mentorats.filter(status='ACTIVE').count()
+                    mentor.disponibilite_reelle = max(0, mentor.max_capacity - actifs)
 
         # ── Liaison compte utilisateur ─────────────────────────────
         if 'link_user_email' in data:

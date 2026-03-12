@@ -92,24 +92,35 @@ class Mentorat(models.Model):
         return delta.years * 12 + delta.months
     
     def activer(self):
-        """Active le mentorat"""
-        self.status = 'ACTIVE'
-        self.assigned_at = timezone.now().date()
-        self.save()
-    
-    def cloturer(self, reason="", statut='CLOSED'):
-        if self.status == 'CLOSED':
+        """Active le mentorat PENDING → ACTIVE et décrémente la disponibilité du mentor."""
+        if self.status == 'ACTIVE':
             return
-        
+        was_inactive = self.status in ('CLOSED', 'ABORTED')
+        self.status = 'ACTIVE'
+        self.assigned_at = self.assigned_at or timezone.now().date()
+        self.save()
+        # Seulement si on passe depuis un état inactif (PENDING n'a pas encore occupé de slot)
+        if not was_inactive:
+            mentor = self.mentor
+            mentor.disponibilite_reelle = max(0, mentor.disponibilite_reelle - 1)
+            mentor.save(update_fields=['disponibilite_reelle'])
+
+    def cloturer(self, reason="", statut='CLOSED'):
+        if self.status in ('CLOSED', 'ABORTED'):
+            return
+        was_active = self.status == 'ACTIVE'
         self.status = statut
         self.closure_reason = reason
         self.closed_at = timezone.now().date()
         self.save()
 
-        # Libération mentor (propre)
-        mentor = self.mentor
-        mentor.disponibilite_reelle += 1
-        mentor.save()
+        # Libère une place uniquement si le mentorat était ACTIVE
+        if was_active:
+            mentor = self.mentor
+            mentor.disponibilite_reelle = min(
+                mentor.disponibilite_reelle + 1, mentor.max_capacity
+            )
+            mentor.save(update_fields=['disponibilite_reelle'])
 
         # Mise à jour demande
         self.young_request.status = 'CLOSED'

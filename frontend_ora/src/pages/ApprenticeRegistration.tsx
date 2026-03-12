@@ -52,10 +52,12 @@ const NEEDS_OPTIONS = [
 
 export function ApprenticeRegistration() {
   const navigate = useNavigate();
-  const [loading, setLoading]   = useState(false);
-  const [success, setSuccess]   = useState(false);
-  const [error, setError]       = useState('');
-  const [poles, setPoles]       = useState<PoleOption[]>([]);
+  const [loading, setLoading]         = useState(false);
+  const [success, setSuccess]         = useState(false);
+  const [error, setError]             = useState('');
+  const [poles, setPoles]             = useState<PoleOption[]>([]);
+  const [detectedPole, setDetectedPole] = useState<PoleOption | null>(null);
+  const [noPoleFound, setNoPoleFound]   = useState(false);
 
   useEffect(() => {
     api.get<PoleOption[]>('/public/poles/').then(r => setPoles(r.data)).catch(() => {});
@@ -79,18 +81,23 @@ export function ApprenticeRegistration() {
     consentGiven:     false,
   });
 
-  // Pôle sélectionné (pour afficher le hint)
-  const selectedPole = poles.find(p => String(p.id) === formData.poleId) ?? null;
-
-  // Auto-suggestion pôle depuis le code postal
+  // Détection automatique du pôle dès que le CP est complet (5 chiffres)
   const handleCodePostalChange = (val: string) => {
-    setFormData(prev => ({ ...prev, codePostal: val }));
-    if (val.length >= 2 && !formData.poleId) {
+    setFormData(prev => ({ ...prev, codePostal: val, poleId: '' }));
+    setDetectedPole(null);
+    setNoPoleFound(false);
+
+    if (val.length === 5) {
       const deptCode = val.startsWith('97') ? val.slice(0, 3) : val.slice(0, 2);
       const match = poles.find(p =>
         p.dept_codes.split(', ').some(c => c === deptCode)
       );
-      if (match) setFormData(prev => ({ ...prev, codePostal: val, poleId: String(match.id) }));
+      if (match) {
+        setDetectedPole(match);
+        setFormData(prev => ({ ...prev, codePostal: val, poleId: String(match.id) }));
+      } else {
+        setNoPoleFound(true);
+      }
     }
   };
 
@@ -101,6 +108,12 @@ export function ApprenticeRegistration() {
 
     if (!formData.consentGiven) {
       setError('Vous devez accepter la politique de confidentialité');
+      setLoading(false);
+      return;
+    }
+
+    if (noPoleFound || !formData.poleId) {
+      setError("Aucun pôle ne couvre votre département. Veuillez nous contacter à ora@ora.fr");
       setLoading(false);
       return;
     }
@@ -278,35 +291,63 @@ export function ApprenticeRegistration() {
               </div>
             </div>
 
-            {/* Pôle */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Pôle ORA de rattachement *
-              </label>
-              <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" />
-                Choisis le pôle qui couvre ton département. Le code postal est utilisé pour t'orienter automatiquement.
-              </p>
-              <select
-                required
-                value={formData.poleId}
-                onChange={e => setFormData({ ...formData, poleId: e.target.value })}
-                className={inputCls}
-              >
-                <option value="">— Sélectionne ton pôle —</option>
-                {poles.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}{p.dept_codes ? ` — Dép. ${p.dept_codes}` : ''}
-                  </option>
-                ))}
-              </select>
-              {selectedPole?.dept_names && (
-                <p className="mt-1.5 text-xs text-slate-500 flex items-start gap-1">
-                  <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                  {selectedPole.dept_names}
-                </p>
-              )}
-            </div>
+            {/* Pôle — détecté automatiquement depuis le code postal */}
+            {detectedPole && (
+              <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-green-800 font-medium">Pôle détecté : {detectedPole.name}</p>
+                  {detectedPole.dept_names && (
+                    <p className="text-green-700 text-sm flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {detectedPole.dept_names}
+                    </p>
+                  )}
+                  <p className="text-green-600 text-xs mt-1">
+                    Ta demande sera automatiquement transmise à ce pôle.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {noPoleFound && (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-800 font-medium">
+                    Désolé, aucun pôle ne couvre ton département !
+                  </p>
+                  <p className="text-amber-700 text-sm mt-1">
+                    Veuillez nous laisser un message à cette adresse :{' '}
+                    <a href="mailto:ora@ora.fr" className="font-semibold underline hover:text-amber-900">
+                      ora@ora.fr
+                    </a>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Fallback manuel si les pôles ne sont pas encore chargés */}
+            {!detectedPole && !noPoleFound && formData.codePostal.length === 5 && poles.length === 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Pôle ORA de rattachement *
+                </label>
+                <select
+                  required
+                  value={formData.poleId}
+                  onChange={e => setFormData({ ...formData, poleId: e.target.value })}
+                  className={inputCls}
+                >
+                  <option value="">— Sélectionne ton pôle —</option>
+                  {poles.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}{p.dept_codes ? ` — Dép. ${p.dept_codes}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Diplôme préparé */}
             <div>

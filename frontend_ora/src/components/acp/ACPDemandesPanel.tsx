@@ -51,10 +51,21 @@ function StatusBadge({ status }: { status: ACPDemande['status'] }) {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const DIPLOME_OPTIONS = [
   { group: 'Niveau 3', options: [{ value: 'CAP', label: 'CAP' }, { value: 'BEP', label: 'BEP' }] },
-  { group: 'Niveau 4', options: [{ value: 'BAC_PRO', label: 'Bac Pro' }, { value: 'BAC_AUTRE', label: 'Bac autres' }, { value: 'BP', label: 'BP' }] },
+  { group: 'Niveau 4', options: [{ value: 'BAC_PRO', label: 'Bac Professionnel' }, { value: 'BAC_AUTRE', label: 'Bac (autre)' }, { value: 'BP', label: 'Brevet Professionnel (BP)' }] },
   { group: 'Niveau 5', options: [{ value: 'BTS', label: 'BTS' }, { value: 'DUT', label: 'DUT' }] },
-  { group: 'Niveau 6', options: [{ value: 'LIC_PRO', label: 'Licence Pro' }, { value: 'BUT', label: 'BUT' }] },
+  { group: 'Niveau 6', options: [{ value: 'LIC_PRO', label: 'Licence Professionnelle' }, { value: 'BUT', label: 'BUT' }] },
   { group: 'Niveau 7', options: [{ value: 'MASTER', label: 'Master' }, { value: 'DEA', label: 'DEA' }, { value: 'DES', label: "Diplôme d'études spécialisées" }, { value: 'ING', label: 'Ingénieur' }] },
+];
+
+const NEEDS_OPTIONS = [
+  { value: 'orientation',          label: 'Orientation professionnelle' },
+  { value: 'confidence',           label: 'Confiance en soi' },
+  { value: 'organization',         label: 'Organisation et méthode de travail' },
+  { value: 'school_difficulties',  label: 'Difficultés scolaires' },
+  { value: 'company_difficulties', label: 'Difficultés en entreprise' },
+  { value: 'daily_life',           label: 'Gestion de la vie quotidienne' },
+  { value: 'company_change',       label: "Changement d'entreprise" },
+  { value: 'other',                label: 'Autre' },
 ];
 
 // ── Nouvelle Demande Modal ────────────────────────────────────────────────────
@@ -62,46 +73,58 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [depts, setDepts]   = useState<DeptOption[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const [needs, setNeeds]       = useState<string[]>([]);
+  const [otherNeeds, setOtherNeeds] = useState('');
 
-  // Form state
   const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    birth_date: '',
-    gender: '',
-    city: '',
-    department_id: '',
-    nom_etablissement: '',
-    diplome_prepare: '',
-    situation: '',
-    needs_description: '',
+    first_name: '', last_name: '', email: '', phone: '',
+    birth_date: '', gender: '',
+    commune: '', code_postal: '',
+    nom_etablissement: '', diplome_prepare: '', situation: '',
     urgency_level: '1',
   });
-
-  useEffect(() => {
-    api.get('/pole/departments/').then(r => setDepts(r.data.departments ?? []));
-  }, []);
 
   const set = (field: keyof typeof form) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm(prev => ({ ...prev, [field]: e.target.value }));
 
+  const toggleNeed = (value: string) =>
+    setNeeds(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
+
+  const buildNeedsDescription = () => {
+    const selected = NEEDS_OPTIONS
+      .filter(o => needs.includes(o.value) && o.value !== 'other')
+      .map(o => o.label);
+    if (needs.includes('other') && otherNeeds.trim()) selected.push(otherNeeds.trim());
+    return selected.join(', ');
+  };
+
   const submit = async () => {
-    if (!form.first_name.trim() || !form.last_name.trim() || !form.city.trim() || !form.needs_description.trim()) {
-      setError('Veuillez remplir les champs obligatoires : Prénom, Nom, Ville, Description');
+    const needsDesc = buildNeedsDescription();
+    if (!form.first_name.trim() || !form.last_name.trim()) {
+      setError('Prénom et Nom sont obligatoires.');
+      return;
+    }
+    if (!form.commune.trim() || !form.code_postal.trim()) {
+      setError('Commune et code postal sont obligatoires.');
+      return;
+    }
+    if (!form.situation) {
+      setError('Veuillez indiquer la situation du jeune.');
+      return;
+    }
+    if (needs.length === 0) {
+      setError('Veuillez sélectionner au moins un besoin.');
       return;
     }
     setLoading(true); setError('');
     try {
       await api.post('/pole/requests/', {
         ...form,
-        department_id: form.department_id ? Number(form.department_id) : undefined,
-        urgency_level: Number(form.urgency_level),
+        urgency_level:     Number(form.urgency_level),
+        needs_description: needsDesc,
       });
       onSuccess();
     } catch (e: unknown) {
@@ -112,10 +135,12 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
 
   const inputCls = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none';
   const labelCls = 'block text-xs font-semibold text-slate-600 mb-1';
+  const sectionCls = 'text-xs font-bold text-slate-400 uppercase tracking-widest mb-3';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-auto">
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -127,16 +152,14 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-5 max-h-[75vh] overflow-y-auto">
+        <div className="px-6 py-5 space-y-6 max-h-[75vh] overflow-y-auto">
           {error && (
-            <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-              {error}
-            </div>
+            <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
           )}
 
-          {/* Identité */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Identité</p>
+          {/* ── Identité ────────────────────────────────────── */}
+          <section>
+            <p className={sectionCls}>Identité</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelCls}>Prénom <span className="text-red-500">*</span></label>
@@ -168,88 +191,113 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
                 </select>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Localisation */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Localisation</p>
+          {/* ── Localisation ─────────────────────────────────── */}
+          <section>
+            <p className={sectionCls}>Localisation</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Ville <span className="text-red-500">*</span></label>
-                <input type="text" value={form.city} onChange={set('city')} className={inputCls} placeholder="Ville" />
+                <label className={labelCls}>Commune <span className="text-red-500">*</span></label>
+                <input type="text" value={form.commune} onChange={set('commune')} className={inputCls} placeholder="Ex : Lyon" />
               </div>
               <div>
-                <label className={labelCls}>Département</label>
-                <select value={form.department_id} onChange={set('department_id')} className={inputCls}>
+                <label className={labelCls}>Code postal <span className="text-red-500">*</span></label>
+                <input type="text" maxLength={5} value={form.code_postal} onChange={set('code_postal')} className={inputCls} placeholder="Ex : 69001" />
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Ces informations permettent de géolocaliser le jeune pour le matching.
+            </p>
+          </section>
+
+          {/* ── Formation ────────────────────────────────────── */}
+          <section>
+            <p className={sectionCls}>Formation</p>
+            <div className="space-y-3">
+              <div>
+                <label className={labelCls}>Établissement / CFA</label>
+                <input type="text" value={form.nom_etablissement} onChange={set('nom_etablissement')} className={inputCls} placeholder="Nom de l'école ou du CFA" />
+              </div>
+              <div>
+                <label className={labelCls}>Diplôme préparé</label>
+                <select value={form.diplome_prepare} onChange={set('diplome_prepare')} className={inputCls}>
                   <option value="">— Choisir —</option>
-                  {depts.map(d => (
-                    <option key={d.id} value={d.id}>{d.label}</option>
+                  {DIPLOME_OPTIONS.map(g => (
+                    <optgroup key={g.group} label={g.group}>
+                      {g.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </optgroup>
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
-
-          {/* Formation */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Formation</p>
-            <div className="grid grid-cols-1 gap-3">
               <div>
-                <label className={labelCls}>Établissement</label>
-                <input type="text" value={form.nom_etablissement} onChange={set('nom_etablissement')} className={inputCls} placeholder="Nom de l'école / CFA" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Diplôme préparé</label>
-                  <select value={form.diplome_prepare} onChange={set('diplome_prepare')} className={inputCls}>
-                    <option value="">— Choisir —</option>
-                    {DIPLOME_OPTIONS.map(g => (
-                      <optgroup key={g.group} label={g.group}>
-                        {g.options.map(o => (
-                          <option key={o.value} value={o.value}>{o.label}</option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Situation</label>
-                  <select value={form.situation} onChange={set('situation')} className={inputCls}>
-                    <option value="">— Choisir —</option>
-                    <option value="apprentissage">Déjà en apprentissage</option>
-                    <option value="recherche">En recherche d'apprentissage</option>
-                  </select>
+                <label className={labelCls}>Situation <span className="text-red-500">*</span></label>
+                <div className="flex gap-6 mt-1">
+                  {[
+                    { value: 'apprentissage', label: 'Déjà en apprentissage' },
+                    { value: 'recherche',     label: "En recherche d'apprentissage" },
+                  ].map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="situation"
+                        value={opt.value}
+                        checked={form.situation === opt.value}
+                        onChange={set('situation')}
+                        className="accent-violet-600"
+                      />
+                      <span className="text-sm text-slate-700">{opt.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Demande */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Demande</p>
-            <div className="space-y-3">
-              <div>
-                <label className={labelCls}>Description des besoins <span className="text-red-500">*</span></label>
-                <textarea
-                  rows={4}
-                  value={form.needs_description}
-                  onChange={set('needs_description')}
-                  placeholder="Décrivez les besoins et objectifs du jeune…"
-                  className={`${inputCls} resize-none`}
-                />
-              </div>
-              <div className="w-1/2">
-                <label className={labelCls}>Niveau d'urgence</label>
-                <select value={form.urgency_level} onChange={set('urgency_level')} className={inputCls}>
-                  <option value="1">1 — Très faible</option>
-                  <option value="2">2 — Faible</option>
-                  <option value="3">3 — Modéré</option>
-                  <option value="4">4 — Urgent</option>
-                  <option value="5">5 — Très urgent</option>
-                </select>
-              </div>
+          {/* ── Besoins ──────────────────────────────────────── */}
+          <section>
+            <p className={sectionCls}>Besoins <span className="text-red-500">*</span></p>
+            <div className="grid grid-cols-2 gap-2">
+              {NEEDS_OPTIONS.map(opt => (
+                <label key={opt.value} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                  needs.includes(opt.value)
+                    ? 'border-violet-400 bg-violet-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={needs.includes(opt.value)}
+                    onChange={() => toggleNeed(opt.value)}
+                    className="accent-violet-600 shrink-0"
+                  />
+                  <span className="text-sm text-slate-700 leading-tight">{opt.label}</span>
+                </label>
+              ))}
             </div>
-          </div>
+            {needs.includes('other') && (
+              <textarea
+                rows={2}
+                value={otherNeeds}
+                onChange={e => setOtherNeeds(e.target.value)}
+                placeholder="Précisez le besoin…"
+                className={`${inputCls} mt-2 resize-none`}
+              />
+            )}
+          </section>
+
+          {/* ── Urgence ──────────────────────────────────────── */}
+          <section>
+            <p className={sectionCls}>Urgence</p>
+            <div className="w-1/2">
+              <select value={form.urgency_level} onChange={set('urgency_level')} className={inputCls}>
+                <option value="1">1 — Très faible</option>
+                <option value="2">2 — Faible</option>
+                <option value="3">3 — Modéré</option>
+                <option value="4">4 — Urgent</option>
+                <option value="5">5 — Très urgent</option>
+              </select>
+            </div>
+          </section>
         </div>
 
         {/* Footer */}
@@ -260,7 +308,9 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
           </button>
           <button onClick={submit} disabled={loading}
             className="flex-1 py-2.5 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 disabled:opacity-50 flex items-center justify-center gap-2">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Création…</> : <><Plus className="w-4 h-4" />Créer la demande</>}
+            {loading
+              ? <><Loader2 className="w-4 h-4 animate-spin" />Création…</>
+              : <><Plus className="w-4 h-4" />Créer la demande</>}
           </button>
         </div>
       </div>

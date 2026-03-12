@@ -293,18 +293,22 @@ class AnimateurAdmin(admin.ModelAdmin):
 @admin.register(Mentor)
 class MentorAdmin(admin.ModelAdmin):
     list_display  = ('full_name', 'pole', 'association', 'disponibilite_reelle',
-                     'max_capacity', 'is_trained', 'statut_badge')
+                     'max_capacity', 'is_trained', 'training_date', 'statut_badge')
     list_filter   = ('is_active', 'is_trained', 'pole', 'association')
     search_fields = ('first_name', 'last_name', 'email')
     ordering      = ('pole__code', 'last_name')
     list_per_page = 30
+    date_hierarchy = 'training_date'
 
     fieldsets = (
         ('Informations',  {'fields': ('user', 'first_name', 'last_name', 'email', 'phone')}),
         ('Localisation',  {'fields': ('city', 'code_postal', 'department')}),
         ('Organisation',  {'fields': ('pole', 'association')}),
         ('Capacité',      {'fields': ('max_capacity', 'disponibilite_reelle')}),
-        ('Statut',        {'fields': ('is_active', 'is_trained')}),
+        ('Formation',     {'fields': ('is_trained', 'training_date'),
+                           'description': 'La date de formation alimente le critère «&nbsp;formation récente&nbsp;» '
+                                          'dans l\'algorithme de matching.'}),
+        ('Statut',        {'fields': ('is_active',)}),
         ('Observations',  {'fields': ('observations',)}),
     )
 

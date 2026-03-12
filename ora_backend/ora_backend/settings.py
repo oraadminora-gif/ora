@@ -139,3 +139,16 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# ==================== EMAIL ====================
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = 'Joa751977@gmail.com'
+EMAIL_HOST_PASSWORD = 'vsvwhezeckdzsvwz'
+
+DEFAULT_FROM_EMAIL = 'ORA Mentorat <Joa751977@gmail.com>'
+
+# URL du frontend (utilisée dans les liens envoyés par email)
+FRONTEND_URL = 'http://localhost:5173'  # En prod : 'https://votre-domaine.fr'

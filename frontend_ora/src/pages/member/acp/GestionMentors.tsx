@@ -4,7 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import api from '../../../services/api';
 import {
   Plus, Search, GraduationCap, Loader2, AlertCircle,
-  Pencil, X, CheckCircle, UserX, Users, Key, Copy,
+  Pencil, X, CheckCircle, UserX, UserCheck, Users, Key, Copy,
   Link2, Link2Off,
 } from 'lucide-react';
 
@@ -17,7 +17,7 @@ interface Mentor {
   observations: string;
   department: string | null; department_id: number | null;
   association: string; association_id: number;
-  is_trained: boolean; is_active: boolean;
+  is_trained: boolean; training_date: string | null; is_active: boolean;
   disponibilite: number; capacite_max: number; est_sature: boolean;
   nb_actifs: number; nb_termines: number;
   // Compte utilisateur
@@ -33,7 +33,7 @@ interface MentorForm {
   first_name: string; last_name: string; email: string; phone: string;
   city: string; code_postal: string; observations: string;
   association_id: string; department_id: string; max_capacity: string;
-  is_trained: boolean; is_active: boolean;
+  is_trained: boolean; training_date: string; is_active: boolean;
   // Compte
   create_account: boolean;
   link_user_email: string;
@@ -43,7 +43,7 @@ const EMPTY_FORM: MentorForm = {
   first_name: '', last_name: '', email: '', phone: '', city: '', code_postal: '',
   observations: '',
   association_id: '', department_id: '', max_capacity: '1',
-  is_trained: false, is_active: true,
+  is_trained: false, training_date: '', is_active: true,
   create_account: false, link_user_email: '',
 };
 
@@ -110,12 +110,13 @@ function TempPasswordDialog({ name, email, password, onClose }: {
 // MODAL
 // ─────────────────────────────────────────────────────────────
 function MentorModal({
-  mode, mentor, associations, departments, onClose, onSaved,
+  mode, mentor, associations, departments, isAP, onClose, onSaved,
 }: {
   mode: ModalMode;
   mentor: Mentor | null;
   associations: Association[];
   departments: Department[];
+  isAP: boolean;
   onClose: () => void;
   onSaved: (m: Mentor, tempPassword?: string) => void;
 }) {
@@ -137,6 +138,7 @@ function MentorModal({
         department_id:   mentor.department_id ? String(mentor.department_id) : '',
         max_capacity:    String(mentor.capacite_max),
         is_trained:      mentor.is_trained,
+        training_date:   mentor.training_date ?? '',
         is_active:       mentor.is_active,
         create_account:  false,
         link_user_email: '',
@@ -173,6 +175,7 @@ function MentorModal({
         department_id:  form.department_id ? Number(form.department_id) : null,
         max_capacity:   Number(form.max_capacity),
         is_trained:     form.is_trained,
+        training_date:  form.is_trained && form.training_date ? form.training_date : null,
         is_active:      form.is_active,
       };
 
@@ -285,6 +288,21 @@ function MentorModal({
               <Toggle label="Actif" value={form.is_active} onToggle={() => toggle('is_active')} />
             )}
           </div>
+
+          {form.is_trained && (
+            <Field label="Date de formation">
+              <input
+                type="date"
+                value={form.training_date}
+                onChange={set('training_date')}
+                max={new Date().toISOString().split('T')[0]}
+                className={INPUT}
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Optionnelle — améliore la précision du matching (critère «&nbsp;formation récente&nbsp;»).
+              </p>
+            </Field>
+          )}
 
           <Field label="Observations">
             <textarea
@@ -443,14 +461,15 @@ export function GestionMentors() {
   const openEdit = (m: Mentor) => { setEditingMentor(m); setModalMode('edit'); };
   const openCreate = () => { setEditingMentor(null); setModalMode('create'); };
 
-  const handleDeactivate = async (m: Mentor) => {
-    if (!confirm(`Désactiver ${m.name} ?`)) return;
+  const handleToggleActive = async (m: Mentor) => {
+    const action = m.is_active ? 'Désactiver' : 'Réactiver';
+    if (!confirm(`${action} ${m.name} ?`)) return;
     try {
-      const res = await api.patch(`/pole/mentors/${m.id}/`, { is_active: false });
+      const res = await api.patch(`/pole/mentors/${m.id}/`, { is_active: !m.is_active });
       setMentors(prev => prev.map(x => x.id === m.id ? res.data : x));
-      setSuccessMsg(`${m.name} désactivé.`);
+      setSuccessMsg(`${m.name} ${m.is_active ? 'désactivé' : 'réactivé'}.`);
       setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError('Erreur lors de la désactivation'); }
+    } catch { setError(`Erreur lors de la ${m.is_active ? 'désactivation' : 'réactivation'}`); }
   };
 
   const stats = useMemo(() => ({
@@ -583,18 +602,27 @@ export function GestionMentors() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
-                        {!isAP && (
+                        {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
+                        {(!isAP || m.association_id === associations[0]?.id) && (
                           <button onClick={() => openEdit(m)}
                             className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
                             title="Modifier">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        {!isAP && m.is_active && (
-                          <button onClick={() => handleDeactivate(m)}
-                            className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 transition-colors"
-                            title="Désactiver">
-                            <UserX className="w-3.5 h-3.5" />
+                        {/* Désactiver / Réactiver : ACP = tous ; AP = seulement son association */}
+                        {(!isAP || m.association_id === associations[0]?.id) && (
+                          <button onClick={() => handleToggleActive(m)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              m.is_active
+                                ? 'hover:bg-red-50 text-slate-400 hover:text-red-600'
+                                : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
+                            }`}
+                            title={m.is_active ? 'Désactiver' : 'Réactiver'}>
+                            {m.is_active
+                              ? <UserX className="w-3.5 h-3.5" />
+                              : <UserCheck className="w-3.5 h-3.5" />
+                            }
                           </button>
                         )}
                       </div>
@@ -614,6 +642,7 @@ export function GestionMentors() {
           mentor={editingMentor}
           associations={associations}
           departments={departments}
+          isAP={isAP}
           onClose={() => setModalMode(null)}
           onSaved={handleSaved}
         />

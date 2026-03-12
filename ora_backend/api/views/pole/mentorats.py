@@ -45,6 +45,7 @@ def _serialize_mentorat(m):
         "jeune_diplome_label":   req.get_diplome_prepare_display() if req.diplome_prepare else '',
         "jeune_situation":       req.situation or '',
         "jeune_situation_label": req.get_situation_display() if req.situation else '',
+        "jeune_urgency_level":   req.urgency_level,
         "jeune_etablissement_id": req.etablissement_id,
         "jeune_nom_etablissement": (
             req.etablissement.nom if req.etablissement_id else req.nom_etablissement
@@ -236,6 +237,13 @@ class PoleMentoratDetailView(APIView):
                 return Response({"error": "Situation invalide"}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
             req_updated.append('situation')
+        if 'urgency_level' in data:
+            try:
+                val = max(1, min(5, int(data['urgency_level'])))
+            except (ValueError, TypeError):
+                return Response({"error": "urgency_level doit être entre 1 et 5"}, status=status.HTTP_400_BAD_REQUEST)
+            req.urgency_level = val
+            req_updated.append('urgency_level')
         if 'etablissement_id' in data:
             etab_id = data['etablissement_id']
             if etab_id:
