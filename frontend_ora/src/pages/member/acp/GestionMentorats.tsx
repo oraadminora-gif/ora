@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import {
   Search, Loader2, AlertCircle, Pencil, X, CheckCircle,
   HandHeart, AlertTriangle, Calendar, User, FileText, Banknote, Plus, Trash2,
-  UserCheck, Building2,
+  UserCheck, Building2, Download,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -812,6 +812,148 @@ const TABS: { key: TabFilter; label: string }[] = [
   { key: 'ABORTED', label: 'Abandonnés' },
 ];
 
+// ─────────────────────────────────────────────────────────────
+// MODAL EXPORT
+// ─────────────────────────────────────────────────────────────
+function ExportModal({ onClose }: { onClose: () => void }) {
+  const today = new Date().toISOString().split('T')[0];
+  const [dateDebut, setDateDebut] = useState('');
+  const [dateFin,   setDateFin]   = useState(today);
+  const [fmt,       setFmt]       = useState<'csv' | 'xlsx'>('xlsx');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+
+  const handleExport = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params = new URLSearchParams({ file_format: fmt });
+      if (dateDebut) params.append('date_debut', dateDebut);
+      if (dateFin)   params.append('date_fin',   dateFin);
+
+      const res = await api.get(`/pole/mentorats/export-csv/?${params}`, {
+        responseType: 'blob',
+      });
+
+      const disposition = res.headers['content-disposition'] ?? '';
+      const match = disposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : `mentorats_export.${fmt}`;
+
+      const mimeType = fmt === 'xlsx'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'text/csv;charset=utf-8;';
+
+      const url  = URL.createObjectURL(new Blob([res.data], { type: mimeType }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      onClose();
+    } catch {
+      setError("Erreur lors de l'export. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const INPUT = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <Download className="w-5 h-5 text-ora-blue" />
+            <h2 className="text-base font-bold text-slate-900">Exporter les mentorats</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          {/* Format */}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-600">Format</label>
+            <div className="flex gap-2">
+              {(['xlsx', 'csv'] as const).map(f => (
+                <button key={f} onClick={() => setFmt(f)}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-xl border-2 transition-all ${
+                    fmt === f
+                      ? 'border-ora-blue bg-ora-blue/5 text-ora-blue'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                  }`}>
+                  {f === 'xlsx' ? 'Excel (.xlsx)' : 'CSV (.csv)'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-500">
+            Filtrez par <span className="font-semibold">date de début</span> des mentorats.
+            Laissez vide pour tout exporter.
+          </p>
+
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-600">Date de début</label>
+              <input type="date" value={dateDebut}
+                onChange={e => setDateDebut(e.target.value)}
+                className={INPUT} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-600">Date de fin</label>
+              <input type="date" value={dateFin}
+                max={today}
+                onChange={e => setDateFin(e.target.value)}
+                className={INPUT} />
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-500 space-y-1">
+            <p className="font-semibold text-slate-600">Colonnes exportées :</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li>Jeune (identité, diplôme, situation, établissement)</li>
+              <li>Mentor (coordonnées, association, formation)</li>
+              <li>AP responsable</li>
+              <li>Mentorat (statut, dates, notes, problématiques)</li>
+              <li>Financeurs associés</li>
+              <li>Activité de suivi (nb rencontres, durée, types)</li>
+            </ul>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />{error}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+          <button onClick={onClose}
+            className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700">
+            Annuler
+          </button>
+          <button onClick={handleExport} disabled={loading}
+            className="flex items-center gap-2 px-5 py-2.5 bg-ora-blue text-white text-sm font-bold rounded-xl hover:bg-ora-blue/90 disabled:opacity-60 transition-all">
+            {loading
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <Download className="w-4 h-4" />
+            }
+            {loading ? 'Téléchargement…' : `Télécharger ${fmt.toUpperCase()}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GestionMentorats() {
   const [mentorats, setMentorats]     = useState<Mentorat[]>([]);
   const [animateurs, setAnimateurs]   = useState<Animateur[]>([]);
@@ -823,6 +965,7 @@ export function GestionMentorats() {
   const [tab, setTab]                 = useState<TabFilter>('all');
   const [editing, setEditing]         = useState<Mentorat | null>(null);
   const [successMsg, setSuccessMsg]   = useState<string | null>(null);
+  const [showExport, setShowExport]   = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -893,11 +1036,20 @@ export function GestionMentorats() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Suivi des mentorats</h1>
-        <p className="text-sm text-slate-500 mt-0.5">
-          {counts.ACTIVE} actifs · {counts.PENDING} en attente · {counts.CLOSED + counts.ABORTED} clôturés
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Suivi des mentorats</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {counts.ACTIVE} actifs · {counts.PENDING} en attente · {counts.CLOSED + counts.ABORTED} clôturés
+          </p>
+        </div>
+        <button
+          onClick={() => setShowExport(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm shrink-0"
+        >
+          <Download className="w-4 h-4" />
+          Exporter
+        </button>
       </div>
 
       {/* Succès */}
@@ -1035,6 +1187,10 @@ export function GestionMentorats() {
           onClose={() => setEditing(null)}
           onSaved={handleSaved}
         />
+      )}
+
+      {showExport && (
+        <ExportModal onClose={() => setShowExport(false)} />
       )}
     </div>
   );

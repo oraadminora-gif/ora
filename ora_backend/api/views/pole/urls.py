@@ -3,6 +3,7 @@ from .matching       import MatchingSuggestionsView, AssignMentorView
 from .mentors        import PoleMentorsView, PoleMentorDetailView
 from .animateurs     import PoleAnimateursView, PoleAnimateurDetailView
 from .mentorats      import PoleMentoratListView, PoleMentoratDetailView
+from .export_csv     import ExportMentoratsCsvView
 from .requests       import PendingRequestsView, RerouterDemandeView, SetEtablissementDemandeView, CreateDemandeView
 from .associations   import PoleAssociationsView
 from .departments    import DepartmentsView
@@ -26,6 +27,7 @@ urlpatterns = [
 
     # ── Mentorats ─────────────────────────────────────────────
     path('mentorats/',                   PoleMentoratListView.as_view(),   name='pole-mentorats'),
+    path('mentorats/export-csv/',        ExportMentoratsCsvView.as_view(), name='pole-mentorats-export-csv'),
     path('mentorats/<int:mentorat_id>/', PoleMentoratDetailView.as_view(), name='pole-mentorat-detail'),
 
     # ── Demandes / Matching ───────────────────────────────────

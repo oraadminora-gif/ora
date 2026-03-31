@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(python manage.py check)",
-      "Bash(python manage.py recalc_disponibilite --dry-run)"
+      "Bash(python manage.py recalc_disponibilite --dry-run)",
+      "Bash(grep -n \"SuiviMentorat\\\\|financement\\\\|MentoratFinancement\\\\|suivi\" /d/M1_NEXA/ORA_Site/ora_backend/core/models/*.py)",
+      "Bash(grep -n \"showExport\\\\|ExportModal\\\\|^  \\);\\\\n^}$\" /d/M1_NEXA/ORA_Site/frontend_ora/src/pages/member/acp/GestionMentorats.tsx)",
+      "Bash(python manage.py check --deploy)",
+      "Bash(python -c \":*)"
     ]
   }
 }
