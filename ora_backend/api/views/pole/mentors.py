@@ -304,3 +304,19 @@ class PoleMentorDetailView(APIView):
         mentor.save()
         m = _annotated_mentor_qs(mentor_id=mentor.id).first()
         return Response(_serialize_mentor(m))
+
+    def delete(self, request, mentor_id):
+        mentor, _, err = self._get_mentor_and_pole(request, mentor_id)
+        if err:
+            return err
+
+        # Bloquer la suppression si le mentor a des mentorats actifs
+        active_count = mentor.mentorats.filter(status='ACTIVE').count()
+        if active_count > 0:
+            return Response(
+                {"error": f"Impossible de supprimer ce mentor : il a {active_count} mentorat(s) actif(s)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        mentor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

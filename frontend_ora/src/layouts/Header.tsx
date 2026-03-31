@@ -30,15 +30,13 @@ export function Header() {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center hover:opacity-80 transition-opacity"
+            className="flex items-center hover:opacity-85 transition-opacity"
           >
-            <div className="bg-white rounded-lg px-2 py-1">
-              <img
-                src="/image.png"
-                alt="ORA"
-                className="h-8"
-              />
-            </div>
+            <img
+              src="/image.png"
+              alt="ORA – Objectif Réussir Apprentissage"
+              className="h-12 w-auto bg-white rounded-xl px-3 py-1 shadow-lg"
+            />
           </Link>
 
           {/* Mobile menu button */}

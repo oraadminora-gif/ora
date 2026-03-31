@@ -5,7 +5,7 @@ import api from '../../../services/api';
 import {
   Plus, Search, GraduationCap, Loader2, AlertCircle,
   Pencil, X, CheckCircle, UserX, UserCheck, Users, Key, Copy,
-  Link2, Link2Off,
+  Link2, Link2Off, Inbox, UserPlus, Ban, ChevronDown, ChevronUp, Trash2,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -28,6 +28,25 @@ interface Association { id: number; name: string; code: string; }
 interface Department  { id: number; code: string; name: string; label: string; }
 
 type ModalMode = 'create' | 'edit' | null;
+
+interface Candidature {
+  id: number;
+  first_name: string; last_name: string;
+  email: string; phone: string;
+  code_postal: string; commune: string;
+  pole_name: string | null;
+  association_id: number | null; association_name: string | null;
+  experience_pro: string;
+  domaines: string[];
+  disponibilite: string;
+  motivation: string;
+  statut: 'PENDING' | 'VALIDATED' | 'REJECTED';
+  statut_label: string;
+  notes_rejet: string;
+  validated_by: string | null;
+  mentor_id: number | null;
+  created_at: string;
+}
 
 interface MentorForm {
   first_name: string; last_name: string; email: string; phone: string;
@@ -413,6 +432,53 @@ export function GestionMentors() {
     name: string; email: string; password: string;
   } | null>(null);
 
+  // ── Candidatures ─────────────────────────────────────────
+  const [tab, setTab]                     = useState<'mentors' | 'candidatures'>('mentors');
+  const [candidatures, setCandidatures]   = useState<Candidature[]>([]);
+  const [candLoading, setCandLoading]     = useState(false);
+  const [expandedCand, setExpandedCand]   = useState<number | null>(null);
+  const [rejectId, setRejectId]           = useState<number | null>(null);
+  const [rejectNote, setRejectNote]       = useState('');
+
+  const pendingCount = candidatures.filter(c => c.statut === 'PENDING').length;
+
+  const loadCandidatures = useCallback(async () => {
+    setCandLoading(true);
+    try {
+      const res = await api.get('/pole/candidatures-mentors/');
+      setCandidatures(res.data);
+    } catch { /* silencieux */ }
+    finally { setCandLoading(false); }
+  }, []);
+
+  useEffect(() => { loadCandidatures(); }, [loadCandidatures]);
+
+  const handleValider = async (id: number) => {
+    if (!confirm('Valider cette candidature et créer le mentor ?')) return;
+    try {
+      await api.post(`/pole/candidatures-mentors/${id}/valider/`);
+      setCandidatures(prev => prev.map(c =>
+        c.id === id ? { ...c, statut: 'VALIDATED', statut_label: 'Validée' } : c
+      ));
+      setSuccessMsg('Candidature validée — mentor créé.');
+      setTimeout(() => setSuccessMsg(null), 4000);
+      loadData(); // rafraîchit la liste des mentors
+    } catch { setError('Erreur lors de la validation.'); }
+  };
+
+  const handleRejeter = async (id: number) => {
+    try {
+      await api.post(`/pole/candidatures-mentors/${id}/rejeter/`, { notes_rejet: rejectNote });
+      setCandidatures(prev => prev.map(c =>
+        c.id === id ? { ...c, statut: 'REJECTED', statut_label: 'Rejetée' } : c
+      ));
+      setRejectId(null);
+      setRejectNote('');
+      setSuccessMsg('Candidature rejetée.');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch { setError('Erreur lors du rejet.'); }
+  };
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -461,6 +527,19 @@ export function GestionMentors() {
   const openEdit = (m: Mentor) => { setEditingMentor(m); setModalMode('edit'); };
   const openCreate = () => { setEditingMentor(null); setModalMode('create'); };
 
+  const handleDelete = async (m: Mentor) => {
+    if (!confirm(`Supprimer définitivement ${m.name} ?\n\nCette action est irréversible.`)) return;
+    try {
+      await api.delete(`/pole/mentors/${m.id}/`);
+      setMentors(prev => prev.filter(x => x.id !== m.id));
+      setSuccessMsg(`${m.name} supprimé.`);
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error || 'Erreur lors de la suppression.');
+    }
+  };
+
   const handleToggleActive = async (m: Mentor) => {
     const action = m.is_active ? 'Désactiver' : 'Réactiver';
     if (!confirm(`${action} ${m.name} ?`)) return;
@@ -495,6 +574,183 @@ export function GestionMentors() {
           <Plus className="w-4 h-4" />Nouveau mentor
         </button>
       </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+        <button
+          onClick={() => setTab('mentors')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            tab === 'mentors' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Users className="w-4 h-4" /> Mentors ({stats.total})
+        </button>
+        <button
+          onClick={() => setTab('candidatures')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            tab === 'candidatures' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Inbox className="w-4 h-4" /> Candidatures
+          {pendingCount > 0 && (
+            <span className="bg-ora-orange text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {pendingCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ── Panel Candidatures ────────────────────────────────── */}
+      {tab === 'candidatures' && (
+        <div className="space-y-3">
+          {candLoading && (
+            <div className="flex items-center gap-2 text-slate-500 text-sm p-4">
+              <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
+            </div>
+          )}
+          {!candLoading && candidatures.length === 0 && (
+            <div className="text-center py-12 text-slate-400">
+              <Inbox className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <p>Aucune candidature pour le moment.</p>
+            </div>
+          )}
+          {!candLoading && candidatures.map(c => (
+            <div key={c.id}
+              className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
+                c.statut === 'PENDING' ? 'border-slate-200' :
+                c.statut === 'VALIDATED' ? 'border-green-200 opacity-75' :
+                'border-red-200 opacity-75'
+              }`}
+            >
+              {/* Ligne principale */}
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-slate-900">
+                      {c.first_name} {c.last_name}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      c.statut === 'PENDING'    ? 'bg-amber-100 text-amber-700' :
+                      c.statut === 'VALIDATED'  ? 'bg-green-100 text-green-700' :
+                                                  'bg-red-100 text-red-700'
+                    }`}>{c.statut_label}</span>
+                    {c.association_name && (
+                      <span className="text-xs px-2 py-0.5 bg-ora-blue/10 text-ora-blue rounded-full font-medium">
+                        {c.association_name}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {c.email}{c.phone ? ` · ${c.phone}` : ''} · {c.code_postal}{c.commune ? ` ${c.commune}` : ''}
+                    {c.pole_name ? ` · Pôle ${c.pole_name}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {c.statut === 'PENDING' && (
+                    <>
+                      <button
+                        onClick={() => handleValider(c.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-semibold rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" /> Valider
+                      </button>
+                      <button
+                        onClick={() => { setRejectId(c.id); setRejectNote(''); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        <Ban className="w-3.5 h-3.5" /> Rejeter
+                      </button>
+                    </>
+                  )}
+                  {c.statut === 'VALIDATED' && c.mentor_id && (
+                    <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" /> Mentor #{c.mentor_id}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setExpandedCand(expandedCand === c.id ? null : c.id)}
+                    className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                  >
+                    {expandedCand === c.id
+                      ? <ChevronUp className="w-4 h-4" />
+                      : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Détail dépliable */}
+              {expandedCand === c.id && (
+                <div className="border-t border-slate-100 px-5 py-4 bg-slate-50 space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Expérience professionnelle</p>
+                    <p className="text-slate-700 whitespace-pre-line">{c.experience_pro}</p>
+                  </div>
+                  {c.domaines.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Domaines</p>
+                      <div className="flex flex-wrap gap-1">
+                        {c.domaines.map(d => (
+                          <span key={d} className="text-xs px-2 py-0.5 bg-white border border-slate-200 rounded-full text-slate-600">{d}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {c.disponibilite && (
+                    <p><span className="font-medium text-slate-600">Disponibilité :</span> {c.disponibilite.replace(/_/g, ' ')}</p>
+                  )}
+                  {c.motivation && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Motivation</p>
+                      <p className="text-slate-700 italic">{c.motivation}</p>
+                    </div>
+                  )}
+                  {c.notes_rejet && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-red-600 mb-1">Motif de rejet</p>
+                      <p className="text-red-700">{c.notes_rejet}</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-400">
+                    Reçue le {new Date(c.created_at).toLocaleDateString('fr-FR')}
+                    {c.validated_by ? ` · Traitée par ${c.validated_by}` : ''}
+                  </p>
+                </div>
+              )}
+
+              {/* Zone rejet inline */}
+              {rejectId === c.id && (
+                <div className="border-t border-red-100 bg-red-50 px-5 py-4 space-y-3">
+                  <p className="text-sm font-semibold text-red-700">Motif de rejet (optionnel)</p>
+                  <textarea
+                    rows={2}
+                    value={rejectNote}
+                    onChange={e => setRejectNote(e.target.value)}
+                    placeholder="Expliquez la raison du rejet pour l'archivage..."
+                    className="w-full px-3 py-2 border border-red-200 rounded-lg text-sm focus:ring-2 focus:ring-red-300 focus:outline-none resize-none bg-white"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRejeter(c.id)}
+                      className="px-4 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600"
+                    >
+                      Confirmer le rejet
+                    </button>
+                    <button
+                      onClick={() => setRejectId(null)}
+                      className="px-4 py-1.5 bg-white border border-slate-200 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Panel Mentors (existant) ──────────────────────── */}
+      {tab === 'mentors' && (<>
 
       {/* Succès */}
       {successMsg && (
@@ -610,12 +866,12 @@ export function GestionMentors() {
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        {/* Désactiver / Réactiver : ACP = tous ; AP = seulement son association */}
+                        {/* Désactiver / Réactiver */}
                         {(!isAP || m.association_id === associations[0]?.id) && (
                           <button onClick={() => handleToggleActive(m)}
                             className={`p-1.5 rounded-lg transition-colors ${
                               m.is_active
-                                ? 'hover:bg-red-50 text-slate-400 hover:text-red-600'
+                                ? 'hover:bg-orange-50 text-slate-400 hover:text-orange-500'
                                 : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
                             }`}
                             title={m.is_active ? 'Désactiver' : 'Réactiver'}>
@@ -623,6 +879,14 @@ export function GestionMentors() {
                               ? <UserX className="w-3.5 h-3.5" />
                               : <UserCheck className="w-3.5 h-3.5" />
                             }
+                          </button>
+                        )}
+                        {/* Supprimer — ACP seulement (action irréversible) */}
+                        {!isAP && (
+                          <button onClick={() => handleDelete(m)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                            title="Supprimer définitivement">
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -634,6 +898,8 @@ export function GestionMentors() {
           </div>
         </div>
       )}
+
+      </>)}{/* fin tab === 'mentors' */}
 
       {/* Modal Mentor */}
       {modalMode && (

@@ -3,17 +3,27 @@ import { useState, useRef, useEffect } from 'react';
 import {
   LogOut, Bell, Globe, Users, BarChart3, Settings, Shield,
   BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown, GraduationCap,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
+import api from '../services/api';
 
 export function HeaderCN() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [adminOpen, setAdminOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fullAccess = user?.cn_acces_complet ?? false;
+
+  useEffect(() => {
+    if (!fullAccess) return;
+    api.get('/cn/messages/').then(res => {
+      setUnreadCount(res.data.unread_count ?? 0);
+    }).catch(() => {});
+  }, [location.pathname, fullAccess]);
 
   // Ferme le dropdown si clic en dehors
   useEffect(() => {
@@ -31,6 +41,7 @@ export function HeaderCN() {
   const adminRoutes = [
     { to: '/member/cn/retribution',  icon: <DollarSign className="w-4 h-4" />,     label: 'Rétribution' },
     { to: '/member/cn/mentors',      icon: <Users className="w-4 h-4" />,           label: 'Mentors' },
+    { to: '/member/cn/messages',     icon: <Mail className="w-4 h-4" />,            label: 'Messages', badge: unreadCount },
     { to: '/member/cn/poles',        icon: <BarChart3 className="w-4 h-4" />,       label: 'Pôles' },
     { to: '/member/cn/animateurs',   icon: <GraduationCap className="w-4 h-4" />,   label: 'Animateurs' },
     { to: '/member/cn/configuration',icon: <Settings className="w-4 h-4" />,        label: 'Configuration' },
@@ -114,7 +125,12 @@ export function HeaderCN() {
                       }`}
                     >
                       {route.icon}
-                      {route.label}
+                      <span className="flex-1">{route.label}</span>
+                      {('badge' in route) && (route as { badge: number }).badge > 0 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                          {(route as { badge: number }).badge}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>

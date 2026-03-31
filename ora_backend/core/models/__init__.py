@@ -12,6 +12,8 @@ from .suivi_mentorat import SuiviMentorat
 from .cn_member import CNMember
 from .matching_audit import MatchingDecision
 from .evaluation_mentor import EvaluationMentor
+from .candidature_mentor import CandidatureMentor
+from .contact_message import ContactMessage
 
 __all__ = [
     'User',
@@ -29,4 +31,6 @@ __all__ = [
     'CNMember',
     'MatchingDecision',
     'EvaluationMentor',
+    'CandidatureMentor',
+    'ContactMessage',
 ]

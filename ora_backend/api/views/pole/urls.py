@@ -9,6 +9,7 @@ from .associations   import PoleAssociationsView
 from .departments    import DepartmentsView
 from .etablissements import PoleEtablissementsView
 from .annuaire       import PoleAnnuaireView
+from .candidatures_mentors import PoleCandidaturesMentorsView, PoleCandidatureMentorActionView
 
 urlpatterns = [
     # ── Référentiels ─────────────────────────────────────────
@@ -37,4 +38,8 @@ urlpatterns = [
     path('requests/<int:pk>/etablissement/',           SetEtablissementDemandeView.as_view(), name='set-etablissement-demande'),
     path('matching/<int:request_id>/',                 MatchingSuggestionsView.as_view(),     name='matching-suggestions'),
     path('matching/assign/',                           AssignMentorView.as_view(),            name='assign-mentor'),
+
+    # ── Candidatures Mentors ──────────────────────────────────
+    path('candidatures-mentors/',                              PoleCandidaturesMentorsView.as_view(),              name='pole-candidatures-mentors'),
+    path('candidatures-mentors/<int:pk>/<str:action>/',        PoleCandidatureMentorActionView.as_view(),          name='pole-candidature-mentor-action'),
 ]

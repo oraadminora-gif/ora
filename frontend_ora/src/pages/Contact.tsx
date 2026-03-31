@@ -21,29 +21,18 @@ export function Contact() {
     setLoading(true);
 
     try {
-      const response = await api.post('/contact', {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+      await api.post('/public/contact/', {
+        name:    formData.name,
+        email:   formData.email,
+        phone:   formData.phone,
         subject: formData.subject,
         message: formData.message,
       });
-
-      if (response.error) {
-        throw new Error(response.error);
-      }
-
       setSuccess(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue';
-      setError(message);
+      const e = err as { response?: { data?: { detail?: string } } };
+      setError(e?.response?.data?.detail || 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }

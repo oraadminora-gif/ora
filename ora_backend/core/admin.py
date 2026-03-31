@@ -47,7 +47,8 @@ class PoleAdminForm(forms.ModelForm):
 from core.models import (
     SuiviMentorat, User, Pole, Department, Association,
     Animateur, Mentor, YoungRequest, Mentorat,
-    CNMember, MatchingDecision, Etablissement, Financement, MentoratFinancement
+    CNMember, MatchingDecision, Etablissement, Financement, MentoratFinancement,
+    ContactMessage,
 )
 
 # ══════════════════════════════════════════════════════════════════
@@ -551,3 +552,54 @@ class SuiviMentoratAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related('mentorat', 'mentorat__mentor', 'mentorat__young_request')
+
+
+# ══════════════════════════════════════════════════════════════════
+#  MESSAGES DE CONTACT
+# ══════════════════════════════════════════════════════════════════
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display   = ('created_at', 'name', 'email', 'phone', 'sujet_badge', 'lu_badge', 'extrait')
+    list_filter    = ('is_read', 'subject', 'created_at')
+    search_fields  = ('name', 'email', 'message')
+    ordering       = ('-created_at',)
+    date_hierarchy = 'created_at'
+    list_per_page  = 30
+    readonly_fields = ('name', 'email', 'phone', 'subject', 'message', 'created_at')
+
+    fieldsets = (
+        ('Expéditeur', {'fields': ('name', 'email', 'phone')}),
+        ('Message',    {'fields': ('subject', 'message', 'created_at')}),
+        ('Traitement', {'fields': ('is_read',)}),
+    )
+
+    SUJET_COLORS = {
+        'apprentice': '#0ea5e9',
+        'mentor':     '#22c55e',
+        'partner':    '#8b5cf6',
+        'press':      '#f59e0b',
+        'other':      '#6b7280',
+    }
+
+    def sujet_badge(self, obj):
+        color = self.SUJET_COLORS.get(obj.subject, '#6b7280')
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;border-radius:12px;'
+            'font-size:0.72rem;font-weight:600;">{}</span>',
+            color, obj.get_subject_display()
+        )
+    sujet_badge.short_description = 'Sujet'
+
+    def lu_badge(self, obj):
+        if obj.is_read:
+            return format_html('<span style="color:#22c55e;font-weight:700;">✓ Lu</span>')
+        return format_html('<span style="color:#ef4444;font-weight:700;">● Non lu</span>')
+    lu_badge.short_description = 'État'
+
+    def extrait(self, obj):
+        return obj.message[:80] + '…' if len(obj.message) > 80 else obj.message
+    extrait.short_description = 'Message'
+
+    def get_queryset(self, request):
+        # Trier les non-lus en premier
+        return super().get_queryset(request).order_by('is_read', '-created_at')

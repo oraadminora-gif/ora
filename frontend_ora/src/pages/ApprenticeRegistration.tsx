@@ -193,7 +193,7 @@ export function ApprenticeRegistration() {
     <div className="min-h-screen bg-slate-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Inscription apprenti(e)</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Inscription </h1>
           <p className="text-slate-600 mb-8">
             Remplis ce formulaire pour être mis(e) en relation avec un mentor
           </p>

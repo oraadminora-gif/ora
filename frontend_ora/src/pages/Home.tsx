@@ -109,7 +109,7 @@ export function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/ora"
+                to="/contact"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-[#333] text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
               >
                 Contact Institutionnel

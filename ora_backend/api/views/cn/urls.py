@@ -5,6 +5,7 @@ from .annuaire      import CNAnnuaireView
 from .membres       import CNMembresView, CNMembreDetailView, CNMembreMeView
 from .implantations import CNImplantationsView
 from .retribution   import RetributionView
+from .messages      import CNMessagesView, CNMessageDetailView
 
 urlpatterns = [
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
@@ -17,4 +18,6 @@ urlpatterns = [
     path('membres/',             CNMembresView.as_view(),         name='cn-membres'),
     path('membres/me/',          CNMembreMeView.as_view(),        name='cn-membre-me'),
     path('membres/<int:pk>/',    CNMembreDetailView.as_view(),    name='cn-membre-detail'),
+    path('messages/',            CNMessagesView.as_view(),        name='cn-messages'),
+    path('messages/<int:pk>/',   CNMessageDetailView.as_view(),   name='cn-message-detail'),
 ]
