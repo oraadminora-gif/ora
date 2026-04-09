@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Loader2, AlertCircle, Search, AlertTriangle,
   Clock, BookOpen, MapPin, GraduationCap, Users, ChevronRight,
-  CheckCircle, XCircle, Pencil,
+  CheckCircle, XCircle, Pencil, Mail,
 } from 'lucide-react';
 import api from '../../../services/api';
 import type { APDashboardData, APMesMenutorat } from './APDashboard.types';
@@ -20,10 +20,12 @@ function ClotureEnAttenteCard({
   busy,
 }: {
   mentorat: APMesMenutorat;
-  onAction: (id: number, action: 'confirm' | 'reject') => void;
+  onAction: (id: number, action: 'confirm' | 'reject', message?: string) => void;
   busy: number | null;
 }) {
   const isClose = mentorat.cloture_action_demandee === 'CLOSED';
+  const [message, setMessage] = useState(mentorat.cloture_message_demandee ?? '');
+
   return (
     <div className={`rounded-xl border-2 p-4 space-y-3 ${
       isClose ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/20'
@@ -49,15 +51,31 @@ function ClotureEnAttenteCard({
       {/* Raison du mentor */}
       {mentorat.cloture_reason_demandee && (
         <div className="bg-white/70 rounded-lg px-3 py-2 border border-slate-100">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Raison</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Raison (mentor)</p>
           <p className="text-xs text-slate-700">{mentorat.cloture_reason_demandee}</p>
         </div>
       )}
 
+      {/* Message au jeune — modifiable par l'AP */}
+      <div>
+        <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+          <Mail className="w-3 h-3" /> Message au jeune
+          <span className="font-normal normal-case text-slate-300">(modifiable)</span>
+        </label>
+        <textarea
+          rows={5}
+          value={message}
+          onChange={e => setMessage(e.target.value)}
+          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue resize-y bg-white transition-all"
+          placeholder="Ce message sera envoyé au jeune lors de la confirmation…"
+        />
+        <p className="text-[10px] text-slate-300 mt-1">Envoyé uniquement si vous confirmez la clôture.</p>
+      </div>
+
       {/* Boutons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onAction(mentorat.id, 'confirm')}
+          onClick={() => onAction(mentorat.id, 'confirm', message)}
           disabled={busy === mentorat.id}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
         >
@@ -67,7 +85,7 @@ function ClotureEnAttenteCard({
           Confirmer
         </button>
         <button
-          onClick={() => onAction(mentorat.id, 'reject')}
+          onClick={() => onAction(mentorat.id, 'reject', message)}
           disabled={busy === mentorat.id}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
         >
@@ -360,10 +378,13 @@ export function APDashboard() {
     } finally { setLoading(false); }
   };
 
-  const handleClotureAction = async (mentoratId: number, action: 'confirm' | 'reject') => {
+  const handleClotureAction = async (mentoratId: number, action: 'confirm' | 'reject', message?: string) => {
     setBusyCloture(mentoratId);
     try {
-      await api.post(`/ap/mentorats/${mentoratId}/confirmer-cloture/`, { action });
+      await api.post(`/ap/mentorats/${mentoratId}/confirmer-cloture/`, {
+        action,
+        ...(message !== undefined ? { message } : {}),
+      });
       fetchDashboard();
     } catch { /* silently refresh */ fetchDashboard(); }
     finally { setBusyCloture(null); }

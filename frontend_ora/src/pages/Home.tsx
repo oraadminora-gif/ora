@@ -1,13 +1,23 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Shield, GraduationCap, Zap, MapPin } from "lucide-react";
 import { StatSection } from "../components/StatSection";
+import { useState, useEffect } from "react";
+import api from "../services/api";
 
 export function Home() {
+  const [implantStats, setImplantStats] = useState<{ total_poles: number; total_departments_covered: number } | null>(null);
+
+  useEffect(() => {
+    api.get<{ stats: { total_poles: number; total_departments_covered: number } }>('/public/implantations/')
+      .then(r => setImplantStats(r.data.stats))
+      .catch(() => {});
+  }, []);
+
   const stats = [
     { value: 6000, label: "Jeunes accompagnés", suffix: "+" },
     { value: 3000, label: "Mentors bénévoles", suffix: "+" },
-    { value: 45, label: "Départements", suffix: "+" },
-    { value: 200, label: "Centres actifs", suffix: "+" },
+    { value: implantStats?.total_departments_covered ?? 45, label: "Départements", suffix: "" },
+    { value: implantStats?.total_poles ?? 12, label: "Pôles actifs", suffix: "" },
   ];
 
   return (
@@ -229,7 +239,9 @@ export function Home() {
               Présents sur tout le territoire
             </h2>
             <p className="text-white/80 mb-8 text-sm">
-              Plus de 45 départements couverts, des pôles locaux à votre service.
+              {implantStats
+                ? `${implantStats.total_departments_covered} département${implantStats.total_departments_covered > 1 ? 's' : ''} couverts · ${implantStats.total_poles} pôle${implantStats.total_poles > 1 ? 's' : ''} actifs à votre service.`
+                : 'Des pôles locaux à votre service partout en France.'}
             </p>
             <Link
               to="/implantations"

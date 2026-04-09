@@ -18,8 +18,10 @@ let _geoCache: unknown = null;
 
 export function FranceImplantationsMap({
   implantations,
+  hoveredCode,
 }: {
   implantations: Implantation[];
+  hoveredCode?: string;
 }) {
   const [geoData, setGeoData] = useState<unknown>(_geoCache);
   const activeDepartments = implantations.map((i) => i.code);
@@ -54,15 +56,18 @@ export function FranceImplantationsMap({
               <Geography
                 key={code}
                 geography={geo}
-                fill={isActive ? "#2563eb" : "#e5e7eb"}
+                fill={
+                  code === hoveredCode
+                    ? "#1d4ed8"
+                    : isActive
+                    ? "#3b82f6"
+                    : "#e2e8f0"
+                }
                 stroke="#ffffff"
                 strokeWidth={0.6}
                 style={{
                   default: { outline: "none" },
-                  hover: {
-                    fill: isActive ? "#1e40af" : "#e5e7eb",
-                    outline: "none",
-                  },
+                  hover: { outline: "none" },
                   pressed: { outline: "none" },
                 }}
               />
