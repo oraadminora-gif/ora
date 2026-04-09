@@ -4,7 +4,7 @@ import {
   X, Loader2, AlertTriangle, CheckCircle, Clock, Calendar,
   Users, Phone, Mail, MapPin, History, StickyNote, Save,
   Plus, Pencil, Trash2, ChevronDown, ChevronUp, Video, PhoneCall, MessageSquare,
-  ClipboardList,
+  ClipboardList, Lock,
 } from 'lucide-react';
 import api from '../../services/api';
 import type {
@@ -686,19 +686,143 @@ function SuiviStatsMini({ stats }: { stats: APSuiviStats }) {
   );
 }
 
+// ── Modal clôture directe AP ────────────────────────────────────────────────────
+function CloturerDirectModal({
+  mentorat,
+  onClose,
+  onDone,
+}: {
+  mentorat: APMentoratActif;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [action, setAction]   = useState<'CLOSED' | 'ABORTED'>('CLOSED');
+  const [reason, setReason]   = useState('');
+  const [message, setMessage] = useState('');
+  const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true); setError(null);
+    try {
+      await api.post(`/ap/mentorats/${mentorat.id}/cloturer-direct/`, { action, reason, message });
+      onDone();
+    } catch (err) {
+      setError((err as ApiError).response?.data?.error ?? 'Erreur lors de la clôture');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-slate-500" />
+            <h3 className="font-bold text-slate-900 text-sm">
+              Clôturer le mentorat — <span className="text-slate-500 font-normal">{mentorat.jeune?.name ?? '—'}</span>
+            </h3>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-slate-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {error && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3">
+              <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Action */}
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Type de clôture</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'CLOSED',  label: 'Clôturer',          sub: 'Mentorat terminé normalement',    color: 'emerald' },
+                { value: 'ABORTED', label: 'Arrêter',           sub: 'Arrêt prématuré du mentorat',     color: 'orange'  },
+              ] as const).map(opt => (
+                <label key={opt.value}
+                  className={`flex flex-col gap-0.5 p-3 border-2 rounded-xl cursor-pointer transition-all ${
+                    action === opt.value
+                      ? opt.color === 'emerald'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-orange-400 bg-orange-50'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}>
+                  <div className="flex items-center gap-2">
+                    <input type="radio" name="action" value={opt.value}
+                      checked={action === opt.value}
+                      onChange={() => setAction(opt.value)}
+                      className="w-3.5 h-3.5 accent-current" />
+                    <span className="text-sm font-bold text-slate-800">{opt.label}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 pl-5">{opt.sub}</p>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Raison */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              Raison
+            </label>
+            <input type="text" value={reason} onChange={e => setReason(e.target.value)}
+              placeholder="Ex : objectifs atteints, départ du jeune…"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+          </div>
+
+          {/* Message au jeune */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              Message au jeune <span className="text-slate-400 font-normal normal-case tracking-normal">(envoyé par email)</span>
+            </label>
+            <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
+              placeholder="Expliquez au jeune les raisons de la clôture…"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors">
+              Annuler
+            </button>
+            <button type="submit" disabled={saving}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-white text-sm font-bold transition-colors disabled:opacity-50 ${
+                action === 'CLOSED' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-orange-500 hover:bg-orange-600'
+              }`}>
+              {saving
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : <Lock className="w-3.5 h-3.5" />}
+              {action === 'CLOSED' ? 'Confirmer la clôture' : "Confirmer l'arrêt"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
 // ── Carte mentorat actif (vue AP, avec gestion suivis) ─────────────────────────
 function MentoratActifRow({
   mentorat,
   onAlertToggle,
   onNotesOpen,
+  onClotureDone,
 }: {
   mentorat: APMentoratActif;
   onAlertToggle: (m: APMentoratActif) => void;
   onNotesOpen: (m: APMentoratActif) => void;
+  onClotureDone: () => void;
 }) {
   const { jeune, inactivite, alerte_rouge, suivi_stats } = mentorat;
-  const [showSuivis, setShowSuivis] = useState(false);
-  const [showSuiviModal, setShowSuiviModal] = useState(false);
+  const [showSuivis, setShowSuivis]           = useState(false);
+  const [showSuiviModal, setShowSuiviModal]   = useState(false);
+  const [showCloture, setShowCloture]         = useState(false);
 
   const borderClass = alerte_rouge
     ? 'border-red-200 bg-red-50/30'
@@ -754,6 +878,13 @@ function MentoratActifRow({
           >
             {showSuivis ? <><ChevronUp className="w-3 h-3" /> Masquer</> : <><ChevronDown className="w-3 h-3" /> Rencontres</>}
           </button>
+          <button
+            onClick={() => setShowCloture(true)}
+            className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors"
+            title="Clôturer ou arrêter ce mentorat"
+          >
+            <Lock className="w-3 h-3" /> Clôturer
+          </button>
         </div>
       </div>
       {showSuivis && (
@@ -766,6 +897,13 @@ function MentoratActifRow({
           mentoratId={mentorat.id}
           jeuneName={jeune?.name ?? '—'}
           onClose={() => setShowSuiviModal(false)}
+        />
+      )}
+      {showCloture && (
+        <CloturerDirectModal
+          mentorat={mentorat}
+          onClose={() => setShowCloture(false)}
+          onDone={() => { setShowCloture(false); onClotureDone(); }}
         />
       )}
     </div>
@@ -1072,6 +1210,7 @@ export function APMentorDetailModal({ mentorId, onClose, onAlertChanged }: Props
                       mentorat={m}
                       onAlertToggle={setAlerteMentorat}
                       onNotesOpen={setNotesMentorat}
+                      onClotureDone={fetchDetail}
                     />
                   ))
                 )}

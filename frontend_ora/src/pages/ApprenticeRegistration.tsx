@@ -1,7 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import axios from 'axios';
 import {
   CheckCircle, AlertCircle, MapPin, Loader2,
   User, GraduationCap, MessageSquare, ShieldCheck,
@@ -141,8 +140,8 @@ export function ApprenticeRegistration() {
       }
     } catch (err) {
       let msg = "Une erreur est survenue lors de l'envoi. Veuillez réessayer.";
-      if (axios.isAxiosError(err)) msg = err.response?.data?.error || err.message || msg;
-      else if (err instanceof Error) msg = err.message;
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      msg = e?.response?.data?.error || e?.message || msg;
       setError(msg);
     } finally {
       setLoading(false);
@@ -284,18 +283,6 @@ export function ApprenticeRegistration() {
               </div>
             )}
 
-            {!detectedPole && !noPoleFound && formData.codePostal.length === 5 && poles.length === 0 && (
-              <Field label="Pôle ORA de rattachement *">
-                <select required value={formData.poleId} onChange={set('poleId')} className={INPUT}>
-                  <option value="">— Sélectionne ton pôle —</option>
-                  {poles.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}{p.dept_codes ? ` — Dép. ${p.dept_codes}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            )}
           </Section>
 
           <hr className="border-slate-100" />

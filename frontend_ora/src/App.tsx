@@ -1,5 +1,12 @@
 // App.tsx
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 import { AuthProvider } from './contexts/AuthContext';
 
 import { PublicLayout } from './layouts/PublicLayout';
@@ -67,6 +74,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
 
           {/* ================= ROUTES PUBLIQUES ================= */}

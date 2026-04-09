@@ -1,24 +1,26 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Shield, GraduationCap, Zap, MapPin } from "lucide-react";
 import { StatSection } from "../components/StatSection";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 
+interface PublicStats { total_poles: number; total_departments_covered: number; }
+
 export function Home() {
-  const [implantStats, setImplantStats] = useState<{ total_poles: number; total_departments_covered: number } | null>(null);
+  const [implantStats, setImplantStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    api.get<{ stats: { total_poles: number; total_departments_covered: number } }>('/public/implantations/')
-      .then(r => setImplantStats(r.data.stats))
+    api.get<PublicStats>('/public/stats/')
+      .then(r => setImplantStats(r.data))
       .catch(() => {});
   }, []);
 
-  const stats = [
+  const stats = useMemo(() => [
     { value: 6000, label: "Jeunes accompagnés", suffix: "+" },
     { value: 3000, label: "Mentors bénévoles", suffix: "+" },
     { value: implantStats?.total_departments_covered ?? 45, label: "Départements", suffix: "" },
     { value: implantStats?.total_poles ?? 12, label: "Pôles actifs", suffix: "" },
-  ];
+  ], [implantStats]);
 
   return (
     <div>
