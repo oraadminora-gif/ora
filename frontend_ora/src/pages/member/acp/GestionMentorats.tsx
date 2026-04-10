@@ -4,8 +4,13 @@ import api from '../../../services/api';
 import {
   Search, Loader2, AlertCircle, Pencil, X, CheckCircle,
   HandHeart, AlertTriangle, Calendar, User, FileText, Banknote, Plus, Trash2,
-  UserCheck, Building2, Download,
+  UserCheck, Building2, Download, ClipboardList, Lock,
 } from 'lucide-react';
+import {
+  APMentoratSuiviModal,
+  APSuiviPanelModal,
+  CloturerDirectModal,
+} from '../../../components/shared/MentoratAPWidgets';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -966,6 +971,9 @@ export function GestionMentorats() {
   const [editing, setEditing]         = useState<Mentorat | null>(null);
   const [successMsg, setSuccessMsg]   = useState<string | null>(null);
   const [showExport, setShowExport]   = useState(false);
+  const [showSuiviModal, setShowSuiviModal]       = useState<number | null>(null);
+  const [showRencontresModal, setShowRencontresModal] = useState<number | null>(null);
+  const [showClotureModal, setShowClotureModal]   = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1161,13 +1169,40 @@ export function GestionMentorats() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => setEditing(m)}
-                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
-                        title={m.status === 'CLOSED' || m.status === 'ABORTED' ? 'Consulter' : 'Modifier'}
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <button
+                          onClick={() => setEditing(m)}
+                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                          title={m.status === 'CLOSED' || m.status === 'ABORTED' ? 'Consulter' : 'Modifier'}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        {m.status === 'ACTIVE' && (
+                          <>
+                            <button
+                              onClick={() => setShowSuiviModal(m.id)}
+                              className="p-1.5 hover:bg-violet-50 rounded-lg text-slate-400 hover:text-violet-600 transition-colors"
+                              title="Modifier le suivi"
+                            >
+                              <ClipboardList className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setShowRencontresModal(m.id)}
+                              className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-ora-blue transition-colors"
+                              title="Rencontres"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setShowClotureModal(m.id)}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors"
+                              title="Clôturer / Arrêter"
+                            >
+                              <Lock className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1191,6 +1226,32 @@ export function GestionMentorats() {
 
       {showExport && (
         <ExportModal onClose={() => setShowExport(false)} />
+      )}
+
+      {/* Modals AP/ACP partagés */}
+      {showSuiviModal !== null && (
+        <APMentoratSuiviModal
+          mentoratId={showSuiviModal}
+          jeuneName={mentorats.find(m => m.id === showSuiviModal)?.jeune_name ?? '—'}
+          onClose={() => setShowSuiviModal(null)}
+        />
+      )}
+
+      {showRencontresModal !== null && (
+        <APSuiviPanelModal
+          mentoratId={showRencontresModal}
+          jeuneName={mentorats.find(m => m.id === showRencontresModal)?.jeune_name ?? '—'}
+          onClose={() => setShowRencontresModal(null)}
+        />
+      )}
+
+      {showClotureModal !== null && (
+        <CloturerDirectModal
+          id={showClotureModal}
+          jeuneName={mentorats.find(m => m.id === showClotureModal)?.jeune_name ?? '—'}
+          onClose={() => setShowClotureModal(null)}
+          onDone={() => { setShowClotureModal(null); loadData(); setSuccessMsg('Mentorat clôturé.'); setTimeout(() => setSuccessMsg(null), 4000); }}
+        />
       )}
     </div>
   );
