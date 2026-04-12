@@ -1,9 +1,9 @@
 // src/pages/MentorRegistration.tsx
 import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
-  CheckCircle, AlertCircle, MapPin, Building2, ChevronRight, Info,
+  CheckCircle, AlertCircle, MapPin, Info, ChevronRight,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -16,60 +16,27 @@ interface PoleOption {
   hint: string;
 }
 
-// Associations fixes nationales ORA
-const ASSOCIATIONS = [
-  { id: 3, name: 'AGIR' },
-  { id: 4, name: 'ECTI' },
-  { id: 5, name: 'EGEE' },
-  { id: 6, name: 'OTECI' },
-];
-
-const EXPERTISE_DOMAINS = [
-  'Commerce / Vente',
-  'Industrie',
-  'Artisanat',
-  'Services',
-  'Santé / Social',
-  'Informatique / Numérique',
-  'Hôtellerie / Restauration',
-  'BTP',
-  'Transport / Logistique',
-  'Agriculture',
-  'Autre',
-];
-
-const DISPONIBILITE_OPTIONS = [
-  { value: '1_per_week',  label: '1 fois par semaine' },
-  { value: '2_per_month', label: '2 fois par mois' },
-  { value: '1_per_month', label: '1 fois par mois' },
-  { value: 'flexible',    label: 'Flexible' },
-];
-
 // ─── Composant principal ─────────────────────────────────────────────────────
 export function MentorRegistration() {
   const navigate = useNavigate();
-  const [loading, setLoading]       = useState(false);
-  const [success, setSuccess]       = useState(false);
-  const [error, setError]           = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [success, setSuccess]   = useState(false);
+  const [error, setError]       = useState('');
 
   // Détection pôle
-  const [poles, setPoles]             = useState<PoleOption[]>([]);
+  const [poles, setPoles]               = useState<PoleOption[]>([]);
   const [detectedPole, setDetectedPole] = useState<PoleOption | null>(null);
   const [noPoleFound, setNoPoleFound]   = useState(false);
 
   // Formulaire
   const [form, setForm] = useState({
-    first_name:     '',
-    last_name:      '',
-    email:          '',
-    phone:          '',
-    code_postal:    '',
-    commune:        '',
-    association_id: '' as string | number,
-    experience_pro: '',
-    domaines:       [] as string[],
-    disponibilite:  '',
-    motivation:     '',
+    first_name:  '',
+    last_name:   '',
+    email:       '',
+    phone:       '',
+    code_postal: '',
+    commune:     '',
+    motivation:  '',
   });
 
   // Charger les pôles au montage
@@ -98,50 +65,25 @@ export function MentorRegistration() {
     }
   }, [form.code_postal, poles]);
 
-  const toggleDomain = (domain: string) => {
-    setForm(prev => ({
-      ...prev,
-      domaines: prev.domaines.includes(domain)
-        ? prev.domaines.filter(d => d !== domain)
-        : [...prev.domaines, domain],
-    }));
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!detectedPole && !noPoleFound && form.code_postal.length === 5) {
-      setError('Veuillez attendre la détection du pôle ou saisir un code postal valide.');
-      return;
-    }
     if (noPoleFound) {
-      setError('Aucun pôle ORA ne couvre votre département. Contactez-nous à ora@ora.fr');
-      return;
-    }
-    if (!form.association_id) {
-      setError('Veuillez choisir votre association.');
-      return;
-    }
-    if (form.domaines.length === 0) {
-      setError('Veuillez sélectionner au moins un domaine d\'expertise.');
+      setError('Aucun pôle ORA ne couvre votre département.');
       return;
     }
 
     setLoading(true);
     try {
       await api.post('/public/mentor-candidatures/', {
-        first_name:     form.first_name,
-        last_name:      form.last_name,
-        email:          form.email,
-        phone:          form.phone,
-        code_postal:    form.code_postal,
-        commune:        form.commune,
-        association_id: form.association_id,
-        experience_pro: form.experience_pro,
-        domaines:       form.domaines,
-        disponibilite:  form.disponibilite,
-        motivation:     form.motivation,
+        first_name:  form.first_name,
+        last_name:   form.last_name,
+        email:       form.email,
+        phone:       form.phone,
+        code_postal: form.code_postal,
+        commune:     form.commune,
+        motivation:  form.motivation,
       });
       setSuccess(true);
     } catch (err: unknown) {
@@ -152,21 +94,25 @@ export function MentorRegistration() {
     }
   };
 
+  const set = (field: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const INPUT = 'w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent';
+
   // ─── Écran de succès ────────────────────────────────────────────────────────
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-10 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
-            Candidature envoyée !
-          </h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">Candidature envoyée !</h2>
           <p className="text-slate-600 mb-2">
             Merci pour votre intérêt. Votre candidature a été transmise au pôle
             {detectedPole ? ` "${detectedPole.name}"` : ''}.
           </p>
           <p className="text-slate-500 text-sm mb-6">
-            L'animateur de votre association vous contactera prochainement.
+            L'animateur de votre pôle vous contactera prochainement.
           </p>
           <button
             onClick={() => navigate('/')}
@@ -192,7 +138,7 @@ export function MentorRegistration() {
           </p>
         </div>
 
-        {/* Info : pas de compte créé */}
+        {/* Info */}
         <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800">
           <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <p>
@@ -210,10 +156,42 @@ export function MentorRegistration() {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-8 space-y-8">
 
-          {/* ── Étape 1 : Localisation & pôle ── */}
+          {/* ── 1 : Vos informations ── */}
           <section>
             <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
               <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">1</span>
+              Vos informations
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Prénom <span className="text-red-500">*</span>
+                </label>
+                <input type="text" required value={form.first_name} onChange={set('first_name')} className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Nom <span className="text-red-500">*</span>
+                </label>
+                <input type="text" required value={form.last_name} onChange={set('last_name')} className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input type="email" required value={form.email} onChange={set('email')} className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
+                <input type="tel" value={form.phone} onChange={set('phone')} placeholder="06 XX XX XX XX" className={INPUT} />
+              </div>
+            </div>
+          </section>
+
+          {/* ── 2 : Votre localisation ── */}
+          <section>
+            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
+              <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">2</span>
               Votre localisation
             </h2>
 
@@ -229,7 +207,7 @@ export function MentorRegistration() {
                     required
                     maxLength={5}
                     value={form.code_postal}
-                    onChange={e => setForm({ ...form, code_postal: e.target.value })}
+                    onChange={set('code_postal')}
                     placeholder="75001"
                     className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
                   />
@@ -237,13 +215,7 @@ export function MentorRegistration() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Commune</label>
-                <input
-                  type="text"
-                  value={form.commune}
-                  onChange={e => setForm({ ...form, commune: e.target.value })}
-                  placeholder="Ex : Paris"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
-                />
+                <input type="text" value={form.commune} onChange={set('commune')} placeholder="Ex : Paris" className={INPUT} />
               </div>
             </div>
 
@@ -256,203 +228,62 @@ export function MentorRegistration() {
                   {detectedPole.dept_names && (
                     <span className="text-green-600 ml-1">— {detectedPole.dept_names}</span>
                   )}
+                  <p className="text-xs text-green-600 mt-0.5">Votre candidature sera transmise à ce pôle.</p>
                 </div>
               </div>
             )}
+
+            {/* Pas de pôle → contact */}
             {noPoleFound && (
-              <div className="mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <p>
-                  Aucun pôle ORA ne couvre votre département.{' '}
-                  <a href="mailto:ora@ora.fr" className="underline font-semibold">
-                    Contactez-nous à ora@ora.fr
-                  </a>
-                </p>
-              </div>
-            )}
-          </section>
-
-          {/* ── Étape 2 : Association ── */}
-          <section>
-            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">2</span>
-              Votre association
-            </h2>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Association <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <select
-                  required
-                  value={form.association_id}
-                  onChange={e => setForm({ ...form, association_id: e.target.value })}
-                  className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent appearance-none bg-white"
-                >
-                  <option value="">Choisissez votre association...</option>
-                  {ASSOCIATIONS.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Étape 3 : Informations personnelles ── */}
-          <section>
-            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">3</span>
-              Vos informations
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Prénom <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text" required
-                  value={form.first_name}
-                  onChange={e => setForm({ ...form, first_name: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Nom <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text" required
-                  value={form.last_name}
-                  onChange={e => setForm({ ...form, last_name: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email" required
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="06 XX XX XX XX"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* ── Étape 4 : Profil mentor ── */}
-          <section>
-            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">4</span>
-              Votre profil mentor
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Expérience professionnelle <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  required rows={3}
-                  value={form.experience_pro}
-                  onChange={e => setForm({ ...form, experience_pro: e.target.value })}
-                  placeholder="Ex : 30 ans dans le commerce, dont 15 ans comme directeur de magasin..."
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Domaines d'expertise <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {EXPERTISE_DOMAINS.map(domain => (
-                    <label
-                      key={domain}
-                      className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer text-sm transition-colors ${
-                        form.domaines.includes(domain)
-                          ? 'border-ora-blue bg-ora-blue/5 text-ora-blue'
-                          : 'border-slate-200 hover:bg-slate-50 text-slate-700'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        className="sr-only"
-                        checked={form.domaines.includes(domain)}
-                        onChange={() => toggleDomain(domain)}
-                      />
-                      <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${
-                        form.domaines.includes(domain)
-                          ? 'border-ora-blue bg-ora-blue'
-                          : 'border-slate-300'
-                      }`}>
-                        {form.domaines.includes(domain) && (
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </span>
-                      {domain}
-                    </label>
-                  ))}
+              <div className="mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">
+                    Désolé, aucun pôle ORA ne couvre votre département.
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Écrivez-nous à{' '}
+                    <a href="mailto:ora@ora.fr" className="font-bold underline hover:text-amber-900">ora@ora.fr</a>
+                    {' '}ou{' '}
+                    <Link to="/contact" className="font-bold underline hover:text-amber-900">via notre formulaire de contact</Link>.
+                  </p>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Disponibilité</label>
-                <select
-                  value={form.disponibilite}
-                  onChange={e => setForm({ ...form, disponibilite: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent bg-white"
-                >
-                  <option value="">Sélectionnez votre disponibilité</option>
-                  {DISPONIBILITE_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Motivation <span className="text-slate-400 text-xs font-normal">(optionnel)</span>
-                </label>
-                <textarea
-                  rows={3}
-                  value={form.motivation}
-                  onChange={e => setForm({ ...form, motivation: e.target.value })}
-                  placeholder="Partagez ce qui vous motive à accompagner un jeune..."
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent resize-none"
-                />
-              </div>
-            </div>
+            )}
           </section>
 
-          {/* ── Soumettre ── */}
-          <button
-            type="submit"
-            disabled={loading || noPoleFound}
-            className="w-full py-3 bg-ora-blue text-white rounded-full font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
-          >
-            {loading ? 'Envoi en cours…' : (
-              <>
-                Envoyer ma candidature
-                <ChevronRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          {/* ── 3 : Motivation ── (masqué si pas de pôle) */}
+          {!noPoleFound && (
+            <section>
+              <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2 mb-4">
+                <span className="w-6 h-6 rounded-full bg-ora-blue text-white text-xs flex items-center justify-center font-bold">3</span>
+                Motivation
+              </h2>
+              <textarea
+                rows={4}
+                value={form.motivation}
+                onChange={set('motivation')}
+                placeholder="Partagez ce qui vous motive à accompagner un jeune apprenti..."
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue focus:border-transparent resize-none"
+              />
+            </section>
+          )}
+
+          {/* ── Soumettre ── (masqué si pas de pôle) */}
+          {!noPoleFound && (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-ora-blue text-white rounded-full font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
+            >
+              {loading ? 'Envoi en cours…' : (
+                <>
+                  Envoyer ma candidature
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          )}
         </form>
       </div>
     </div>

@@ -283,8 +283,9 @@ function NationalView({
             label="Taux de réussite" value={`${data.taux_reussite}%`}
             sub={`Abandon : ${data.taux_abandon}%`} up={data.taux_reussite > 60} />
           <StatCard icon={<Users size={18} />} color="purple"
-            label="Mentors" value={data.mentors_total}
-            sub={`${data.mentors_dispo ?? 0} dispos · ${data.mentors_satures ?? 0} saturés`} />
+            label="Mentors"
+            value={(data.mentors_total ?? 0) + (data.mentors_inactifs ?? 0)}
+            sub={`${data.mentors_total} actifs · ${data.mentors_inactifs ?? 0} inactifs · ${data.mentors_dispo ?? 0} dispos`} />
           <StatCard icon={<AlertTriangle size={18} />} color="red"
             label="Alertes rouges" value={data.alertes_rouges_actives}
             sub={`${data.urgences_non_traitees} urgences`} up={false} />
@@ -296,24 +297,40 @@ function NationalView({
         <SectionTitle>Répartition nationale</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ChartCard title="Genre des bénéficiaires">
-            <ResponsiveContainer width="100%" height={160}>
+            <ResponsiveContainer width="100%" height={150}>
               <PieChart>
-                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={60} dataKey="value" label={({ name, value }) => `${name} ${value}%`}>
+                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={55} dataKey="value">
                   {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
                 <Tooltip formatter={(v) => `${v}%`} />
               </PieChart>
             </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+              {pieGenre.map(e => (
+                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                  {e.name} <span className="font-semibold">{e.value}%</span>
+                </span>
+              ))}
+            </div>
           </ChartCard>
           <ChartCard title="Statut des mentorats">
-            <ResponsiveContainer width="100%" height={160}>
+            <ResponsiveContainer width="100%" height={150}>
               <PieChart>
-                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={60} dataKey="value" label={({ name, value }) => `${name} ${value}`}>
+                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={55} dataKey="value">
                   {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+              {pieStatut.map(e => (
+                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                  {e.name} <span className="font-semibold">{e.value}</span>
+                </span>
+              ))}
+            </div>
           </ChartCard>
         </div>
       </section>
@@ -633,24 +650,40 @@ function PoleDetailView({ data, poleName }: { data: PoleKPI; poleName: string })
         <SectionTitle>Graphiques</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ChartCard title="Genre des bénéficiaires">
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={150}>
               <PieChart>
-                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={65} dataKey="value" label={({ name, value }) => `${name} ${value}`}>
+                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={55} dataKey="value">
                   {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+              {pieGenre.map(e => (
+                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                  {e.name} <span className="font-semibold">{e.value}</span>
+                </span>
+              ))}
+            </div>
           </ChartCard>
           <ChartCard title="Statut des mentorats">
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={150}>
               <PieChart>
-                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={65} dataKey="value" label={({ name, value }) => `${name} ${value}`}>
+                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={55} dataKey="value">
                   {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+              {pieStatut.map(e => (
+                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                  {e.name} <span className="font-semibold">{e.value}</span>
+                </span>
+              ))}
+            </div>
           </ChartCard>
           {assocData.length > 0 && (
             <ChartCard title="Mentors par association" className="md:col-span-2">
@@ -869,23 +902,39 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
             {pieGenre.length > 0 && (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Genre des bénéficiaires</p>
-                <PieChart width={240} height={140}>
-                  <Pie data={pieGenre} cx={120} cy={65} outerRadius={55} dataKey="value"
-                    label={({ name, value }) => `${name} ${value}`} labelLine={false}>
+                <PieChart width={200} height={120}>
+                  <Pie data={pieGenre} cx={100} cy={60} outerRadius={50} dataKey="value">
                     {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
                   </Pie>
                 </PieChart>
+                <div style={{ marginTop: 4 }}>
+                  {pieGenre.map(e => (
+                    <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                      <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {pieStatut.length > 0 && (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Statut des mentorats</p>
-                <PieChart width={240} height={140}>
-                  <Pie data={pieStatut} cx={120} cy={65} outerRadius={55} dataKey="value"
-                    label={({ name, value }) => `${name} ${value}`} labelLine={false}>
+                <PieChart width={200} height={120}>
+                  <Pie data={pieStatut} cx={100} cy={60} outerRadius={50} dataKey="value">
                     {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
                   </Pie>
                 </PieChart>
+                <div style={{ marginTop: 4 }}>
+                  {pieStatut.map(e => (
+                    <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                      <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -1056,23 +1105,39 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
           {pieGenreN.length > 0 && (
             <div>
               <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Genre des bénéficiaires</p>
-              <PieChart width={240} height={140}>
-                <Pie data={pieGenreN} cx={120} cy={65} outerRadius={55} dataKey="value"
-                  label={({ name, value }) => `${name} ${value}%`} labelLine={false}>
+              <PieChart width={200} height={120}>
+                <Pie data={pieGenreN} cx={100} cy={60} outerRadius={50} dataKey="value">
                   {pieGenreN.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
               </PieChart>
+              <div style={{ marginTop: 4 }}>
+                {pieGenreN.map(e => (
+                  <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                    <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {pieStatutN.length > 0 && (
             <div>
               <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Statut des mentorats</p>
-              <PieChart width={240} height={140}>
-                <Pie data={pieStatutN} cx={120} cy={65} outerRadius={55} dataKey="value"
-                  label={({ name, value }) => `${name} ${value}`} labelLine={false}>
+              <PieChart width={200} height={120}>
+                <Pie data={pieStatutN} cx={100} cy={60} outerRadius={50} dataKey="value">
                   {pieStatutN.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
               </PieChart>
+              <div style={{ marginTop: 4 }}>
+                {pieStatutN.map(e => (
+                  <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    <div key={e.name} style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                    <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

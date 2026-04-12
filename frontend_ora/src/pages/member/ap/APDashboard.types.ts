@@ -18,6 +18,8 @@ export interface APStats {
   alertes_rouges: number;
   mentors_inactifs: number;
   mes_mentorats_actifs: number;
+  mes_mentorats_clotures: number;
+  mes_mentorats_abandonnes: number;
   mes_mentorats_total: number;
   clotures_en_attente: number;
 }
@@ -113,7 +115,16 @@ export interface APDashboardData {
   animateur: APAnimateur;
   stats: APStats;
   mentors: APMentor[];
-  mes_mentorats: APMesMenutorat[];
+  clotures_en_attente: APMesMenutorat[];
+}
+
+export interface APMesMentoratPage {
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  results: APMesMenutorat[];
 }
 
 export interface APMentorDetail {

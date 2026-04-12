@@ -71,7 +71,7 @@ class PublicContactView(APIView):
                 message      = body,
                 from_email   = settings.DEFAULT_FROM_EMAIL,
                 recipient_list = [settings.EMAIL_HOST_USER],
-                fail_silently = False,
+                fail_silently = True,
             )
         except Exception as e:
             # Le message est sauvegardé même si l'email échoue

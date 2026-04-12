@@ -1,9 +1,10 @@
 // src/pages/member/cn/GestionAnimateursNational.tsx
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../../services/api';
 import {
   Plus, Search, Loader2, AlertCircle, Pencil, X,
   CheckCircle, UserX, UserCheck, Shield, Key, Copy, Users,
+  ChevronDown,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -281,57 +282,87 @@ function AnimModal({
   );
 }
 
+interface AnimMeta {
+  total_counts: {
+    all: number; acps: number; aps: number;
+    with_account: number; actifs: number; inactifs: number;
+  };
+  count: number;
+  page: number;
+  page_size: number;
+  has_next: boolean;
+}
+
+type ActiveFilter = 'all' | 'actifs' | 'inactifs';
+const PAGE_SIZE = 25;
+
 // ─────────────────────────────────────────────────────────────
 // PAGE PRINCIPALE
 // ─────────────────────────────────────────────────────────────
 export function GestionAnimateursNational() {
-  const [animateurs, setAnimateurs] = useState<Animateur[]>([]);
-  const [poles, setPoles]           = useState<Pole[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
-  const [search, setSearch]         = useState('');
-  const [filterPole, setFilterPole] = useState('');
-  const [filterRole, setFilterRole] = useState('');
-  const [modalMode, setModalMode]   = useState<ModalMode>(null);
+  const [animateurs, setAnimateurs]   = useState<Animateur[]>([]);
+  const [meta, setMeta]               = useState<AnimMeta | null>(null);
+  const [poles, setPoles]             = useState<Pole[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError]             = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch]           = useState('');
+  const [filterPole, setFilterPole]   = useState('');
+  const [filterRole, setFilterRole]   = useState('');
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
+  const [modalMode, setModalMode]     = useState<ModalMode>(null);
   const [editingAnim, setEditingAnim] = useState<Animateur | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg]   = useState<string | null>(null);
   const [tempPasswordInfo, setTempPasswordInfo] = useState<{
     name: string; email: string; password: string;
   } | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [animRes, polesRes] = await Promise.all([
-        api.get('/cn/animateurs/'),
-        api.get('/poles/'),
-      ]);
-      setAnimateurs(animRes.data.animateurs ?? []);
-      setPoles(polesRes.data.results ?? polesRes.data ?? []);
-    } catch { setError('Erreur de chargement'); }
-    finally { setLoading(false); }
+  // ── Chargement des pôles (une seule fois) ─────────────────────────────────
+  useEffect(() => {
+    api.get('/poles/').then(res => setPoles(res.data.results ?? res.data ?? [])).catch(() => {});
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // ── Fetch paginé ──────────────────────────────────────────────────────────
+  const fetchAnimateurs = useCallback(async (
+    active: ActiveFilter, role: string, pole: string, q: string, page: number, append = false
+  ) => {
+    if (page === 1) setLoading(true); else setLoadingMore(true);
+    setError(null);
+    try {
+      const params: Record<string, string | number> = { page, page_size: PAGE_SIZE };
+      if (active === 'actifs')   params.is_active = 'true';
+      if (active === 'inactifs') params.is_active = 'false';
+      if (role)  params.role = role;
+      if (pole)  params.pole_id = pole;
+      if (q)     params.search = q;
 
-  const filtered = useMemo(() => {
-    return animateurs.filter(a => {
-      if (filterPole && String(a.pole_id) !== filterPole) return false;
-      if (filterRole === 'ACP' && !a.is_coordinator) return false;
-      if (filterRole === 'AP'  &&  a.is_coordinator) return false;
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        return `${a.first_name} ${a.last_name} ${a.email} ${a.pole_name} ${a.association_name}`.toLowerCase().includes(q);
-      }
-      return true;
-    });
-  }, [animateurs, filterPole, filterRole, search]);
+      const res = await api.get('/cn/animateurs/', { params });
+      const { animateurs: rows, ...pageMeta } = res.data;
+      setMeta(pageMeta);
+      setAnimateurs(prev => append ? [...prev, ...rows] : rows);
+    } catch { setError('Erreur de chargement'); }
+    finally { setLoading(false); setLoadingMore(false); }
+  }, []);
 
-  // Stats
-  const total = animateurs.length;
-  const acps  = animateurs.filter(a => a.is_coordinator).length;
-  const aps   = animateurs.filter(a => !a.is_coordinator).length;
-  const withAccount = animateurs.filter(a => a.has_account).length;
+  // Refetch page 1 quand un filtre change
+  useEffect(() => {
+    fetchAnimateurs(activeFilter, filterRole, filterPole, search, 1, false);
+  }, [activeFilter, filterRole, filterPole, search, fetchAnimateurs]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(val), 350);
+  };
+
+  const handleLoadMore = () => {
+    if (!meta?.has_next) return;
+    fetchAnimateurs(activeFilter, filterRole, filterPole, search, meta.page + 1, true);
+  };
+
+  const tc = meta?.total_counts;
 
   const handleSaved = (saved: Animateur, tempPassword?: string) => {
     setAnimateurs(prev => {
@@ -348,24 +379,23 @@ export function GestionAnimateursNational() {
     }
   };
 
-  const handleDeactivate = async (a: Animateur) => {
-    if (!confirm(`Désactiver le compte de ${a.first_name} ${a.last_name} ?`)) return;
+  const handleToggleActive = async (a: Animateur, newValue: boolean) => {
+    const label = newValue ? 'Réactiver' : 'Désactiver';
+    if (!confirm(`${label} le compte de ${a.first_name} ${a.last_name} ?`)) return;
     try {
-      const res = await api.patch(`/cn/animateurs/${a.id}/`, { is_active: false });
+      const res = await api.patch(`/cn/animateurs/${a.id}/`, { is_active: newValue });
       setAnimateurs(prev => prev.map(x => x.id === a.id ? res.data : x));
-      setSuccessMsg(`${a.first_name} ${a.last_name} désactivé.`);
+      setMeta(prev => prev ? {
+        ...prev,
+        total_counts: {
+          ...prev.total_counts,
+          actifs:   prev.total_counts.actifs   + (newValue ? 1 : -1),
+          inactifs: prev.total_counts.inactifs + (newValue ? -1 : 1),
+        },
+      } : prev);
+      setSuccessMsg(`${a.first_name} ${a.last_name} ${newValue ? 'réactivé' : 'désactivé'}.`);
       setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError('Erreur lors de la désactivation'); }
-  };
-
-  const handleReactivate = async (a: Animateur) => {
-    if (!confirm(`Réactiver le compte de ${a.first_name} ${a.last_name} ?`)) return;
-    try {
-      const res = await api.patch(`/cn/animateurs/${a.id}/`, { is_active: true });
-      setAnimateurs(prev => prev.map(x => x.id === a.id ? res.data : x));
-      setSuccessMsg(`${a.first_name} ${a.last_name} réactivé.`);
-      setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError('Erreur lors de la réactivation'); }
+    } catch { setError(`Erreur lors de la ${newValue ? 'réactivation' : 'désactivation'}`); }
   };
 
   return (
@@ -374,7 +404,9 @@ export function GestionAnimateursNational() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Gestion nationale des animateurs</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Tous les pôles · ACP et AP</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {tc ? `${tc.all} animateur${tc.all > 1 ? 's' : ''} · ${tc.acps} ACP · ${tc.aps} AP` : 'Tous les pôles · ACP et AP'}
+          </p>
         </div>
         <button onClick={() => { setEditingAnim(null); setModalMode('create'); }}
           className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-all shadow-sm shadow-violet-500/20">
@@ -385,10 +417,10 @@ export function GestionAnimateursNational() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total', value: total,       color: 'bg-violet-50 text-violet-700 border-violet-200' },
-          { label: 'ACPs',  value: acps,        color: 'bg-blue-50 text-blue-700 border-blue-200' },
-          { label: 'APs',   value: aps,         color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-          { label: 'Avec compte', value: withAccount, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+          { label: 'Total',        value: tc?.all          ?? 0, color: 'bg-violet-50 text-violet-700 border-violet-200' },
+          { label: 'ACPs',         value: tc?.acps         ?? 0, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+          { label: 'APs',          value: tc?.aps          ?? 0, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+          { label: 'Avec compte',  value: tc?.with_account ?? 0, color: 'bg-amber-50 text-amber-700 border-amber-200' },
         ].map(s => (
           <div key={s.label} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${s.color}`}>
             <Users className="w-5 h-5 shrink-0 opacity-70" />
@@ -410,23 +442,40 @@ export function GestionAnimateursNational() {
 
       {/* Filtres */}
       <div className="flex flex-wrap gap-3">
+        {/* Recherche */}
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Nom, email, pôle, association…"
+          <input value={searchInput} onChange={e => handleSearchChange(e.target.value)}
+            placeholder="Nom, email…"
             className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400" />
         </div>
+        {/* Filtre pôle */}
         <select value={filterPole} onChange={e => setFilterPole(e.target.value)}
           className="px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30">
           <option value="">Tous les pôles</option>
           {poles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
+        {/* Filtre rôle */}
         <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
           className="px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30">
           <option value="">Tous les rôles</option>
           <option value="ACP">ACP uniquement</option>
           <option value="AP">AP uniquement</option>
         </select>
+        {/* Filtre actif/inactif */}
+        <div className="flex gap-1.5">
+          {(['all', 'actifs', 'inactifs'] as ActiveFilter[]).map(f => (
+            <button key={f} onClick={() => setActiveFilter(f)}
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${activeFilter === f ? 'bg-violet-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              {f === 'all' ? 'Tous' : f === 'actifs' ? 'Actifs' : 'Inactifs'}
+              {tc && (
+                <span className={`ml-1.5 text-xs ${activeFilter === f ? 'text-violet-200' : 'text-slate-400'}`}>
+                  {f === 'all' ? tc.all : f === 'actifs' ? tc.actifs : tc.inactifs}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tableau */}
@@ -439,74 +488,92 @@ export function GestionAnimateursNational() {
           <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
           <p className="text-sm text-red-700">{error}</p>
         </div>
+      ) : animateurs.length === 0 ? (
+        <div className="bg-white border border-slate-100 rounded-2xl py-16 text-center shadow-sm">
+          <Users className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+          <p className="text-sm font-semibold text-slate-400">Aucun animateur trouvé</p>
+        </div>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Animateur</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Pôle</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Association</th>
-                <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rôle</th>
-                <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Statut</th>
-                <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-12 text-sm text-slate-400">Aucun animateur trouvé</td></tr>
-              ) : filtered.map(a => (
-                <tr key={a.id} className={`hover:bg-slate-50/50 transition-colors ${!a.is_active ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_coordinator ? 'bg-blue-500' : 'bg-violet-500'}`}>
-                        {`${a.first_name[0] ?? ''}${a.last_name[0] ?? ''}`.toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{a.first_name} {a.last_name}</p>
-                        <p className="text-[11px] text-slate-400">{a.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">{a.pole_code}</span>
-                    <span className="ml-1.5 text-sm text-slate-700">{a.pole_name}</span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-600">{a.association_name}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_coordinator ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
-                      {a.is_coordinator ? 'ACP' : 'AP'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${a.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
-                      <Shield className="w-2.5 h-2.5" />
-                      {a.is_active ? 'Actif' : 'Inactif'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => { setEditingAnim(a); setModalMode('edit'); }}
-                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      {a.is_active ? (
-                        <button onClick={() => handleDeactivate(a)}
-                          className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
-                          <UserX className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button onClick={() => handleReactivate(a)}
-                          className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-400 hover:text-emerald-600" title="Réactiver">
-                          <UserCheck className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Animateur</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Pôle</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Association</th>
+                  <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rôle</th>
+                  <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Statut</th>
+                  <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {animateurs.map(a => (
+                  <tr key={a.id} className={`hover:bg-slate-50/50 transition-colors ${!a.is_active ? 'opacity-50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_coordinator ? 'bg-blue-500' : 'bg-violet-500'}`}>
+                          {`${a.first_name[0] ?? ''}${a.last_name[0] ?? ''}`.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-900">{a.first_name} {a.last_name}</p>
+                          <p className="text-[11px] text-slate-400">{a.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">{a.pole_code}</span>
+                      <span className="ml-1.5 text-sm text-slate-700">{a.pole_name}</span>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-600">{a.association_name}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_coordinator ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
+                        {a.is_coordinator ? 'ACP' : 'AP'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${a.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                        <Shield className="w-2.5 h-2.5" />
+                        {a.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => { setEditingAnim(a); setModalMode('edit'); }}
+                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        {a.is_active ? (
+                          <button onClick={() => handleToggleActive(a, false)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
+                            <UserX className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <button onClick={() => handleToggleActive(a, true)}
+                            className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-400 hover:text-emerald-600" title="Réactiver">
+                            <UserCheck className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Charger plus */}
+      {meta?.has_next && (
+        <div className="text-center">
+          <button onClick={handleLoadMore} disabled={loadingMore}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm">
+            {loadingMore
+              ? <><Loader2 className="w-4 h-4 animate-spin" />Chargement…</>
+              : <><ChevronDown className="w-4 h-4" />Charger plus ({meta.count - animateurs.length} restant{meta.count - animateurs.length > 1 ? 's' : ''})</>
+            }
+          </button>
         </div>
       )}
 

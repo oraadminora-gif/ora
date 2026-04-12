@@ -52,6 +52,7 @@ export interface PoleKPI {
   taux_saturation:         number;
   // Mentors
   mentors_total:           number;
+  mentors_inactifs?:       number;
   mentors_disponibles:     number;
   mentors_satures:         number;
   capacite_restante:       number;
@@ -102,6 +103,7 @@ export interface NationalKPIDetailed extends NationalKPI {
   mentorats_pending:       number;
   mentorats_abandonnes:    number;
   mentors_satures:         number;
+  mentors_inactifs?:       number;
   taux_abandon:            number;
   demandes_en_attente:     number;
   urgences_non_traitees:   number;

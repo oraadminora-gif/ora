@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchNationalKPIsDetailed } from '../../../services/kpiService';
 import type { NationalKPIDetailed, PoleSummaryKPI } from '../../../types/kpi';
+import { useAuth } from '../../../contexts/AuthContext';
 import {
   MapPin,
   Users,
@@ -13,6 +14,8 @@ import {
 } from 'lucide-react';
 
 export function CNDashboard() {
+  const { user } = useAuth();
+  const fullAccess = user?.cn_acces_complet ?? false;
   const [kpis, setKpis] = useState<NationalKPIDetailed | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -97,12 +100,14 @@ export function CNDashboard() {
         <div className="bg-white rounded-xl border border-slate-200">
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">Aperçu des pôles</h2>
-            <Link
-              to="/member/cn/poles"
-              className="text-sm text-ora-blue hover:text-ora-dark font-medium flex items-center gap-1"
-            >
-              Gérer les pôles <ArrowRight className="w-4 h-4" />
-            </Link>
+            {fullAccess && (
+              <Link
+                to="/member/cn/poles"
+                className="text-sm text-ora-blue hover:text-ora-dark font-medium flex items-center gap-1"
+              >
+                Gérer les pôles <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
           </div>
 
           <div className="divide-y divide-slate-200">
@@ -111,7 +116,7 @@ export function CNDashboard() {
             ))}
           </div>
 
-          {poles.length > 5 && (
+          {poles.length > 5 && fullAccess && (
             <div className="px-6 py-3 border-t border-slate-200 text-center">
               <Link to="/member/cn/poles" className="text-sm text-slate-600 hover:text-ora-blue">
                 Voir les {poles.length - 5} autres pôles
@@ -123,18 +128,22 @@ export function CNDashboard() {
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <QuickLinkCard
-          to="/member/cn/mentors"
-          icon={<UserCheck className="w-6 h-6" />}
-          title="Gestion mentors"
-          description="Consulter et gérer les mentors de l'organisation"
-        />
-        <QuickLinkCard
-          to="/member/cn/poles"
-          icon={<MapPin className="w-6 h-6" />}
-          title="Gestion pôles"
-          description="Créer et configurer les pôles régionaux"
-        />
+        {fullAccess && (
+          <>
+            <QuickLinkCard
+              to="/member/cn/mentors"
+              icon={<UserCheck className="w-6 h-6" />}
+              title="Gestion mentors"
+              description="Consulter et gérer les mentors de l'organisation"
+            />
+            <QuickLinkCard
+              to="/member/cn/poles"
+              icon={<MapPin className="w-6 h-6" />}
+              title="Gestion pôles"
+              description="Créer et configurer les pôles régionaux"
+            />
+          </>
+        )}
         <QuickLinkCard
           to="/member/cn/kpis"
           icon={<BarChart2 className="w-6 h-6" />}

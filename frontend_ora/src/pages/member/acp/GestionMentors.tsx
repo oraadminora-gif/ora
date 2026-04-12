@@ -35,10 +35,7 @@ interface Candidature {
   email: string; phone: string;
   code_postal: string; commune: string;
   pole_name: string | null;
-  association_id: number | null; association_name: string | null;
-  experience_pro: string;
-  domaines: string[];
-  disponibilite: string;
+  association_name: string | null;
   motivation: string;
   statut: 'PENDING' | 'VALIDATED' | 'REJECTED';
   statut_label: string;
@@ -585,19 +582,21 @@ export function GestionMentors() {
         >
           <Users className="w-4 h-4" /> Mentors ({stats.total})
         </button>
-        <button
-          onClick={() => setTab('candidatures')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            tab === 'candidatures' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Inbox className="w-4 h-4" /> Candidatures
-          {pendingCount > 0 && (
-            <span className="bg-ora-orange text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
-              {pendingCount}
-            </span>
-          )}
-        </button>
+        {!isAP && (
+          <button
+            onClick={() => setTab('candidatures')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              tab === 'candidatures' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Inbox className="w-4 h-4" /> Candidatures
+            {pendingCount > 0 && (
+              <span className="bg-ora-orange text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* ── Panel Candidatures ────────────────────────────────── */}
@@ -681,23 +680,6 @@ export function GestionMentors() {
               {/* Détail dépliable */}
               {expandedCand === c.id && (
                 <div className="border-t border-slate-100 px-5 py-4 bg-slate-50 space-y-3 text-sm">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Expérience professionnelle</p>
-                    <p className="text-slate-700 whitespace-pre-line">{c.experience_pro}</p>
-                  </div>
-                  {c.domaines.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Domaines</p>
-                      <div className="flex flex-wrap gap-1">
-                        {c.domaines.map(d => (
-                          <span key={d} className="text-xs px-2 py-0.5 bg-white border border-slate-200 rounded-full text-slate-600">{d}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {c.disponibilite && (
-                    <p><span className="font-medium text-slate-600">Disponibilité :</span> {c.disponibilite.replace(/_/g, ' ')}</p>
-                  )}
                   {c.motivation && (
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Motivation</p>

@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../services/api';
 import {
   Search, Loader2, AlertCircle, Mail, Phone, MapPin,
-  Building2, Crown, Users,
+  Building2, Crown, Users, ChevronDown,
 } from 'lucide-react';
+
+const PAGE_DISPLAY = 24; // cartes affichées par tranche
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -150,6 +152,7 @@ export function AnnuaireORA() {
   const [search, setSearch]         = useState('');
   const [filterPole, setFilterPole] = useState('');
   const [filterAssoc, setFilterAssoc] = useState('');
+  const [displayCount, setDisplayCount] = useState(PAGE_DISPLAY);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -189,6 +192,9 @@ export function AnnuaireORA() {
     }
   }, [filterPole, animateurs]);
 
+  // Reset affichage quand les filtres changent
+  useEffect(() => { setDisplayCount(PAGE_DISPLAY); }, [tab, search, filterPole, filterAssoc]);
+
   // Construction de la liste unifiée filtrée
   const items = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -196,8 +202,13 @@ export function AnnuaireORA() {
     type Card = { type: 'cn' | 'acp' | 'ap'; key: string; data: CNMember | Animateur };
     const cards: Card[] = [];
 
+    // Membres CN : inclus seulement si onglet CN ou "Tous" SANS filtre pôle actif
+    // (les CN sont nationaux — un filtre pôle ne les concerne pas)
     if (tab === 'all' || tab === 'cn') {
       cnMembers.forEach(m => {
+        // Si un filtre pôle est actif, n'inclure que les CN attachés à ce pôle
+        if (filterPole && String(m.pole_id) !== filterPole) return;
+        // Le filtre association ne s'applique pas aux CN
         if (q && !`${m.first_name} ${m.last_name} ${m.email} ${m.ville ?? ''} ${m.association_name ?? ''} ${m.fonction_label ?? ''}`.toLowerCase().includes(q)) return;
         cards.push({ type: 'cn', key: `cn-${m.id}`, data: m });
       });
@@ -207,7 +218,7 @@ export function AnnuaireORA() {
       animateurs.forEach(a => {
         if (tab === 'acp' && !a.is_coordinator) return;
         if (tab === 'ap'  &&  a.is_coordinator) return;
-        if (filterPole && String(a.pole_id) !== filterPole) return;
+        if (filterPole  && String(a.pole_id)        !== filterPole)  return;
         if (filterAssoc && String(a.association_id) !== filterAssoc) return;
         if (q && !`${a.first_name} ${a.last_name} ${a.email} ${a.pole_name} ${a.association_name}`.toLowerCase().includes(q)) return;
         cards.push({ type: a.is_coordinator ? 'acp' : 'ap', key: `anim-${a.id}`, data: a });
@@ -216,6 +227,10 @@ export function AnnuaireORA() {
 
     return cards;
   }, [tab, search, filterPole, filterAssoc, cnMembers, animateurs]);
+
+  // Tranche affichée (frontend "charger plus")
+  const visibleItems = items.slice(0, displayCount);
+  const hasMore = displayCount < items.length;
 
   const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: 'all', label: 'Tous',       count: cnMembers.length + animateurs.length },
@@ -231,7 +246,10 @@ export function AnnuaireORA() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Annuaire ORA</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {cnMembers.length + animateurs.length} membres au total
+            {items.length !== cnMembers.length + animateurs.length
+              ? `${items.length} résultat${items.length > 1 ? 's' : ''} sur ${cnMembers.length + animateurs.length} membres`
+              : `${cnMembers.length + animateurs.length} membres au total`
+            }
           </p>
         </div>
         {/* Barre de recherche header */}
@@ -291,33 +309,48 @@ export function AnnuaireORA() {
           <p className="text-sm">Aucun membre trouvé</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {items.map(item => {
-            if (item.type === 'cn') {
-              const m = item.data as CNMember;
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {visibleItems.map(item => {
+              if (item.type === 'cn') {
+                const m = item.data as CNMember;
+                return (
+                  <ContactCard key={item.key}
+                    role="cn"
+                    fn={m.first_name} ln={m.last_name}
+                    email={m.email} phone={m.phone} city={m.ville || undefined}
+                    assocName={m.association_name || undefined}
+                    poleName={m.pole_name || undefined}
+                    isActive={m.is_active} isSuperAdmin={m.is_super_admin}
+                    fonctionLabel={m.fonction_label} />
+                );
+              }
+              const a = item.data as Animateur;
               return (
                 <ContactCard key={item.key}
-                  role="cn"
-                  fn={m.first_name} ln={m.last_name}
-                  email={m.email} phone={m.phone} city={m.ville || undefined}
-                  assocName={m.association_name || undefined}
-                  poleName={m.pole_name || undefined}
-                  isActive={m.is_active} isSuperAdmin={m.is_super_admin}
-                  fonctionLabel={m.fonction_label} />
+                  role={item.type as 'acp' | 'ap'}
+                  fn={a.first_name} ln={a.last_name}
+                  email={a.email} phone={a.phone} city={a.city}
+                  poleName={a.pole_name} poleCode={a.pole_code}
+                  assocName={a.association_name}
+                  isActive={a.is_active} />
               );
-            }
-            const a = item.data as Animateur;
-            return (
-              <ContactCard key={item.key}
-                role={item.type as 'acp' | 'ap'}
-                fn={a.first_name} ln={a.last_name}
-                email={a.email} phone={a.phone} city={a.city}
-                poleName={a.pole_name} poleCode={a.pole_code}
-                assocName={a.association_name}
-                isActive={a.is_active} />
-            );
-          })}
-        </div>
+            })}
+          </div>
+
+          {/* Charger plus (frontend — pas de requête réseau) */}
+          {hasMore && (
+            <div className="text-center pt-2">
+              <button
+                onClick={() => setDisplayCount(c => c + PAGE_DISPLAY)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <ChevronDown className="w-4 h-4" />
+                Afficher plus ({items.length - displayCount} restant{items.length - displayCount > 1 ? 's' : ''})
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

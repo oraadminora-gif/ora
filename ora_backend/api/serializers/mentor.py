@@ -14,7 +14,10 @@ class MentorUserSerializer(serializers.ModelSerializer):
 class MentorListSerializer(serializers.ModelSerializer):
     """Serializer liste Mentor (léger)"""
     association = AssociationListSerializer(read_only=True)
-    est_disponible = serializers.BooleanField(source='disponibilite_reelle', read_only=True)
+    est_disponible = serializers.SerializerMethodField()
+
+    def get_est_disponible(self, obj):
+        return obj.disponibilite_reelle > 0
     pole_name = serializers.CharField(source='pole.name', read_only=True, default='')
 
     class Meta:
@@ -36,7 +39,7 @@ class MentorSerializer(serializers.ModelSerializer):
         model = Mentor
         fields = [
             'id', 'user', 'first_name', 'last_name', 'full_name', 'email', 'phone',
-            'pole', 'pole_name', 'association',
+            'city', 'pole', 'pole_name', 'association',
             'max_capacity', 'disponibilite_reelle', 'taux_occupation',
             'is_active', 'is_trained', 'training_date', 'created_at', 'updated_at'
         ]
@@ -78,9 +81,6 @@ class MentorCreateSerializer(serializers.ModelSerializer):
             user = User.objects.create_user(**user_data)
             validated_data['user'] = user
         else:
-            # Sans user, on met les infos directement
-            validated_data['first_name'] = validated_data.get('first_name', '')
-            validated_data['last_name'] = validated_data.get('last_name', '')
-            validated_data['email'] = validated_data.get('email', '')
+            validated_data.pop('password', None)  # password non utilisé sans création de compte
         
         return Mentor.objects.create(**validated_data)

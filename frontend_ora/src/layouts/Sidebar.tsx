@@ -145,6 +145,7 @@ interface MenuItem {
   roles: UserRole[];
   disabled?: boolean;
   scrollTo?: string;
+  requiresFullAccess?: boolean;
 }
 
 const ROLE_CONFIG: Record<string, { label: string; accent: string; color: string }> = {
@@ -162,11 +163,10 @@ const ROLE_HOME: Record<UserRole, string> = {
 };
 
 const menuItems: MenuItem[] = [
-  { label: 'Accueil',        path: '/member',                  roles: ['MENTOR','AP','ACP','CN'], icon: <Home size={18} /> },
+  { label: 'Accueil',        path: '/member',                  roles: ['MENTOR','AP'], icon: <Home size={18} /> },
   // MENTOR
   { label: 'Mes mentorats',  path: '/member/mentor/dashboard', roles: ['MENTOR'],                 icon: <HandHeart size={18} />, scrollTo: 'mentorats-en-cours' },
   // AP — vue association uniquement
-  { label: 'Mes mentors',    path: '/member/ap/dashboard',     roles: ['AP'],                     icon: <Users size={18} /> },
   // ACP — vue pôle complète
   { label: 'Tableau de bord',  path: '/member/acp/dashboard',   roles: ['ACP'], icon: <LayoutDashboard size={18} /> },
   { label: 'Matching',         path: '/member/matching',        roles: ['ACP'], icon: <HandHeart size={18} /> },
@@ -176,14 +176,14 @@ const menuItems: MenuItem[] = [
   { label: 'Gestion APs',      path: '/member/acp/animateurs', roles: ['ACP'], icon: <Shield size={18} /> },
   { label: 'Suivi mentorats',  path: '/member/acp/mentorats',  roles: ['ACP'], icon: <FileText size={18} /> },
   // CN
-  { label: 'Vue nationale',    path: '/member/cn/dashboard',     roles: ['CN'], icon: <Globe size={18} /> },
-  { label: 'Gestion mentors', path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} /> },
-  { label: 'Gestion pôles',   path: '/member/cn/poles',         roles: ['CN'], icon: <Shield size={18} /> },
-  { label: 'Gestion animateurs', path: '/member/cn/animateurs', roles: ['CN'], icon: <Users size={18} /> },
-  { label: 'Annuaire ORA',      path: '/member/cn/annuaire',       roles: ['CN'], icon: <BookOpen size={18} /> },
-  { label: 'Implantations',     path: '/member/cn/implantations',  roles: ['CN'], icon: <MapPin size={18} /> },
-  { label: 'KPIs Nationaux',  path: '/member/cn/kpis',          roles: ['CN'], icon: <BarChart2 size={18} /> },
-  { label: 'Configuration',   path: '/member/cn/configuration', roles: ['CN'], icon: <Settings size={18} /> },
+  { label: 'Vue nationale',       path: '/member/cn/dashboard',    roles: ['CN'], icon: <Globe size={18} /> },
+  { label: 'Gestion mentors',     path: '/member/cn/mentors',      roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Gestion pôles',       path: '/member/cn/poles',        roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
+  { label: 'Gestion animateurs',  path: '/member/cn/animateurs',   roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Annuaire ORA',        path: '/member/cn/annuaire',     roles: ['CN'], icon: <BookOpen size={18} /> },
+  { label: 'Implantations',       path: '/member/cn/implantations',roles: ['CN'], icon: <MapPin size={18} /> },
+  { label: 'KPIs Nationaux',      path: '/member/cn/kpis',         roles: ['CN'], icon: <BarChart2 size={18} /> },
+  { label: 'Configuration',       path: '/member/cn/configuration',roles: ['CN'], icon: <Settings size={18} />, requiresFullAccess: true },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -199,8 +199,11 @@ export const Sidebar = ({ onNavigate }: SidebarProps) => {
 
   if (!user) return null;
 
+  const fullAccess = activeRole !== 'CN' || (user.cn_acces_complet ?? false);
   const roleInfo = ROLE_CONFIG[activeRole] ?? { label: 'Membre', accent: 'text-slate-400', color: '' };
-  const filteredMenu = menuItems.filter(i => i.roles.includes(activeRole));
+  const filteredMenu = menuItems.filter(i =>
+    i.roles.includes(activeRole) && (!i.requiresFullAccess || fullAccess)
+  );
   const initials = `${user.first_name?.charAt(0) ?? ''}${user.last_name?.charAt(0) ?? ''}`.toUpperCase();
 
   const availableRoles = user.roles ?? [activeRole];

@@ -64,8 +64,18 @@ def _serialize_mentorat(m):
 
 class PoleMentoratListView(APIView):
     """
-    GET /pole/mentorats/  – liste de tous les mentorats du pôle
-    Filtre : ?status=ACTIVE|CLOSED|ABORTED|PENDING
+    GET /pole/mentorats/  – liste paginée des mentorats du pôle
+
+    Query params:
+      status    : ACTIVE | CLOSED | ABORTED | PENDING | all  (défaut: all)
+      search    : filtre texte (mentor, jeune, AP)
+      page      : numéro de page 1-based  (défaut: 1)
+      page_size : taille de page          (défaut: 20, max: 100)
+
+    Réponse:
+      count, page, page_size, total_pages, has_next,
+      counts { all, ACTIVE, PENDING, CLOSED, ABORTED },
+      mentorats [ … ]
     """
     permission_classes = [IsAuthenticated, IsACP]
 
@@ -74,25 +84,69 @@ class PoleMentoratListView(APIView):
             return Response({"error": "Pas de pôle"}, status=400)
         pole_id = request.user.animateur.pole_id
 
-        qs = (
-            Mentorat.objects
-            .filter(pole_id=pole_id)
-            .select_related(
-                'mentor', 'mentor__association',
-                'young_request', 'young_request__etablissement',
-                'ap_responsable', 'ap_responsable__association',
-                'pole',
-            )
-            .order_by('-created_at')
+        status_filter = request.query_params.get('status', 'all')
+        search        = request.query_params.get('search', '').strip()
+        try:
+            page      = max(1, int(request.query_params.get('page', 1)))
+            page_size = min(100, max(1, int(request.query_params.get('page_size', 20))))
+        except (ValueError, TypeError):
+            page, page_size = 1, 20
+
+        base_qs = Mentorat.objects.filter(pole_id=pole_id)
+
+        # Compteurs par statut (toujours calculés sur la base entière)
+        from django.db.models import Count as _Count
+        counts_raw = (
+            base_qs.values('status')
+            .annotate(n=_Count('id'))
+        )
+        counts = {'all': 0, 'ACTIVE': 0, 'PENDING': 0, 'CLOSED': 0, 'ABORTED': 0}
+        for row in counts_raw:
+            s = row['status']
+            counts[s] = row['n']
+            counts['all'] += row['n']
+
+        # Filtrage
+        qs = base_qs.select_related(
+            'mentor', 'mentor__association',
+            'young_request', 'young_request__etablissement',
+            'ap_responsable', 'ap_responsable__association',
+            'pole',
         )
 
-        status_filter = request.query_params.get('status')
-        if status_filter and status_filter in ('ACTIVE', 'CLOSED', 'ABORTED', 'PENDING'):
+        if status_filter in ('ACTIVE', 'CLOSED', 'ABORTED', 'PENDING'):
             qs = qs.filter(status=status_filter)
 
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(mentor__first_name__icontains=search) |
+                Q(mentor__last_name__icontains=search)  |
+                Q(young_request__first_name__icontains=search) |
+                Q(young_request__last_name__icontains=search)  |
+                Q(mentor__association__name__icontains=search)  |
+                Q(ap_responsable__first_name__icontains=search) |
+                Q(ap_responsable__last_name__icontains=search)
+            )
+
+        # Tri : alertes rouges en premier pour ACTIVE, sinon plus récent d'abord
+        if status_filter == 'ACTIVE':
+            qs = qs.order_by('-alerte_rouge', '-assigned_at')
+        else:
+            qs = qs.order_by('-created_at')
+
+        total  = qs.count()
+        offset = (page - 1) * page_size
+        items  = list(qs[offset: offset + page_size])
+
         return Response({
-            "count":    qs.count(),
-            "mentorats": [_serialize_mentorat(m) for m in qs],
+            "counts":      counts,
+            "count":       total,
+            "page":        page,
+            "page_size":   page_size,
+            "total_pages": max(1, (total + page_size - 1) // page_size),
+            "has_next":    offset + page_size < total,
+            "mentorats":   [_serialize_mentorat(m) for m in items],
         })
 
 

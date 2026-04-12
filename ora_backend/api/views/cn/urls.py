@@ -6,6 +6,7 @@ from .membres       import CNMembresView, CNMembreDetailView, CNMembreMeView
 from .implantations import CNImplantationsView
 from .retribution   import RetributionView
 from .messages      import CNMessagesView, CNMessageDetailView
+from .mentors       import CNMenteursListView, CNMenteurDetailView
 
 urlpatterns = [
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
@@ -20,4 +21,6 @@ urlpatterns = [
     path('membres/<int:pk>/',    CNMembreDetailView.as_view(),    name='cn-membre-detail'),
     path('messages/',            CNMessagesView.as_view(),        name='cn-messages'),
     path('messages/<int:pk>/',   CNMessageDetailView.as_view(),   name='cn-message-detail'),
+    path('mentors/',             CNMenteursListView.as_view(),    name='cn-mentors'),
+    path('mentors/<int:mentor_id>/', CNMenteurDetailView.as_view(), name='cn-mentor-detail'),
 ]

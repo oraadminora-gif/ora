@@ -160,6 +160,7 @@ class PoleKPIsView(APIView):
         # ── Mentors ───────────────────────────────────────────────────────
         mentors_qs         = Mentor.objects.filter(pole=pole, is_active=True)
         mentors_total      = mentors_qs.count()
+        mentors_inactifs   = Mentor.objects.filter(pole=pole, is_active=False).count()
         mentors_disponibles = mentors_qs.filter(disponibilite_reelle__gt=0).count()
         mentors_satures    = mentors_qs.filter(disponibilite_reelle=0).count()
         taux_saturation    = round(mentors_satures    / mentors_total * 100, 1) if mentors_total else 0
@@ -266,6 +267,7 @@ class PoleKPIsView(APIView):
             "taux_saturation":         taux_saturation,
             # ── Mentors (absolu) ──────────────────────────
             "mentors_total":           mentors_total,
+            "mentors_inactifs":        mentors_inactifs,
             "mentors_disponibles":     mentors_disponibles,
             "mentors_satures":         mentors_satures,
             "capacite_restante":       int(capacite_restante),
@@ -349,6 +351,7 @@ class NationalKPIsView(APIView):
         ).count()
 
         mentors_total        = Mentor.objects.filter(is_active=True).count()
+        mentors_inactifs_nat = Mentor.objects.filter(is_active=False).count()
         mentors_dispo        = Mentor.objects.filter(is_active=True, disponibilite_reelle__gt=0).count()
         mentors_satures      = Mentor.objects.filter(is_active=True, disponibilite_reelle=0).count()
         capacite_totale_nat  = int(Mentor.objects.filter(is_active=True).aggregate(s=Sum('disponibilite_reelle'))['s'] or 0)
@@ -439,6 +442,7 @@ class NationalKPIsView(APIView):
             "mentorats_closes":       mentorats_closes,
             "mentorats_abandonnes":   mentorats_abandonnes,
             "mentors_total":          mentors_total,
+            "mentors_inactifs":       mentors_inactifs_nat,
             "mentors_dispo":          mentors_dispo,
             "mentors_satures":        mentors_satures,
             "taux_reussite":          taux_reussite,

@@ -59,7 +59,7 @@ def _annotated_mentor_qs(pole_id=None, mentor_id=None):
         )
     )
     if pole_id:
-        qs = qs.filter(pole_id=pole_id, is_active=True)
+        qs = qs.filter(pole_id=pole_id)  # inclut actifs ET inactifs
     if mentor_id:
         qs = qs.filter(id=mentor_id)
     return qs

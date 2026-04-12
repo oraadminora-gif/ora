@@ -1,12 +1,12 @@
 // src/pages/member/ap/APDashboard.tsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Loader2, AlertCircle, Search, AlertTriangle,
   Clock, BookOpen, MapPin, GraduationCap, Users, ChevronRight,
-  CheckCircle, XCircle, Pencil, Mail,
+  CheckCircle, XCircle, Pencil, Mail, ChevronDown,
 } from 'lucide-react';
 import api from '../../../services/api';
-import type { APDashboardData, APMesMenutorat } from './APDashboard.types';
+import type { APDashboardData, APMesMenutorat, APMesMentoratPage } from './APDashboard.types';
 import { APStatsBar } from '../../../components/ap/APStatsBar';
 import { APMentorDetailModal } from '../../../components/ap/APMentorDetailModal';
 import { ACPDemandesPanel } from '../../../components/acp/ACPDemandesPanel';
@@ -356,16 +356,29 @@ function FilterPill({
   );
 }
 
+const PAGE_SIZE = 15;
+
 // ── Page principale ────────────────────────────────────────────────────────────
 export function APDashboard() {
+  // ── Dashboard (stats + clôtures en attente) ───────────────────────────────
   const [data, setData] = useState<APDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMentorId, setSelectedMentorId] = useState<number | null>(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [busyCloture, setBusyCloture] = useState<number | null>(null);
 
+  // ── Liste paginée des mentorats ───────────────────────────────────────────
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ACTIVE');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');  // valeur brute (debounced)
+  const [mentorats, setMentorats] = useState<APMesMenutorat[]>([]);
+  const [mentoratsMeta, setMentoratsMeta] = useState<Omit<APMesMentoratPage, 'results'> | null>(null);
+  const [mentoratLoading, setMentoratLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [selectedMentorId, setSelectedMentorId] = useState<number | null>(null);
+
+  // ── Chargement dashboard ──────────────────────────────────────────────────
   useEffect(() => { fetchDashboard(); }, []);
 
   const fetchDashboard = async () => {
@@ -378,6 +391,38 @@ export function APDashboard() {
     } finally { setLoading(false); }
   };
 
+  // ── Chargement mentorats paginés ──────────────────────────────────────────
+  const fetchMentorats = useCallback(async (status: StatusFilter, q: string, page: number, append = false) => {
+    if (page === 1) setMentoratLoading(true); else setLoadingMore(true);
+    try {
+      const params: Record<string, string | number> = { status, page, page_size: PAGE_SIZE };
+      if (q) params.search = q;
+      const res = await api.get<APMesMentoratPage>('/ap/mes-mentorats/', { params });
+      const { results, ...meta } = res.data;
+      setMentoratsMeta(meta);
+      setMentorats(prev => append ? [...prev, ...results] : results);
+    } catch { /* silencieux */ }
+    finally { setMentoratLoading(false); setLoadingMore(false); }
+  }, []);
+
+  // Reset + fetch page 1 quand filtre ou search change
+  useEffect(() => {
+    fetchMentorats(statusFilter, search, 1, false);
+  }, [statusFilter, search, fetchMentorats]);
+
+  // Debounce sur la saisie dans le champ recherche
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(val), 350);
+  };
+
+  const handleLoadMore = () => {
+    if (!mentoratsMeta?.has_next) return;
+    fetchMentorats(statusFilter, search, mentoratsMeta.page + 1, true);
+  };
+
+  // ── Clôtures ─────────────────────────────────────────────────────────────
   const handleClotureAction = async (mentoratId: number, action: 'confirm' | 'reject', message?: string) => {
     setBusyCloture(mentoratId);
     try {
@@ -386,33 +431,18 @@ export function APDashboard() {
         ...(message !== undefined ? { message } : {}),
       });
       fetchDashboard();
-    } catch { /* silently refresh */ fetchDashboard(); }
+      fetchMentorats(statusFilter, search, 1, false);
+    } catch { fetchDashboard(); fetchMentorats(statusFilter, search, 1, false); }
     finally { setBusyCloture(null); }
   };
 
-  const mentorats = useMemo(() => data?.mes_mentorats ?? [], [data]);
-
+  // ── Counts depuis les stats du dashboard ─────────────────────────────────
   const counts = useMemo(() => ({
-    all:     mentorats.length,
-    ACTIVE:  mentorats.filter(m => m.status === 'ACTIVE').length,
-    CLOSED:  mentorats.filter(m => m.status === 'CLOSED').length,
-    ABORTED: mentorats.filter(m => m.status === 'ABORTED').length,
-  }), [mentorats]);
-
-  const filtered = useMemo(() => {
-    let list = mentorats;
-    if (statusFilter !== 'all') list = list.filter(m => m.status === statusFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(m =>
-        m.mentor.name.toLowerCase().includes(q) ||
-        (m.jeune?.name ?? '').toLowerCase().includes(q) ||
-        m.mentor.association.toLowerCase().includes(q) ||
-        m.mentor.city.toLowerCase().includes(q)
-      );
-    }
-    return list;
-  }, [mentorats, statusFilter, search]);
+    all:     data?.stats.mes_mentorats_total   ?? 0,
+    ACTIVE:  data?.stats.mes_mentorats_actifs  ?? 0,
+    CLOSED:  data?.stats.mes_mentorats_clotures  ?? 0,
+    ABORTED: data?.stats.mes_mentorats_abandonnes ?? 0,
+  }), [data]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   if (loading) return (
@@ -485,35 +515,31 @@ export function APDashboard() {
       )}
 
       {/* ── Clôtures en attente ────────────────────────────────────────────────── */}
-      {(() => {
-        const pending = mentorats.filter(m => m.status === 'ACTIVE' && m.cloture_en_attente);
-        if (pending.length === 0) return null;
-        return (
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-amber-500" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Clôtures en attente</h2>
-                <p className="text-xs text-amber-600">
-                  {pending.length} demande{pending.length > 1 ? 's' : ''} de clôture à valider
-                </p>
-              </div>
+      {data.clotures_en_attente.length > 0 && (
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+              <Clock className="w-4 h-4 text-amber-500" />
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-              {pending.map(m => (
-                <ClotureEnAttenteCard
-                  key={m.id}
-                  mentorat={m}
-                  onAction={handleClotureAction}
-                  busy={busyCloture}
-                />
-              ))}
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Clôtures en attente</h2>
+              <p className="text-xs text-amber-600">
+                {data.clotures_en_attente.length} demande{data.clotures_en_attente.length > 1 ? 's' : ''} de clôture à valider
+              </p>
             </div>
           </div>
-        );
-      })()}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            {data.clotures_en_attente.map(m => (
+              <ClotureEnAttenteCard
+                key={m.id}
+                mentorat={m}
+                onAction={handleClotureAction}
+                busy={busyCloture}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Demandes en attente du pôle ────────────────────────────────────────── */}
       {animateur.pole.id !== null && (
@@ -531,7 +557,14 @@ export function APDashboard() {
             <div>
               <h2 className="text-base font-bold text-slate-900">Mes mentorats</h2>
               <p className="text-xs text-slate-400">
-                {filtered.length} affiché{filtered.length !== 1 ? 's' : ''} sur {stats.mes_mentorats_total} — mentors de{' '}
+                {mentoratsMeta ? (
+                  <>
+                    {mentorats.length} affiché{mentorats.length !== 1 ? 's' : ''}
+                    {mentoratsMeta.count > mentorats.length && ` sur ${mentoratsMeta.count}`}
+                  </>
+                ) : (
+                  <>— sur {stats.mes_mentorats_total} au total</>
+                )}{' '}— mentors de{' '}
                 <span className="font-semibold text-ora-blue">{animateur.association.name}</span>
               </p>
             </div>
@@ -548,8 +581,8 @@ export function APDashboard() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none" />
             <input
               type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={e => handleSearchChange(e.target.value)}
               placeholder="Mentor, jeune, association, ville…"
               className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue transition-all"
             />
@@ -558,39 +591,61 @@ export function APDashboard() {
           <div className="flex items-center gap-2 flex-wrap">
             <FilterPill active={statusFilter === 'all'}     onClick={() => setStatusFilter('all')}     label="Tous"       count={counts.all}     colorActive="bg-slate-800 text-white border-slate-800" />
             <FilterPill active={statusFilter === 'ACTIVE'}  onClick={() => setStatusFilter('ACTIVE')}  label="Actifs"     count={counts.ACTIVE}  colorActive="bg-emerald-600 text-white border-emerald-600" />
-            <FilterPill active={statusFilter === 'CLOSED'}  onClick={() => setStatusFilter('CLOSED')}  label="Clôturés"  count={counts.CLOSED}  colorActive="bg-slate-600 text-white border-slate-600" />
+            <FilterPill active={statusFilter === 'CLOSED'}  onClick={() => setStatusFilter('CLOSED')}  label="Clôturés"   count={counts.CLOSED}  colorActive="bg-slate-600 text-white border-slate-600" />
             <FilterPill active={statusFilter === 'ABORTED'} onClick={() => setStatusFilter('ABORTED')} label="Abandonnés" count={counts.ABORTED} colorActive="bg-red-600 text-white border-red-600" />
           </div>
         </div>
 
         {/* Liste */}
-        {filtered.length === 0 ? (
+        {mentoratLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-ora-blue" />
+          </div>
+        ) : mentorats.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4">
-              {mentorats.length === 0
+              {counts.all === 0
                 ? <BookOpen className="w-6 h-6 text-slate-300" />
                 : <Search className="w-6 h-6 text-slate-300" />
               }
             </div>
             <p className="text-sm font-semibold text-slate-400">
-              {mentorats.length === 0 ? 'Aucun mentorat à suivre' : 'Aucun mentorat trouvé'}
+              {counts.all === 0 ? 'Aucun mentorat à suivre' : 'Aucun mentorat trouvé'}
             </p>
             <p className="text-xs text-slate-300 mt-1">
-              {mentorats.length === 0
+              {counts.all === 0
                 ? 'Vous apparaîtrez ici dès que vous serez assigné comme AP sur un mentorat'
-                : 'Essayez de modifier vos filtres'}
+                : 'Essayez de modifier vos filtres ou votre recherche'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {filtered.map(m => (
-              <MentoratCard
-                key={m.id}
-                mentorat={m}
-                onClick={() => setSelectedMentorId(m.mentor.id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+              {mentorats.map(m => (
+                <MentoratCard
+                  key={m.id}
+                  mentorat={m}
+                  onClick={() => setSelectedMentorId(m.mentor.id)}
+                />
+              ))}
+            </div>
+
+            {/* Charger plus */}
+            {mentoratsMeta?.has_next && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 transition-all shadow-sm"
+                >
+                  {loadingMore
+                    ? <><Loader2 className="w-4 h-4 animate-spin" />Chargement…</>
+                    : <><ChevronDown className="w-4 h-4" />Charger plus ({mentoratsMeta.count - mentorats.length} restant{mentoratsMeta.count - mentorats.length > 1 ? 's' : ''})</>
+                  }
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

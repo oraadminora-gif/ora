@@ -40,42 +40,73 @@ def _serialize_animateur(a):
     }
 
 
+PAGE_SIZE_DEFAULT = 25
+PAGE_SIZE_MAX     = 100
+
+
 class CNAnimateursView(APIView):
     """
-    GET  /api/cn/animateurs/?pole_id=&role=ACP|AP&search=  – liste nationale des animateurs
+    GET  /api/cn/animateurs/?pole_id=&role=ACP|AP&is_active=true|false&search=&page=&page_size=
     POST /api/cn/animateurs/  – créer un animateur (ACP ou AP) sur n'importe quel pôle
     """
     permission_classes = [IsAuthenticated, IsCN]
 
     def get(self, request):
-        qs = (
-            Animateur.objects
-            .select_related('pole', 'association')
-            .order_by('pole__name', 'last_name')
-        )
+        pole_id   = request.query_params.get('pole_id', '')
+        role      = request.query_params.get('role', '').upper()
+        is_active = request.query_params.get('is_active', '')   # 'true'|'false'|''
+        search    = request.query_params.get('search', '').strip()
+        try:
+            page      = max(1, int(request.query_params.get('page', 1)))
+            page_size = min(PAGE_SIZE_MAX, max(1, int(request.query_params.get('page_size', PAGE_SIZE_DEFAULT))))
+        except (ValueError, TypeError):
+            page, page_size = 1, PAGE_SIZE_DEFAULT
 
-        pole_id = request.query_params.get('pole_id')
+        # ── Base (pole seulement, pour les compteurs totaux) ────────────────
+        base_qs = Animateur.objects.all()
         if pole_id:
-            qs = qs.filter(pole_id=pole_id)
+            base_qs = base_qs.filter(pole_id=pole_id)
 
-        role = request.query_params.get('role', '').upper()
+        total_counts = {
+            'all':          base_qs.count(),
+            'acps':         base_qs.filter(is_coordinator=True).count(),
+            'aps':          base_qs.filter(is_coordinator=False).count(),
+            'with_account': base_qs.filter(user__isnull=False).count(),
+            'actifs':       base_qs.filter(is_active=True).count(),
+            'inactifs':     base_qs.filter(is_active=False).count(),
+        }
+
+        # ── Filtrage complet ────────────────────────────────────────────────
+        qs = base_qs.select_related('pole', 'association').order_by('pole__name', 'last_name')
+
         if role == 'ACP':
             qs = qs.filter(is_coordinator=True)
         elif role == 'AP':
             qs = qs.filter(is_coordinator=False)
 
-        search = request.query_params.get('search', '').strip()
+        if is_active == 'true':
+            qs = qs.filter(is_active=True)
+        elif is_active == 'false':
+            qs = qs.filter(is_active=False)
+
         if search:
             qs = qs.filter(
                 Q(first_name__icontains=search) |
-                Q(last_name__icontains=search) |
+                Q(last_name__icontains=search)  |
                 Q(email__icontains=search)
             )
 
-        animateurs = list(qs)
+        total  = qs.count()
+        offset = (page - 1) * page_size
+        items  = list(qs[offset: offset + page_size])
+
         return Response({
-            "count":      len(animateurs),
-            "animateurs": [_serialize_animateur(a) for a in animateurs],
+            "total_counts": total_counts,
+            "count":        total,
+            "page":         page,
+            "page_size":    page_size,
+            "has_next":     offset + page_size < total,
+            "animateurs":   [_serialize_animateur(a) for a in items],
         })
 
     @transaction.atomic

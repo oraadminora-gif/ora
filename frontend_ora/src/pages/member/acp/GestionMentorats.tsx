@@ -1,10 +1,10 @@
 // src/pages/member/acp/GestionMentorats.tsx
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import api from '../../../services/api';
 import {
   Search, Loader2, AlertCircle, Pencil, X, CheckCircle,
   HandHeart, AlertTriangle, Calendar, User, FileText,
-  UserCheck, Building2, Download, ClipboardList, Lock,
+  UserCheck, Building2, Download, ClipboardList, Lock, ChevronDown,
 } from 'lucide-react';
 import {
   APMentoratSuiviModal,
@@ -431,34 +431,63 @@ function ExportModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const PAGE_SIZE = 20;
+
+interface MentoratMeta {
+  count: number; page: number; page_size: number;
+  total_pages: number; has_next: boolean;
+  counts: Record<TabFilter, number>;
+}
+
 export function GestionMentorats() {
   const [mentorats, setMentorats]     = useState<Mentorat[]>([]);
+  const [meta, setMeta]               = useState<MentoratMeta | null>(null);
   const [animateurs, setAnimateurs]   = useState<Animateur[]>([]);
   const [mentors, setMentors]         = useState<MentorOption[]>([]);
   const [poles, setPoles]             = useState<PoleOption[]>([]);
   const [loading, setLoading]         = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError]             = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch]           = useState('');
-  const [tab, setTab]                 = useState<TabFilter>('all');
+  const [tab, setTab]                 = useState<TabFilter>('ACTIVE');
   const [editing, setEditing]         = useState<Mentorat | null>(null);
   const [successMsg, setSuccessMsg]   = useState<string | null>(null);
   const [showExport, setShowExport]   = useState(false);
-  const [showSuiviModal, setShowSuiviModal]       = useState<number | null>(null);
+  const [showSuiviModal, setShowSuiviModal]           = useState<number | null>(null);
   const [showRencontresModal, setShowRencontresModal] = useState<number | null>(null);
-  const [showClotureModal, setShowClotureModal]   = useState<number | null>(null);
+  const [showClotureModal, setShowClotureModal]       = useState<number | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  // ── Chargement paginé des mentorats ────────────────────────────────────────
+  const fetchMentorats = useCallback(async (
+    status: TabFilter, q: string, page: number, append = false
+  ) => {
+    if (page === 1) setLoading(true); else setLoadingMore(true);
     setError(null);
     try {
-      const [mRes, aRes, mentRes, polesRes] = await Promise.all([
-        api.get('/pole/mentorats/'),
+      const params: Record<string, string | number> = { status, page, page_size: PAGE_SIZE };
+      if (q) params.search = q;
+      const res = await api.get('/pole/mentorats/', { params });
+      const { mentorats: rows, ...pageMeta } = res.data;
+      setMeta(pageMeta);
+      setMentorats(prev => append ? [...prev, ...rows] : rows);
+    } catch {
+      setError('Erreur de chargement');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
+
+  // ── Chargement des listes de référence (une seule fois) ────────────────────
+  const loadRefData = useCallback(async () => {
+    try {
+      const [aRes, mentRes, polesRes] = await Promise.all([
         api.get('/pole/animateurs/'),
         api.get('/pole/mentors/'),
         api.get('/poles/'),
       ]);
-      setMentorats(mRes.data.mentorats ?? []);
-      // Normalise les APs
       const aps = (aRes.data.animateurs ?? []).map((a: {
         id: number; name?: string; first_name?: string; last_name?: string; association: string;
       }) => ({
@@ -474,35 +503,44 @@ export function GestionMentorats() {
         id: number; name: string; code: string;
       }) => ({ id: p.id, name: p.name, code: p.code }));
       setPoles(poleList);
-    } catch {
-      setError('Erreur de chargement');
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silencieux */ }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadRefData();
+  }, [loadRefData]);
 
-  const counts = useMemo(() => ({
-    all:     mentorats.length,
-    ACTIVE:  mentorats.filter(m => m.status === 'ACTIVE').length,
-    PENDING: mentorats.filter(m => m.status === 'PENDING').length,
-    CLOSED:  mentorats.filter(m => m.status === 'CLOSED').length,
-    ABORTED: mentorats.filter(m => m.status === 'ABORTED').length,
-  }), [mentorats]);
+  // Reset page 1 quand filtre ou search change
+  useEffect(() => {
+    fetchMentorats(tab, search, 1, false);
+  }, [tab, search, fetchMentorats]);
 
-  const filtered = useMemo(() => mentorats.filter(m => {
-    const matchTab = tab === 'all' || m.status === tab;
-    const matchSearch = !search.trim()
-      || `${m.mentor_name} ${m.jeune_name} ${m.mentor_assoc} ${m.ap_responsable_name ?? ''}`.toLowerCase()
-          .includes(search.toLowerCase());
-    return matchTab && matchSearch;
-  }), [mentorats, tab, search]);
+  // Debounce saisie recherche
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(val), 350);
+  };
+
+  const handleLoadMore = () => {
+    if (!meta?.has_next) return;
+    fetchMentorats(tab, search, meta.page + 1, true);
+  };
+
+  const loadData = useCallback(() => fetchMentorats(tab, search, 1, false), [fetchMentorats, tab, search]);
+
+  // Counts depuis les métadonnées serveur
+  const counts = useMemo<Record<TabFilter, number>>(() => ({
+    all:     meta?.counts?.all     ?? 0,
+    ACTIVE:  meta?.counts?.ACTIVE  ?? 0,
+    PENDING: meta?.counts?.PENDING ?? 0,
+    CLOSED:  meta?.counts?.CLOSED  ?? 0,
+    ABORTED: meta?.counts?.ABORTED ?? 0,
+  }), [meta]);
 
   const handleSaved = (saved: Mentorat) => {
     const originalPoleId = editing?.pole_id;
     if (originalPoleId && saved.pole_id !== originalPoleId) {
-      // Mentorat transferred — remove from list
       setMentorats(prev => prev.filter(m => m.id !== saved.id));
       setSuccessMsg('Mentorat transféré vers un autre pôle.');
     } else {
@@ -521,6 +559,7 @@ export function GestionMentorats() {
           <h1 className="text-2xl font-bold text-slate-900">Suivi des mentorats</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {counts.ACTIVE} actifs · {counts.PENDING} en attente · {counts.CLOSED + counts.ABORTED} clôturés
+            {meta && mentorats.length < meta.count && ` · ${mentorats.length} affichés sur ${meta.count}`}
           </p>
         </div>
         <button
@@ -566,8 +605,8 @@ export function GestionMentorats() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={e => handleSearchChange(e.target.value)}
             placeholder="Mentor, jeune, association, AP…"
             className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue"
           />
@@ -585,7 +624,7 @@ export function GestionMentorats() {
           <p className="text-sm text-red-700">{error}</p>
           <button onClick={loadData} className="mt-3 text-xs font-semibold text-red-600 hover:underline">Réessayer</button>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : mentorats.length === 0 ? (
         <div className="bg-white border border-slate-100 rounded-2xl py-16 text-center shadow-sm">
           <HandHeart className="w-10 h-10 text-slate-200 mx-auto mb-3" />
           <p className="text-sm font-semibold text-slate-400">Aucun mentorat trouvé</p>
@@ -605,7 +644,7 @@ export function GestionMentorats() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filtered.map(m => (
+                {mentorats.map(m => (
                   <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
@@ -681,6 +720,22 @@ export function GestionMentorats() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Charger plus */}
+      {meta?.has_next && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
+          >
+            {loadingMore
+              ? <><Loader2 className="w-4 h-4 animate-spin" />Chargement…</>
+              : <><ChevronDown className="w-4 h-4" />Charger plus ({meta.count - mentorats.length} restant{meta.count - mentorats.length > 1 ? 's' : ''})</>
+            }
+          </button>
         </div>
       )}
 

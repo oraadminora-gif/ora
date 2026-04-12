@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.models import CandidatureMentor, Pole, Association, Department
+from core.models import CandidatureMentor, Pole, Department
 
 
 def _dept_code_from_cp(code_postal: str) -> str:
@@ -22,8 +22,7 @@ class PublicMentorCandidatureView(APIView):
         data = request.data
 
         # Champs obligatoires
-        required = ['first_name', 'last_name', 'email', 'code_postal',
-                    'association_id', 'experience_pro']
+        required = ['first_name', 'last_name', 'email', 'code_postal']
         missing = [f for f in required if not data.get(f)]
         if missing:
             return Response(
@@ -42,15 +41,6 @@ class PublicMentorCandidatureView(APIView):
         except Department.DoesNotExist:
             pass
 
-        # Vérification association
-        try:
-            association = Association.objects.get(pk=data['association_id'])
-        except Association.DoesNotExist:
-            return Response(
-                {'detail': 'Association introuvable.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         candidature = CandidatureMentor.objects.create(
             first_name      = data['first_name'].strip(),
             last_name       = data['last_name'].strip().upper(),
@@ -59,10 +49,6 @@ class PublicMentorCandidatureView(APIView):
             code_postal     = data['code_postal'].strip(),
             commune         = data.get('commune', '').strip(),
             pole            = pole,
-            association     = association,
-            experience_pro  = data['experience_pro'].strip(),
-            domaines        = data.get('domaines', []),
-            disponibilite   = data.get('disponibilite', ''),
             motivation      = data.get('motivation', '').strip(),
         )
 
