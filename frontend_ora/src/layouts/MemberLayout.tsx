@@ -2,8 +2,8 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../contexts/AuthContext';
-import { useState, useEffect } from 'react';
-import { Menu, X, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { X, LogOut } from 'lucide-react';
 
 // Import des 4 headers spécifiques
 import { HeaderMentor } from './HeaderMentor';
@@ -16,15 +16,6 @@ export const MemberLayout = () => {
   const { activeRole, user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // DEBUG: Voir ce qui se passe
-  useEffect(() => {
-    console.log('🔍 MemberLayout MOUNTED');
-    console.log('🔍 activeRole:', activeRole);
-    console.log('🔍 user?.role:', user?.role);
-    console.log('🔍 user?.email:', user?.email);
-    console.log('🔍 loading:', loading);
-  }, [activeRole, user, loading]);
-
   // Attendre le chargement
   if (loading) {
     return (
@@ -34,36 +25,15 @@ export const MemberLayout = () => {
     );
   }
 
-  // Si pas authentifié, ne rien afficher (ProtectedRoute gère la redirection)
-  if (!user) {
-    console.log('❌ MemberLayout: No user');
-    return null;
-  }
+  if (!user) return null;
 
-  // Sélection du header selon le rôle
   const renderHeader = () => {
-    console.log('🎯 renderHeader called, activeRole =', activeRole);
-    
-    // Vérification stricte du rôle
-    const role = activeRole || user?.role;
-    console.log('🎯 effective role =', role);
-
-    switch (role) {
-      case 'MENTOR':
-        console.log('✅ Returning HeaderMentor');
-        return <HeaderMentor />;
-      case 'AP':
-        console.log('✅ Returning HeaderAP');
-        return <HeaderAP />;
-      case 'ACP':
-        console.log('✅ Returning HeaderACP');
-        return <HeaderACP />;
-      case 'CN':
-        console.log('✅ Returning HeaderCN');
-        return <HeaderCN />;
-      default:
-        console.log('⚠️ Returning default HeaderMember, role =', role);
-        return <HeaderMember />;
+    switch (activeRole ?? user?.role) {
+      case 'MENTOR': return <HeaderMentor />;
+      case 'AP':     return <HeaderAP />;
+      case 'ACP':    return <HeaderACP />;
+      case 'CN':     return <HeaderCN />;
+      default:       return <HeaderMember />;
     }
   };
 

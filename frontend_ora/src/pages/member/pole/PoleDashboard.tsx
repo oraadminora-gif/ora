@@ -130,16 +130,6 @@ export function PoleDashboard() {
               color="blue"
             />
             
-            {isACP && (
-              <ActionCard 
-                icon={<Calendar className="w-8 h-8 text-ora-orange" />}
-                title="Planification"
-                description="Gérer les réunions de suivi"
-                buttonText="Voir le calendrier"
-                to="#"
-                color="orange"
-              />
-            )}
           </div>
 
           {/* Recent Activity */}

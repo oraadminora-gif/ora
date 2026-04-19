@@ -241,16 +241,20 @@ class AssignMentorView(APIView):
 
         if ap_id:
             try:
-                ap = Animateur.objects.get(id=ap_id, is_coordinator=False, is_active=True)
+                ap = Animateur.objects.get(id=ap_id, is_active=True)
                 if hasattr(user, 'animateur') and ap.pole_id != user.animateur.pole_id:
                     return None
                 return ap
             except Animateur.DoesNotExist:
                 return None
 
-        return Animateur.objects.filter(
-            association=mentor.association,
-            pole=mentor.pole,
-            is_coordinator=False,
-            is_active=True,
-        ).first()
+        # Priorité : AP de l'association du mentor, sinon ACP du pôle
+        return (
+            Animateur.objects.filter(
+                association=mentor.association,
+                pole=mentor.pole,
+                is_active=True,
+            )
+            .order_by('is_coordinator')  # AP (False) avant ACP (True)
+            .first()
+        )

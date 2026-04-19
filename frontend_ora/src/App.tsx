@@ -19,14 +19,15 @@ import { FAQ } from './pages/FAQ';
 import { Testimonials } from './pages/Testimonials';
 import { Partners } from './pages/Partners';
 import { Implantations } from './pages/Implantations';
-import { News } from './pages/News';
 import { Contact } from './pages/Contact';
+import { MentionsLegales } from './pages/MentionsLegales';
+import { PolitiqueConfidentialite } from './pages/PolitiqueConfidentialite';
+import { CGV } from './pages/CGV';
 import { ApprenticeInfo } from './pages/ApprenticeInfo';
 import { ApprenticeRegistration } from './pages/ApprenticeRegistration';
 import { MentorRegistration } from './pages/MentorRegistration';
 import { Login } from './pages/Login';
 import { NotFound } from './pages/NotFound';
-import { TestDebug } from './pages/TestDebug';
 import { EvaluationPage } from './pages/EvaluationPage';
 
 // Dashboards membres
@@ -89,10 +90,11 @@ function App() {
             <Route path="/temoignages" element={<Testimonials />} />
             <Route path="/partenaires" element={<Partners />} />
             <Route path="/implantations" element={<Implantations />} />
-            <Route path="/actualites" element={<News />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+            <Route path="/cgv" element={<CGV />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/test-debug" element={<TestDebug />} />
             <Route path="/evaluer-mentor/:token" element={<EvaluationPage />} />
           </Route>
 

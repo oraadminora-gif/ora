@@ -52,12 +52,16 @@ class MeView(APIView):
     def get(self, request):
         user = request.user
         
-        # Rôles
+        # Rôles — ACP inclut AP, Mentor peut coexister avec ACP/AP
         roles = []
         if hasattr(user, 'mentor'):
             roles.append('MENTOR')
         if hasattr(user, 'animateur'):
-            roles.append('ACP' if user.animateur.is_coordinator else 'AP')
+            if user.animateur.is_coordinator:
+                roles.append('ACP')
+                roles.append('AP')   # ACP hérite des droits AP
+            else:
+                roles.append('AP')
         if hasattr(user, 'cn_member'):
             roles.append('CN')
         

@@ -22,16 +22,18 @@ def _generate_temp_password(length=12):
 
 def _serialize_ap(ap):
     return {
-        "id":             ap.id,
-        "name":           f"{ap.first_name} {ap.last_name}",
-        "first_name":     ap.first_name,
-        "last_name":      ap.last_name,
-        "email":          ap.email,
-        "phone":          ap.phone,
-        "city":           ap.city,
-        "association":    ap.association.name,
-        "association_id": ap.association_id,
-        "is_active":      ap.is_active,
+        "id":               ap.id,
+        "name":             f"{ap.first_name} {ap.last_name}",
+        "first_name":       ap.first_name,
+        "last_name":        ap.last_name,
+        "email":            ap.email,
+        "phone":            ap.phone,
+        "city":             ap.city,
+        "association":      ap.association.name,
+        "association_id":   ap.association_id,
+        "is_active":        ap.is_active,
+        "is_coordinator":   ap.is_coordinator,
+        "role_label":       "ACP" if ap.is_coordinator else "AP",
     }
 
 
@@ -52,9 +54,9 @@ class PoleAnimateursView(APIView):
 
         aps = (
             Animateur.objects
-            .filter(pole_id=pole_id, is_coordinator=False, is_active=True)
+            .filter(pole_id=pole_id, is_active=True)
             .select_related('association')
-            .order_by('association__name', 'last_name')
+            .order_by('is_coordinator', 'association__name', 'last_name')
         )
         return Response({"count": aps.count(), "animateurs": [_serialize_ap(ap) for ap in aps]})
 

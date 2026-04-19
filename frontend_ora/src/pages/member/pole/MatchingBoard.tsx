@@ -92,6 +92,8 @@ interface Animateur {
   name: string;
   association: string;
   association_id: number;
+  is_coordinator: boolean;
+  role_label: 'AP' | 'ACP';
 }
 
 interface ApiError { response?: { data?: { error?: string; message?: string; code?: string } } }
@@ -413,9 +415,9 @@ function APSelector({ animateurs, selectedApId, onSelect, required }: {
   return (
     <div className="space-y-1.5">
       <p className="text-xs font-semibold text-slate-600">
-        AP accompagnateur{required ? ' *' : ' (optionnel — auto-assigné si absent)'}
+        Animateur accompagnateur{required ? ' *' : ' (optionnel — auto-assigné si absent)'}
       </p>
-      <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
+      <div className="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto">
         {!required && (
           <button
             onClick={() => onSelect(null)}
@@ -432,13 +434,23 @@ function APSelector({ animateurs, selectedApId, onSelect, required }: {
           <button
             key={ap.id}
             onClick={() => onSelect(ap.id)}
-            className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
+            className={`text-left px-3 py-2 rounded-lg border text-xs transition-all flex items-center justify-between gap-2 ${
               selectedApId === ap.id
                 ? 'border-violet-400 bg-violet-50 text-violet-800 font-semibold'
                 : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
             }`}
           >
-            {ap.name} <span className="text-slate-400">· {ap.association}</span>
+            <span>
+              {ap.name}
+              <span className="text-slate-400 ml-1">· {ap.association}</span>
+            </span>
+            <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+              ap.is_coordinator
+                ? 'bg-violet-100 text-violet-700'
+                : 'bg-sky-100 text-sky-700'
+            }`}>
+              {ap.role_label}
+            </span>
           </button>
         ))}
       </div>

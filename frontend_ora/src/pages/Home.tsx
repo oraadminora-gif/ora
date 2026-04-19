@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Shield, GraduationCap, Zap, MapPin } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { StatSection } from "../components/StatSection";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
@@ -16,30 +16,68 @@ export function Home() {
   }, []);
 
   const stats = useMemo(() => [
-    { value: 6000, label: "Jeunes accompagnés", suffix: "+" },
-    { value: 3000, label: "Mentors bénévoles", suffix: "+" },
-    { value: implantStats?.total_departments_covered ?? 45, label: "Départements", suffix: "" },
-    { value: implantStats?.total_poles ?? 12, label: "Pôles actifs", suffix: "" },
+    {
+      value: 6000,
+      label: "Jeunes accompagnés",
+      suffix: "+",
+      icon: "🎓",
+      description: "jeunes aidés depuis la création du programme",
+      color: "text-blue-400",
+    },
+    {
+      value: 3000,
+      label: "Mentors bénévoles",
+      suffix: "+",
+      icon: "🤝",
+      description: "professionnels retraités engagés bénévolement",
+      color: "text-orange-400",
+    },
+    {
+      value: implantStats?.total_departments_covered ?? 45,
+      label: "Départements",
+      suffix: "",
+      icon: "📍",
+      description: "couverts par un pôle ORA en France",
+      color: "text-emerald-400",
+    },
+    {
+      value: implantStats?.total_poles ?? 12,
+      label: "Pôles actifs",
+      suffix: "",
+      icon: "🏢",
+      description: "antennes locales coordonnant les mentorats",
+      color: "text-purple-400",
+    },
   ], [implantStats]);
 
   return (
     <div>
       {/* ─── HERO ─────────────────────────────────────────────── */}
       <section
-        className="relative text-white py-28 text-center"
-        style={{
-          background:
-            "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.72)), url('/images/image_mentorat.png') center center / cover no-repeat",
-        }}
+        className="relative text-white py-16 text-center overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a6e 50%, #0f172a 100%)' }}
       >
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            Ton Avenir Pro Commence Ici.
+        {/* Cercles décoratifs */}
+        <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }} />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 w-80 h-80 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)' }} />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 w-[700px] h-[700px] rounded-full opacity-5"
+          style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 60%)', transform: 'translate(-50%, -50%)' }} />
+
+        <div className="relative max-w-2xl mx-auto px-4">
+          {/* Badge */}
+          <span className="inline-block mb-6 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest border border-blue-400/30 text-blue-300 bg-blue-500/10">
+            Gratuit · Bénévole · Confidentiel
+          </span>
+
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight tracking-tight">
+            Quelqu'un a envie<br className="hidden sm:block" /> de te voir réussir.
           </h1>
-          <p className="text-lg md:text-xl text-white/90 leading-relaxed">
-            Objectif Réussir l'Apprentissage (ORA) soutient les jeunes de 18 à
-            29&nbsp;ans dans tous leurs projets d'alternance. Ne reste pas seul
-            face à tes questions.
+          <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-xl mx-auto">
+            Des mentors bénévoles, issus du monde professionnel, t'accompagnent
+            tout au long de ton apprentissage — de la recherche de contrat jusqu'à
+            l'obtention de ton diplôme.
           </p>
         </div>
       </section>
@@ -48,53 +86,41 @@ export function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-12 relative z-10">
         <div className="grid md:grid-cols-3 gap-6">
 
-          {/* Trouver mon Alternance — orange */}
-          <div className="bg-white rounded-2xl shadow-lg border-t-4 border-ora-orange flex flex-col justify-between p-8 hover:-translate-y-1 transition-transform">
+          {/* Tu veux être accompagné(e) — carte fusionnée, col-span-2 */}
+          <div className="md:col-span-2 bg-gradient-to-br from-ora-orange/5 to-white rounded-2xl shadow-lg border-t-4 border-ora-orange flex flex-col justify-between p-8 hover:-translate-y-1 transition-transform">
             <div>
-              <div className="text-5xl mb-5">🔍</div>
-              <h2 className="text-xl font-bold text-ora-orange mb-3">
-                Trouver mon Alternance
+              <div className="text-5xl mb-5">🎓</div>
+              <h2 className="text-2xl font-bold text-ora-orange mb-3">
+                Tu veux être accompagné(e)&nbsp;?
               </h2>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Je suis en recherche d'apprentissage (contrat d'entreprise ou
-                centre de formation). ORA m'aide à construire mon projet et à
-                trouver mes partenaires.
+              <p className="text-slate-600 text-sm leading-relaxed mb-5">
+                Que tu recherches encore ton contrat ou que tu sois déjà en
+                apprentissage, ORA te connecte gratuitement à un mentor
+                expérimenté de ton secteur. Un accompagnement personnalisé,
+                du premier entretien jusqu'à la validation de ton diplôme.
               </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 border border-ora-orange/15">
+                  <span className="text-xl">🔍</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">Je cherche mon contrat</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Construis ton projet et trouve ton entreprise ou ton CFA avec l'aide d'un mentor.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 border border-ora-orange/15">
+                  <span className="text-xl">🚀</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">Je suis déjà en alternance</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Évite les obstacles, booste ta réussite et prépare ton avenir professionnel.</p>
+                  </div>
+                </div>
+              </div>
             </div>
             <Link
               to="/apprentis/inscription"
               className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-ora-orange text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
             >
-              ME FAIRE ACCOMPAGNER
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Je suis Apprenti(e) — rouge corail */}
-          <div
-            className="bg-white rounded-2xl shadow-lg border-t-4 flex flex-col justify-between p-8 hover:-translate-y-1 transition-transform"
-            style={{ borderTopColor: "#ff6b6b" }}
-          >
-            <div>
-              <div className="text-5xl mb-5">🚀</div>
-              <h2
-                className="text-xl font-bold mb-3"
-                style={{ color: "#ff6b6b" }}
-              >
-                Je suis Apprenti(e)
-              </h2>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Tu as déjà ton contrat d'apprentissage&nbsp;? Booste ta réussite
-                et évite les obstacles avec un mentor expérimenté. C'est gratuit
-                et personnalisé.
-              </p>
-            </div>
-            <Link
-              to="/apprentis/inscription"
-              className="mt-6 flex items-center justify-center gap-2 w-full py-3 text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
-              style={{ backgroundColor: "#ff6b6b" }}
-            >
-              M'INSCRIRE MAINTENANT
+              JE VEUX UN MENTOR — C'EST GRATUIT
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -233,28 +259,154 @@ export function Home() {
       </section>
 
       {/* ─── TERRITOIRE ────────────────────────────────────────── */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <div className="bg-gradient-to-br from-ora-blue to-ora-dark rounded-2xl p-12 text-white">
-            <MapPin className="w-14 h-14 mx-auto mb-5 opacity-90" />
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+      <section className="py-16 bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="text-center mb-10">
+            <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-blue bg-ora-blue/10">
+              Implantations
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
               Présents sur tout le territoire
             </h2>
-            <p className="text-white/80 mb-8 text-sm">
-              {implantStats
-                ? `${implantStats.total_departments_covered} département${implantStats.total_departments_covered > 1 ? 's' : ''} couverts · ${implantStats.total_poles} pôle${implantStats.total_poles > 1 ? 's' : ''} actifs à votre service.`
-                : 'Des pôles locaux à votre service partout en France.'}
-            </p>
-            <Link
-              to="/implantations"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-ora-blue rounded-full font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Voir nos implantations
-              <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
+
+          <div className="relative overflow-hidden rounded-2xl"
+            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a6e 60%, #0f172a 100%)' }}
+          >
+            {/* Cercles déco */}
+            <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-10"
+              style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }} />
+            <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full opacity-10"
+              style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)' }} />
+
+            <div className="relative flex flex-col md:flex-row items-center gap-8 p-8 md:p-12">
+
+              {/* Chiffres clés */}
+              <div className="flex flex-row md:flex-col gap-6 md:gap-4 flex-shrink-0">
+                <div className="text-center">
+                  <p className="text-4xl font-extrabold text-white">
+                    {implantStats?.total_departments_covered ?? 45}
+                  </p>
+                  <p className="text-xs text-white/60 mt-1 uppercase tracking-wide">Départements</p>
+                </div>
+                <div className="w-px md:w-auto md:h-px bg-white/10 self-stretch md:self-auto" />
+                <div className="text-center">
+                  <p className="text-4xl font-extrabold text-white">
+                    {implantStats?.total_poles ?? 12}
+                  </p>
+                  <p className="text-xs text-white/60 mt-1 uppercase tracking-wide">Pôles actifs</p>
+                </div>
+              </div>
+
+              {/* Séparateur vertical */}
+              <div className="hidden md:block w-px self-stretch bg-white/10" />
+
+              {/* Texte + CTA */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                  <MapPin className="w-5 h-5 text-ora-orange" />
+                  <span className="text-white/60 text-sm uppercase tracking-widest font-medium">France métropolitaine & DOM</span>
+                </div>
+                <p className="text-white/80 text-sm leading-relaxed mb-6">
+                  Nos pôles locaux couvrent l'ensemble du territoire national. Où que tu sois,
+                  un coordinateur est disponible pour te mettre en relation avec le mentor
+                  adapté à ta situation.
+                </p>
+                <Link
+                  to="/implantations"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-ora-blue rounded-full font-semibold text-sm hover:bg-blue-50 transition-colors"
+                >
+                  Trouver mon pôle
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
+
+      {/* ─── TÉMOIGNAGES ───────────────────────────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="text-center mb-12">
+            <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-orange bg-ora-orange/10">
+              Ils témoignent
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
+              Ce qu'ils en disent
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+
+            {/* Léa */}
+            <div className="relative bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 border border-slate-100 hover:shadow-md transition-shadow">
+              <span className="text-5xl font-serif leading-none text-ora-orange/30 select-none">"</span>
+              <p className="text-slate-700 text-sm leading-relaxed -mt-4">
+                Grâce à mon mentor ORA, j'ai repris confiance en moi. J'avais des difficultés
+                avec mon maître d'apprentissage et je pensais tout arrêter. Mon mentor m'a
+                écoutée et j'ai pu aller jusqu'au bout de mon CAP pâtisserie&nbsp;!
+              </p>
+              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-slate-200">
+                <div className="w-9 h-9 rounded-full bg-ora-blue/15 flex items-center justify-center text-ora-blue font-bold text-sm">L</div>
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm">Léa, 19 ans</p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-ora-blue/10 text-ora-blue font-medium">Apprentie · Lyon</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Michel */}
+            <div className="relative bg-slate-900 rounded-2xl p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
+              <span className="text-5xl font-serif leading-none text-white/20 select-none">"</span>
+              <p className="text-white/80 text-sm leading-relaxed -mt-4">
+                Accompagner ces jeunes, leur transmettre mon expérience du monde de l'entreprise,
+                les voir grandir et réussir… c'est une expérience incroyablement enrichissante&nbsp;!
+              </p>
+              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-white/10">
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-sm">M</div>
+                <div>
+                  <p className="font-semibold text-white text-sm">Michel, 68 ans</p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Mentor · Paris</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Thomas */}
+            <div className="relative bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 border border-slate-100 hover:shadow-md transition-shadow">
+              <span className="text-5xl font-serif leading-none text-ora-orange/30 select-none">"</span>
+              <p className="text-slate-700 text-sm leading-relaxed -mt-4">
+                Mon mentor m'a aidé à y voir plus clair sur mes objectifs. Aujourd'hui, j'ai
+                validé mon BTS et je suis en poste dans l'entreprise où j'étais apprenti&nbsp;!
+              </p>
+              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-slate-200">
+                <div className="w-9 h-9 rounded-full bg-ora-blue/15 flex items-center justify-center text-ora-blue font-bold text-sm">T</div>
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm">Thomas, 20 ans</p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-ora-blue/10 text-ora-blue font-medium">Apprenti · Lille</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="text-center mt-10">
+            <Link
+              to="/temoignages"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-slate-200 text-slate-700 font-semibold text-sm hover:border-ora-blue hover:text-ora-blue transition-colors"
+            >
+              Voir tous les témoignages
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
     </div>
   );
 }

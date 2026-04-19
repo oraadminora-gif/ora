@@ -39,12 +39,11 @@ class IsACP(BasePermission):
 
 
 class IsAP(BasePermission):
-    """Animateur de Pôle simple (pas coordinateur)"""
+    """Animateur de Pôle — ACP hérite également des droits AP."""
     def has_permission(self, request, view):
         return (
-            request.user.is_authenticated 
+            request.user.is_authenticated
             and hasattr(request.user, 'animateur')
-            and not request.user.animateur.is_coordinator
         )
 
 
@@ -81,7 +80,7 @@ class HasAnyRole(BasePermission):
                 return True
             if role == 'ACP' and hasattr(user, 'animateur') and user.animateur.is_coordinator:
                 return True
-            if role == 'AP' and hasattr(user, 'animateur') and not user.animateur.is_coordinator:
+            if role == 'AP' and hasattr(user, 'animateur'):
                 return True
             if role == 'MENTOR' and hasattr(user, 'mentor'):
                 return True
@@ -91,29 +90,12 @@ class HasAnyRole(BasePermission):
 
 # ✅ NOUVEAU : Permission pour KPIs - CN ou ACP (pas besoin d'être les deux)
 class IsCNOrACP(BasePermission):
+    """CN ou tout animateur (AP ou ACP)."""
 
     def has_permission(self, request, view):
-
         user = request.user
-
-        print("------ PERMISSION DEBUG ------")
-        print("USER:", user)
-        print("AUTH:", user.is_authenticated)
-        print("HAS CN:", hasattr(user, 'cn_member'))
-        print("HAS ANIMATEUR:", hasattr(user, 'animateur'))
-
-        if hasattr(user, 'animateur'):
-            print("IS COORDINATOR:", user.animateur.is_coordinator)
-
-        print("-----------------------------")
-
         if not user.is_authenticated:
             return False
-
         if hasattr(user, 'cn_member'):
             return True
-
-        if hasattr(user, 'animateur'):
-            return True   # ← FIX IMPORTANT
-
-        return False
+        return hasattr(user, 'animateur')

@@ -35,8 +35,7 @@ class Mentorat(models.Model):
         null=True,
         blank=True,
         related_name='mentorats_suivis',
-        limit_choices_to={'is_coordinator': False},  # Seuls les AP, pas les ACP
-        help_text="AP chargé du suivi de ce mentorat"
+        help_text="Animateur chargé du suivi (AP ou ACP)"
     )
     
     # Dates

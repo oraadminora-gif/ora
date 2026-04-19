@@ -167,14 +167,18 @@ const menuItems: MenuItem[] = [
   // MENTOR
   { label: 'Mes mentorats',  path: '/member/mentor/dashboard', roles: ['MENTOR'],                 icon: <HandHeart size={18} />, scrollTo: 'mentorats-en-cours' },
   // AP — vue association uniquement
-  // ACP — vue pôle complète
-  { label: 'Tableau de bord',  path: '/member/acp/dashboard',   roles: ['ACP'], icon: <LayoutDashboard size={18} /> },
-  { label: 'Matching',         path: '/member/matching',        roles: ['ACP'], icon: <HandHeart size={18} /> },
-  { label: 'KPIs Pôle',        path: '/member/pole/kpi',        roles: ['ACP'], icon: <BarChart3 size={18} /> },
-  { label: 'Annuaire Pôle',    path: '/member/acp/annuaire',    roles: ['ACP'], icon: <BookOpen size={18} /> },
-  { label: 'Gestion mentors',  path: '/member/acp/mentors',    roles: ['AP', 'ACP'], icon: <Users size={18} /> },
-  { label: 'Gestion APs',      path: '/member/acp/animateurs', roles: ['ACP'], icon: <Shield size={18} /> },
-  { label: 'Suivi mentorats',  path: '/member/acp/mentorats',  roles: ['ACP'], icon: <FileText size={18} /> },
+  // AP — vue association
+  { label: 'Tableau de bord AP', path: '/member/ap/dashboard',   roles: ['AP'],        icon: <LayoutDashboard size={18} /> },
+  { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['AP'],        icon: <Users size={18} /> },
+  // ACP — vue pôle complète (inclut accès aux vues AP)
+  { label: 'Tableau de bord',    path: '/member/acp/dashboard',  roles: ['ACP'],       icon: <LayoutDashboard size={18} /> },
+  { label: 'Vue Animateur',      path: '/member/ap/dashboard',   roles: ['ACP'],       icon: <HandHeart size={18} /> },
+  { label: 'Matching',           path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
+  { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },
+  { label: 'Annuaire Pôle',      path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
+  { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },
+  { label: 'Gestion APs',        path: '/member/acp/animateurs', roles: ['ACP'],       icon: <Shield size={18} /> },
+  { label: 'Suivi mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
   // CN
   { label: 'Vue nationale',       path: '/member/cn/dashboard',    roles: ['CN'], icon: <Globe size={18} /> },
   { label: 'Gestion mentors',     path: '/member/cn/mentors',      roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },

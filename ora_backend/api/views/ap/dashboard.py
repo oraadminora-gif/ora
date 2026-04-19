@@ -8,6 +8,9 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import date, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
 from api.permissions import IsAP, IsACP, IsCN
@@ -499,19 +502,42 @@ class APMentorDetailView(APIView):
         if not self._check_access(request, mentor):
             return Response({'error': 'Accès non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Mentorats actifs + historique
-        mentorats_actifs = Mentorat.objects.filter(
-            mentor=mentor, status='ACTIVE'
-        ).select_related('young_request')
+        # Déterminer le périmètre : même association → tout voir, sinon → seulement ses mentorats
+        animateur = _get_animateur(request.user)
+        same_assoc = (
+            animateur is None  # CN
+            or animateur.is_coordinator  # ACP voit tout
+            or mentor.association_id == animateur.association_id
+        )
 
+        mentorat_qs_base = Mentorat.objects.filter(mentor=mentor)
+        if not same_assoc and animateur:
+            # AP d'une autre association : restreint à ses mentorats assignés
+            mentorat_qs_base = mentorat_qs_base.filter(ap_responsable=animateur)
+
+        # Mentorats actifs + historique (scope filtré)
+        mentorats_actifs = list(
+            mentorat_qs_base.filter(status='ACTIVE')
+            .select_related('young_request', 'young_request__etablissement')
+        )
         historique = list(
-            Mentorat.objects.filter(mentor=mentor, status__in=['CLOSED', 'ABORTED'])
+            mentorat_qs_base.filter(status__in=['CLOSED', 'ABORTED'])
             .select_related('young_request').order_by('-closed_at')[:10]
         )
+        suivi_map      = bulk_suivi_stats([m.id for m in mentorats_actifs])
         hist_suivi_map = bulk_suivi_stats([m.id for m in historique])
 
+        # serialize_mentor_for_ap refait ses propres requêtes (tous les mentorats),
+        # on surcharge les clés liées au périmètre de l'AP
+        mentor_data = serialize_mentor_for_ap(mentor)
+        if not same_assoc:
+            mentor_data['mentorats_actifs'] = [
+                serialize_mentorat_for_ap(m, suivi_map.get(m.id)) for m in mentorats_actifs
+            ]
+            mentor_data['nb_mentorats_actifs'] = len(mentorats_actifs)
+
         return Response({
-            'mentor': serialize_mentor_for_ap(mentor),
+            'mentor': mentor_data,
             'historique': [
                 {
                     'id':             m.id,
@@ -691,10 +717,10 @@ class APConfirmerClotureView(APIView):
                         message=message_jeune,
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[jeune.email],
-                        fail_silently=True,
+                        fail_silently=False,
                     )
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error("Email rejet clôture failed: %s", e)
             return Response({'success': True, 'action': 'rejected'})
 
         # ── Confirmer la clôture ──────────────────────────────
@@ -730,10 +756,10 @@ class APConfirmerClotureView(APIView):
                     message=message_jeune,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[jeune.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Email clôture jeune failed: %s", e)
 
         # Créer le token d'évaluation et envoyer le lien au jeune
         if jeune and jeune.email:
@@ -756,10 +782,10 @@ class APConfirmerClotureView(APIView):
                     message=eval_message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[jeune.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Email évaluation failed: %s", e)
 
         return Response({
             'success':      True,
@@ -826,10 +852,10 @@ class APCloturerDirectView(APIView):
                     message=message_jeune,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[jeune.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Email clôture directe jeune failed: %s", e)
 
         # Token d'évaluation
         if jeune and jeune.email:
@@ -849,10 +875,10 @@ class APCloturerDirectView(APIView):
                     ),
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[jeune.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Email évaluation clôture directe failed: %s", e)
 
         return Response({
             'success':      True,
