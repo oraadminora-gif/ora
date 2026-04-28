@@ -7,7 +7,9 @@
       "Bash(python manage.py shell -c \"from django.contrib.auth import get_user_model; U = get_user_model\\(\\); emails = ['patrice.rochais@gmail.com','soravia.philippe@neuf.fr']; [print\\(u.email, u.username, u.is_active\\) for u in U.objects.filter\\(email__in=emails\\)]\")",
       "Bash(identify /d/M1_NEXA/ORA_Site/frontend_ora/public/image.png)",
       "Bash(cat)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(xargs wc *)",
+      "Bash(python3)"
     ],
     "additionalDirectories": [
       "\\tmp"

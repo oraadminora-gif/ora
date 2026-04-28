@@ -18,10 +18,10 @@ export function ApprenticeInfo() {
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-slate-900 mb-8">
-            Pourquoi être mentoré(e) ?
+            Pourquoi être accompagné(e) ?
           </h2>
           <p className="text-lg text-slate-600 mb-8">
-            L'apprentissage est un parcours passionnant mais qui peut parfois être difficile. Entre l'école, l'entreprise, et ta vie personnelle, il n'est pas toujours facile de trouver son équilibre.
+            L'apprentissage est un parcours de formation mais qui peut parfois être difficile. Entre le CFA, l'entreprise, et ta vie personnelle, il n'est pas toujours facile de trouver son équilibre.
           </p>
           <p className="text-lg text-slate-600 mb-8">
             Un mentor est là pour t'écouter, te conseiller et t'aider à surmonter les obstacles que tu rencontres.
@@ -42,8 +42,8 @@ export function ApprenticeInfo() {
               <div className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 text-ora-blue flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Orientation</h4>
-                  <p className="text-slate-600 text-sm">Clarifie ton projet professionnel</p>
+                  <h4 className="font-semibold text-slate-900 mb-1">Ta formation</h4>
+                  <p className="text-slate-600 text-sm">Renforcer ton projet</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -96,7 +96,7 @@ export function ApprenticeInfo() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">Rencontre ton mentor</h3>
-                <p className="text-slate-600">Nous te mettons en relation avec un mentor adapté à tes besoins</p>
+                <p className="text-slate-600">Nous te mettons en relation avec un mentor</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -105,7 +105,7 @@ export function ApprenticeInfo() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">Échangez régulièrement</h3>
-                <p className="text-slate-600">Rencontrez-vous ou échangez par téléphone selon vos disponibilités</p>
+                <p className="text-slate-600">Rencontrez-vous et échangez selon vos disponibilités</p>
               </div>
             </div>
           </div>

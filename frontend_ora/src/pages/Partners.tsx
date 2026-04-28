@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Building, Users, Heart } from 'lucide-react';
 
 const partners = [
@@ -103,12 +104,12 @@ export function Partners() {
             <p className="text-lg text-white/90 mb-6">
               Vous êtes un CFA, une entreprise, une collectivité ou une association et vous souhaitez nous soutenir dans notre mission ? Contactez-nous pour échanger sur des partenariats possibles.
             </p>
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               className="inline-block px-6 py-3 bg-white text-ora-blue rounded-lg font-semibold hover:bg-slate-100 transition-colors"
             >
               Nous contacter
-            </a>
+            </Link>
           </div>
         </div>
       </section>

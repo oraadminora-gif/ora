@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 interface FAQItem {
@@ -194,18 +195,18 @@ export function FAQ() {
               N'hésite pas à nous contacter ou à faire une demande d'accompagnement. Nous sommes là pour toi !
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="/apprentis/inscription"
+              <Link
+                to="/apprentis/inscription"
                 className="inline-block px-6 py-3 bg-white text-ora-blue rounded-lg font-semibold hover:bg-slate-100 transition-colors"
               >
                 Je veux être accompagné(e)
-              </a>
-              <a
-                href="/contact"
+              </Link>
+              <Link
+                to="/contact"
                 className="inline-block px-6 py-3 bg-ora-dark text-white border-2 border-white rounded-lg font-semibold hover:bg-ora-blue transition-colors"
               >
                 Nous contacter
-              </a>
+              </Link>
             </div>
           </div>
         </div>

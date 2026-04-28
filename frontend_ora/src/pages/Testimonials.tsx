@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Quote, Filter } from 'lucide-react';
 
 interface Testimonial {
@@ -184,18 +185,18 @@ export function Testimonials() {
               Que tu sois apprenti(e) ou senior, viens vivre une expérience enrichissante avec ORA
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="/apprentis/inscription"
+              <Link
+                to="/apprentis/inscription"
                 className="inline-block px-6 py-3 bg-white text-ora-blue rounded-lg font-semibold hover:bg-slate-100 transition-colors"
               >
                 Je suis apprenti(e)
-              </a>
-              <a
-                href="/mentors/inscription"
+              </Link>
+              <Link
+                to="/mentors/inscription"
                 className="inline-block px-6 py-3 bg-ora-dark text-white border-2 border-white rounded-lg font-semibold hover:bg-ora-blue transition-colors"
               >
                 Je veux devenir mentor
-              </a>
+              </Link>
             </div>
           </div>
         </div>

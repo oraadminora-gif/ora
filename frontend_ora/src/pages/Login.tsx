@@ -17,23 +17,12 @@ export function Login() {
     password: '',
   });
 
-  // DEBUG
-  useEffect(() => {
-    console.log('🔵 Login component - Auth state:', { 
-      isAuthenticated, 
-      user: user?.email, 
-      activeRole, 
-      loading 
-    });
-  }, [isAuthenticated, user, activeRole, loading]);
-
   // Redirection si déjà connecté
   useEffect(() => {
     if (isAuthenticated && user && activeRole && !loading) {
       const from = location.state?.from?.pathname;
       const redirectPath = from || redirectByRole(activeRole);
       
-      console.log('🔀 Auto-redirect (déjà connecté):', redirectPath);
       navigate(redirectPath, { replace: true });
     }
   }, [isAuthenticated, user, activeRole, loading, navigate, location]);
@@ -44,11 +33,7 @@ export function Login() {
     setIsSubmitting(true);
 
     try {
-      console.log('🟡 Tentative login:', formData.email);
-      
       const result = await signIn(formData.email, formData.password);
-
-      console.log('🟡 Résultat signIn:', result);
 
       if (result.error) {
         setError(result.error);
@@ -59,9 +44,6 @@ export function Login() {
       // Redirection avec le rôle retourné
       const role = result.role || activeRole;
       const redirectPath = redirectByRole(role);
-      
-      console.log('✅ Login OK - Redirection vers:', redirectPath, 'role:', role);
-      
       navigate(redirectPath, { replace: true });
       
     } catch (err) {

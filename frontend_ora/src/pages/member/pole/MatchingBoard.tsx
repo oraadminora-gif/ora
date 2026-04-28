@@ -848,7 +848,7 @@ export function MatchingBoard() {
       {/* ── En-tête ────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Matching & Mentors</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Affectation & Mentors</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Associez les jeunes avec les mentors disponibles de votre pôle
           </p>
@@ -869,7 +869,7 @@ export function MatchingBoard() {
           }`}
         >
           <Shuffle className="w-4 h-4" />
-          Matching
+          Affectation
           {demandes.length > 0 && (
             <span className="text-[10px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-full">
               {demandes.length}

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Breadcrumbs } from '../components/navigation/Breadcrumbs';
+import { CookieBanner } from '../components/CookieBanner';
 
 interface LayoutProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ export function PublicLayout({ children }: LayoutProps) {
       </main>
 
       <Footer />
+      <CookieBanner />
     </div>
   );
 }

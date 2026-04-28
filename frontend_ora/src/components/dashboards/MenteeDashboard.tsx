@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Users, Calendar, Clock } from 'lucide-react';
 
@@ -64,12 +65,12 @@ export function MenteeDashboard() {
             <p className="text-slate-600 mb-6">
               Vous n'avez pas encore fait de demande d'accompagnement
             </p>
-            <a
-              href="/apprentis/inscription"
+            <Link
+              to="/apprentis/inscription"
               className="inline-block px-6 py-3 bg-ora-blue text-white rounded-lg font-semibold hover:bg-ora-dark"
             >
               Faire une demande
-            </a>
+            </Link>
           </div>
         </div>
       </div>

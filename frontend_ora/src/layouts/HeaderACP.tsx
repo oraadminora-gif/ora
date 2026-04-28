@@ -41,7 +41,7 @@ export function HeaderACP() {
           <NavLink
             to="/member/matching"
             icon={<Users className="w-4 h-4" />}
-            label="Matching"
+            label="Affectation"
             active={location.pathname === '/member/matching'}
           />
           <NavLink

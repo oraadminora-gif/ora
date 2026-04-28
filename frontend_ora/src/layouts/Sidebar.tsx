@@ -163,7 +163,7 @@ const ROLE_HOME: Record<UserRole, string> = {
 };
 
 const menuItems: MenuItem[] = [
-  { label: 'Accueil',        path: '/member',                  roles: ['MENTOR','AP'], icon: <Home size={18} /> },
+  { label: 'Accueil',        path: '/member',                  roles: ['MENTOR'], icon: <Home size={18} /> },
   // MENTOR
   { label: 'Mes mentorats',  path: '/member/mentor/dashboard', roles: ['MENTOR'],                 icon: <HandHeart size={18} />, scrollTo: 'mentorats-en-cours' },
   // AP — vue association uniquement
@@ -173,7 +173,7 @@ const menuItems: MenuItem[] = [
   // ACP — vue pôle complète (inclut accès aux vues AP)
   { label: 'Tableau de bord',    path: '/member/acp/dashboard',  roles: ['ACP'],       icon: <LayoutDashboard size={18} /> },
   { label: 'Vue Animateur',      path: '/member/ap/dashboard',   roles: ['ACP'],       icon: <HandHeart size={18} /> },
-  { label: 'Matching',           path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
+  { label: 'Affectation',        path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
   { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },
   { label: 'Annuaire Pôle',      path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
   { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },

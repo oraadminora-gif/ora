@@ -28,7 +28,7 @@
 | **Jeune (public)** | Apprenti ou chercheur d'apprentissage | S'inscrire, évaluer son mentor |
 | **Mentor** | Professionnel bénévole | Suivre ses jeunes en mentorat |
 | **AP** | Animateur de Pôle | Encadrer les mentors, valider les clôtures |
-| **ACP** | Animateur Coordinateur de Pôle | Matching, suivi global du pôle, KPIs |
+| **ACP** | Animateur Coordinateur de Pôle | Affectation, suivi global du pôle, KPIs. **Hérite aussi des droits AP** : peut valider des clôtures et suivre les mentors de son association. |
 | **CN (limité)** | Membre CN lecture seule | Consulter les données nationales |
 | **CN (complet)** | Membre CN admin | Gérer mentors, pôles, animateurs, membres CN |
 
@@ -60,10 +60,10 @@ La barre de navigation (en haut de toutes les pages publiques) contient :
 
 **URL :** `/`
 
-La page d'accueil se compose de 5 sections :
+La page d'accueil se compose des sections suivantes, dans cet ordre :
 
 #### Section Hero
-Bandeau plein-écran avec photo de fond, slogan "Ton Avenir Pro Commence Ici." et sous-titre de présentation d'ORA.
+Bandeau avec fond dégradé bleu marine foncé, accroche principale **"Quelqu'un a envie de te voir réussir."** et sous-titre de présentation d'ORA. Badge de confiance affiché (ex: "1 200+ jeunes accompagnés").
 
 #### Section "Trois portes" (entrées principales)
 Trois cartes d'entrée positionnées juste sous le Hero :
@@ -76,7 +76,7 @@ Trois cartes d'entrée positionnées juste sous le Hero :
 
 > Les deux premières cartes redirigent vers le même formulaire d'inscription jeune.
 
-#### Section Statistiques
+#### Section Statistiques (première occurrence)
 4 chiffres clés affichés dynamiquement (alimentés en temps réel depuis la base de données) :
 - 6 000+ jeunes accompagnés
 - 3 000+ mentors bénévoles
@@ -84,13 +84,26 @@ Trois cartes d'entrée positionnées juste sous le Hero :
 - Nombre de pôles actifs (mis à jour dynamiquement)
 
 #### Section "Pourquoi choisir ORA ?"
-3 arguments : Zéro Décrochage, Réussite Diplômante, Confiance Boostée.
+3 arguments illustrés par des icônes Lucide :
+- **Zéro Décrochage** (icône ShieldCheck)
+- **Réussite Diplômante** (icône GraduationCap)
+- **Confiance Boostée** (icône TrendingUp)
 
 #### Section "Nos valeurs"
-4 valeurs : Bienveillant, Confidentiel, Sur-mesure, 100% Gratuit.
+4 valeurs présentées en grille 2×2 de cartes horizontales avec icône colorée et fond teinté :
+- **Bienveillant** (fond bleu clair)
+- **Confidentiel** (fond violet clair)
+- **Sur-mesure** (fond orange clair)
+- **100% Gratuit** (fond vert clair)
 
 #### Section "Présents sur tout le territoire"
-Bloc avec le nombre de départements et pôles couverts + bouton "Voir nos implantations" → `/implantations`.
+Bloc dégradé sombre avec chiffres clés (départements couverts, pôles actifs, associations partenaires) et texte descriptif + bouton "Voir nos implantations" → `/implantations`.
+
+#### Section Témoignages
+3 cartes de témoignages (Léa — apprentie, Michel — mentor, Thomas — apprenti) avec badges de rôle colorés. Lien **"Voir tous les témoignages"** → `/temoignages`.
+
+#### Section Statistiques "ORA en chiffres" (deuxième occurrence — bas de page)
+Répétition condensée des 4 chiffres clés. La mention "ORA en chiffres" est positionnée **sous** les compteurs.
 
 ---
 
@@ -250,11 +263,28 @@ Les messages reçus sont consultables par la CN dans l'espace membre (page **CN 
 
 ---
 
-### 2.7 Page d'évaluation (lien reçu par email)
+### 2.7 Bandeau de consentement cookies (RGPD)
+
+Un bandeau de consentement s'affiche automatiquement sur **toutes les pages publiques** lors de la première visite (après un délai de 800 ms).
+
+**Contenu :**
+- Explication que le site utilise uniquement des cookies **techniques essentiels** (authentification, session) — aucun cookie publicitaire ou de traçage tiers
+- Badge de conformité RGPD : "Conforme RGPD · Aucun traçage tiers"
+- Bouton **"J'accepte"** — enregistre le consentement dans le navigateur (`localStorage`)
+- Lien **"En savoir plus"** → `/politique-confidentialite`
+- Bouton de fermeture (×) — ferme le bandeau sans action
+
+> **Persistance :** une fois accepté ou fermé, le bandeau ne réapparaît plus (consentement stocké sous la clé `ora_cookie_consent`). Pour réinitialiser en développement : supprimer cette clé dans le `localStorage` du navigateur.
+
+---
+
+### 2.8 Page d'évaluation (lien reçu par email)
 
 **URL :** `/evaluer-mentor/:token`
 
 Page publique accessible sans connexion, via le lien unique reçu par email après la clôture d'un mentorat. Voir [section 9](#9-système-dévaluation).
+
+---
 
 ---
 
@@ -277,6 +307,8 @@ Après connexion, chaque utilisateur est redirigé automatiquement vers son espa
 | AP | `/member/ap/dashboard` |
 | ACP | `/member/acp/dashboard` |
 | CN | `/member/cn/dashboard` |
+
+> **Utilisateurs multi-rôles (ACP+AP, ACP+AP+Mentor) :** un ACP hérite automatiquement des droits AP. Dans la barre latérale, un **sélecteur de rôle** permet de basculer entre les vues disponibles (ex : "ACP", "AP", "Mentor"). L'ACP peut accéder à la **Vue Animateur** (tableau de bord AP) via le menu latéral sans changer de compte.
 
 ### 3.3 Mot de passe oublié
 
@@ -487,12 +519,15 @@ Pour chaque demande :
 
 ### Navigation disponible
 - **Dashboard** — vue globale du pôle
-- **Matching** — affecter les mentors aux demandes
+- **Affectation** — affecter les mentors aux demandes (anciennement "Matching")
 - **KPIs** — indicateurs de performance
 - **Suivi mentorats** — gestion de tous les mentorats du pôle
 - **Gestion** — animateurs et établissements
+- **Vue Animateur** *(lien vers `/member/ap/dashboard`)* — accéder à la vue AP sans changer de rôle
 
 > **Périmètre :** l'ACP voit **tous** les mentors et mentorats de son pôle, toutes associations confondues.
+>
+> **Multi-rôle :** un ACP hérite des droits AP. Il peut valider des clôtures, suivre les mentors de son association, et être désigné comme AP responsable d'un mentorat.
 
 ---
 
@@ -513,9 +548,9 @@ Le dashboard affiche aussi un **tableau par association** : nb mentors, mentorat
 
 ---
 
-### 6.2 Matching
+### 6.2 Affectation
 
-Fonctionnalité centrale pour affecter un mentor à une demande de jeune.
+Fonctionnalité centrale pour affecter un mentor à une demande de jeune (accessible via le menu **Affectation**).
 
 #### Étape 1 — Sélectionner une demande
 Liste des demandes en statut **NOUVEAU** ou **EN ATTENTE** dans le pôle, avec : nom du jeune, diplôme, situation, commune/CP, date, urgence.
@@ -542,10 +577,11 @@ Chaque suggestion affiche un badge de **distance en km** coloré selon la proxim
 
 #### Étape 3 — Confirmer l'affectation
 1. Cliquer sur le mentor choisi
-2. Optionnel : justification si le choix diffère de la suggestion n°1
-3. Cliquer **Confirmer l'affectation**
+2. Optionnel : sélectionner l'**animateur responsable** dans le sélecteur "Animateur accompagnateur" — la liste inclut les AP **et** les ACP du pôle, chacun identifié par un badge coloré (violet = ACP, bleu ciel = AP)
+3. Optionnel : justification si le choix diffère de la suggestion n°1
+4. Cliquer **Confirmer l'affectation**
 
-Résultat : mentorat créé (statut ACTIVE), demande → ASSIGNED, AP de l'association du mentor automatiquement désigné comme AP responsable.
+Résultat : mentorat créé (statut ACTIVE), demande → ASSIGNED, animateur responsable désigné (AP ou ACP selon disponibilité).
 
 #### Rerouter une demande
 Si la demande ne peut être traitée dans ce pôle :
@@ -730,7 +766,7 @@ Tableau de tous les membres CN avec toggles :
           Demande créée → statut : NOUVEAU
           (pôle détecté automatiquement par code postal)
                ↓
-[ACP]     Consulte les demandes dans Matching
+[ACP]     Consulte les demandes dans Affectation
           Lance l'algorithme de suggestions (score + distance)
           Choisit un mentor → Confirmer l'affectation
                ↓
@@ -1017,7 +1053,7 @@ Messages reçus via `/contact`. Non-lus affichés en premier. Marquer comme lu :
 
 ---
 
-### 11.12 Décisions de matching
+### 11.12 Décisions d'affectation
 
 **Section :** `Core > Matching decisions`
 
@@ -1051,4 +1087,4 @@ Audit des affectations : décideur, score calculé, si le choix a différé de l
 
 ---
 
-*Manuel mis à jour le 2026-04-11 — Plateforme ORA*
+*Manuel mis à jour le 2026-04-20 — Plateforme ORA*

@@ -123,9 +123,9 @@ export function PoleDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ActionCard 
               icon={<Users className="w-8 h-8 text-ora-blue" />}
-              title="Matching"
+              title="Affectation"
               description={`${poleData.pending_matches} demandes en attente`}
-              buttonText="Accéder au matching"
+              buttonText="Accéder aux affectations"
               to="/member/matching"
               color="blue"
             />

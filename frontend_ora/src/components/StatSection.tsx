@@ -1,13 +1,13 @@
 // src/components/StatSection.tsx
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 interface StatItem {
   value: number;
   label: string;
   suffix?: string;
-  icon: string;        // emoji ou symbole
-  description: string; // courte phrase sous le label
-  color: string;       // classe Tailwind de couleur accent
+  icon: ReactNode;
+  description: string;
+  color: string;
 }
 
 interface StatSectionProps {
@@ -89,9 +89,9 @@ export function StatSection({ stats }: StatSectionProps) {
               )}
 
               {/* Icône */}
-              <div className={`text-3xl mb-4 w-14 h-14 rounded-2xl flex items-center justify-center
+              <div className="mb-4 w-14 h-14 rounded-2xl flex items-center justify-center
                 bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-300
-                shadow-lg`}>
+                shadow-lg">
                 {stat.icon}
               </div>
 

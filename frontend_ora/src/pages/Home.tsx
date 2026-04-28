@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, ShieldCheck, GraduationCap, TrendingUp, UserCheck, HandHeart, Building2, Heart, Lock, SlidersHorizontal, BadgeCheck } from "lucide-react";
 import { StatSection } from "../components/StatSection";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
@@ -17,34 +17,34 @@ export function Home() {
 
   const stats = useMemo(() => [
     {
-      value: 6000,
+      value: 10000,
       label: "Jeunes accompagnés",
       suffix: "+",
-      icon: "🎓",
+      icon: <UserCheck className="w-6 h-6 text-blue-400" />,
       description: "jeunes aidés depuis la création du programme",
       color: "text-blue-400",
     },
     {
-      value: 3000,
+      value: 1500,
       label: "Mentors bénévoles",
       suffix: "+",
-      icon: "🤝",
-      description: "professionnels retraités engagés bénévolement",
+      icon: <HandHeart className="w-6 h-6 text-orange-400" />,
+      description: "retraités engagés bénévolement",
       color: "text-orange-400",
     },
     {
       value: implantStats?.total_departments_covered ?? 45,
       label: "Départements",
       suffix: "",
-      icon: "📍",
+      icon: <MapPin className="w-6 h-6 text-emerald-400" />,
       description: "couverts par un pôle ORA en France",
       color: "text-emerald-400",
     },
     {
-      value: implantStats?.total_poles ?? 12,
+      value: implantStats?.total_poles ?? 25,
       label: "Pôles actifs",
       suffix: "",
-      icon: "🏢",
+      icon: <Building2 className="w-6 h-6 text-purple-400" />,
       description: "antennes locales coordonnant les mentorats",
       color: "text-purple-400",
     },
@@ -72,12 +72,12 @@ export function Home() {
           </span>
 
           <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight tracking-tight">
-            Quelqu'un a envie<br className="hidden sm:block" /> de te voir réussir.
-          </h1>
+           Quelqu'un a envie<br className="hidden sm:block" /> de te voir réussir.
+          Oui! ton futur mentor ORA? A toi d'en décider</h1>
           <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-xl mx-auto">
-            Des mentors bénévoles, issus du monde professionnel, t'accompagnent
-            tout au long de ton apprentissage — de la recherche de contrat jusqu'à
-            l'obtention de ton diplôme.
+            Un mentor bénévole, issus du monde professionnel, t'accompagne
+            pendant ton apprentissage — de la recherche de contrat jusqu'à
+            ton diplôme.
           </p>
         </div>
       </section>
@@ -89,29 +89,27 @@ export function Home() {
           {/* Tu veux être accompagné(e) — carte fusionnée, col-span-2 */}
           <div className="md:col-span-2 bg-gradient-to-br from-ora-orange/5 to-white rounded-2xl shadow-lg border-t-4 border-ora-orange flex flex-col justify-between p-8 hover:-translate-y-1 transition-transform">
             <div>
-              <div className="text-5xl mb-5">🎓</div>
+              <div className="text-5xl mb-5"></div>
               <h2 className="text-2xl font-bold text-ora-orange mb-3">
                 Tu veux être accompagné(e)&nbsp;?
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed mb-5">
-                Que tu recherches encore ton contrat ou que tu sois déjà en
-                apprentissage, ORA te connecte gratuitement à un mentor
-                expérimenté de ton secteur. Un accompagnement personnalisé,
+                 ORA te met en relation avec un mentor expérimenté. Un accompagnement personnalisé,
                 du premier entretien jusqu'à la validation de ton diplôme.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="flex items-start gap-3 bg-white rounded-xl p-3 border border-ora-orange/15">
-                  <span className="text-xl">🔍</span>
+                  <span className="text-xl"></span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">Je cherche mon contrat</p>
+                    <p className="text-sm font-semibold text-slate-800">Je m'oriente vers l'apprentissage</p>
                     <p className="text-xs text-slate-500 mt-0.5">Construis ton projet et trouve ton entreprise ou ton CFA avec l'aide d'un mentor.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 bg-white rounded-xl p-3 border border-ora-orange/15">
-                  <span className="text-xl">🚀</span>
+                  <span className="text-xl"></span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">Je suis déjà en alternance</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Évite les obstacles, booste ta réussite et prépare ton avenir professionnel.</p>
+                    <p className="text-sm font-semibold text-slate-800">Je suis déjà en apprentissage</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Évite les obstacles, booste ta réussite et prépare ton avenir.</p>
                   </div>
                 </div>
               </div>
@@ -120,7 +118,7 @@ export function Home() {
               to="/apprentis/inscription"
               className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-ora-orange text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
             >
-              JE VEUX UN MENTOR — C'EST GRATUIT
+              LE MENTORAT C'EST POUR MOI
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -128,14 +126,13 @@ export function Home() {
           {/* CFA, Greta, Mentors... — bleu */}
           <div className="bg-white rounded-2xl shadow-lg border-t-4 border-ora-blue flex flex-col justify-between p-8 hover:-translate-y-1 transition-transform">
             <div>
-              <div className="text-5xl mb-5">🤝</div>
+              <div className="text-5xl mb-5"></div>
               <h2 className="text-xl font-bold text-ora-blue mb-3">
-                CFA, Greta, Mentors…
+                Vous souhaitez prendre contact avec les responsables d'ORA ?
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Vous êtes une institution, une entreprise, ou vous souhaitez
-                transmettre votre expérience&nbsp;? Collaborons pour sécuriser
-                les parcours professionnels.
+                Vous êtes un particulier qui aimerait nous rejoindre comme mentor ? Vous êtes
+                un CFA, un organisme d'apprentissage ou une institution ?
               </p>
             </div>
             <div className="mt-6 flex flex-col gap-3">
@@ -150,7 +147,7 @@ export function Home() {
                 to="/contact"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-[#333] text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
               >
-                Contact Institutionnel
+                Autre contact
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -171,37 +168,41 @@ export function Home() {
           <div className="grid md:grid-cols-3 gap-10">
 
             <div className="text-center px-4">
-              <div className="text-5xl mb-4">🛡️</div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-ora-blue/10 flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-ora-blue" />
+              </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">
-                Zéro Décrochage
+                le mentorat
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Nous agissons comme un bouclier contre les ruptures de contrat
-                en offrant une écoute et une médiation rapide entre le jeune et
-                l'entreprise.
+                Une formule souple d'accompagnement par un Senior, à ton rythme et adapté
+                à tes préoccupations : tu restes moteur de ton parcours et maitre de ton avenir
               </p>
             </div>
 
             <div className="text-center px-4">
-              <div className="text-5xl mb-4">🎓</div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-ora-orange/10 flex items-center justify-center">
+                <GraduationCap className="w-8 h-8 text-ora-orange" />
+              </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">
-                Réussite Diplômante
+                en vue
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Aide à l'organisation, soutien pédagogique ciblé et préparation
-                aux examens pour maximiser les chances d'obtenir le diplôme.
+                la forumule du mentorat a prouvé son efficacité car ton mentor apprend à te connaitre
+                et s'adapte à tes difficultés jusqu'à la réussite de ton projet
               </p>
             </div>
 
             <div className="text-center px-4">
-              <div className="text-5xl mb-4">💪</div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                <TrendingUp className="w-8 h-8 text-emerald-600" />
+              </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">
-                Confiance Boostée
+                Confiance retrouvée
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Développement des "soft skills" et décode des codes de
-                l'entreprise pour une intégration durable et sereine dans le
-                monde du travail.
+                au fil du mentorat et de vos échanges, si tu t'impliques, tu auras en main les conditions
+                pour retrouver confiance en toi et voir ton avenir se dessiner plus clairement
               </p>
             </div>
 
@@ -210,48 +211,65 @@ export function Home() {
       </section>
 
       {/* ─── NOS VALEURS ───────────────────────────────────────── */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+      <section className="py-12 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
               Nos valeurs
             </h2>
-            <p className="text-slate-500 text-lg">
-              Un accompagnement bienveillant et adapté à chaque situation
+            <p className="text-slate-500 text-sm">
+              Un accompagnement bienveillant et adapté
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="text-4xl mb-3">❤️</div>
-              <h3 className="font-bold text-slate-800 mb-2">Bienveillant</h3>
-              <p className="text-slate-500 text-sm">
-                Un accompagnement dans l'écoute, le respect et sans jugement
-              </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+
+            <div className="flex items-center gap-4 bg-white rounded-xl p-4 border border-rose-100 hover:border-rose-300 hover:shadow-sm transition-all">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Bienveillance</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Écoute, respect et accompagnement sans jugement
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="text-4xl mb-3">🔒</div>
-              <h3 className="font-bold text-slate-800 mb-2">Confidentiel</h3>
-              <p className="text-slate-500 text-sm">
-                Vos échanges restent privés et sécurisés
-              </p>
+            <div className="flex items-center gap-4 bg-white rounded-xl p-4 border border-blue-100 hover:border-blue-300 hover:shadow-sm transition-all">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Confidentialité</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Vos échanges restent privés et sécurisés
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="text-4xl mb-3">🎯</div>
-              <h3 className="font-bold text-slate-800 mb-2">Sur-mesure</h3>
-              <p className="text-slate-500 text-sm">
-                Un mentor adapté à vos besoins et votre situation
-              </p>
+            <div className="flex items-center gap-4 bg-white rounded-xl p-4 border border-violet-100 hover:border-violet-300 hover:shadow-sm transition-all">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
+                <SlidersHorizontal className="w-5 h-5 text-violet-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Disponible pour ta demande</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Un mentor adapté à vos besoins et votre situation
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="text-4xl mb-3">💶</div>
-              <h3 className="font-bold text-slate-800 mb-2">100% Gratuit</h3>
-              <p className="text-slate-500 text-sm">
-                Un service entièrement gratuit pour tous les jeunes
-              </p>
+            <div className="flex items-center gap-4 bg-white rounded-xl p-4 border border-emerald-100 hover:border-emerald-300 hover:shadow-sm transition-all">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <BadgeCheck className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Engagement</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Un service bénévole par des Seniors d'expérience 
+                </p>
+              </div>
             </div>
 
           </div>
@@ -267,7 +285,7 @@ export function Home() {
               Implantations
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              Présents sur tout le territoire
+              Présents
             </h2>
           </div>
 
@@ -293,7 +311,7 @@ export function Home() {
                 <div className="w-px md:w-auto md:h-px bg-white/10 self-stretch md:self-auto" />
                 <div className="text-center">
                   <p className="text-4xl font-extrabold text-white">
-                    {implantStats?.total_poles ?? 12}
+                    {implantStats?.total_poles ?? 25}
                   </p>
                   <p className="text-xs text-white/60 mt-1 uppercase tracking-wide">Pôles actifs</p>
                 </div>
@@ -306,10 +324,10 @@ export function Home() {
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
                   <MapPin className="w-5 h-5 text-ora-orange" />
-                  <span className="text-white/60 text-sm uppercase tracking-widest font-medium">France métropolitaine & DOM</span>
+                  <span className="text-white/60 text-sm uppercase tracking-widest font-medium">France métropolitaine </span>
                 </div>
                 <p className="text-white/80 text-sm leading-relaxed mb-6">
-                  Nos pôles locaux couvrent l'ensemble du territoire national. Où que tu sois,
+                  Où que tu sois,
                   un coordinateur est disponible pour te mettre en relation avec le mentor
                   adapté à ta situation.
                 </p>

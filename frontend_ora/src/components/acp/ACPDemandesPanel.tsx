@@ -691,7 +691,7 @@ export function ACPDemandesPanel({ demandes: demandesProp, poleId, onRefresh }: 
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">Demandes en attente</h2>
-              <p className="text-xs text-slate-400">Matching à effectuer</p>
+              <p className="text-xs text-slate-400">Affectation à effectuer</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
