@@ -10,7 +10,7 @@ export function AboutORA() {
             ORA, c'est quoi ?
           </h1>
           <p className="text-xl text-white/90">
-            Objectif Réussir l'Apprentissage - Un accompagnement sur-mesure pour ta réussite
+            Objectif Réussir l'Apprentissage - Un accompagnement sur mesure pour ta réussite
           </p>
         </div>
       </section>
@@ -19,14 +19,19 @@ export function AboutORA() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-lg max-w-none">
             <h2 className="text-3xl font-bold text-slate-900 mb-6">
-              Une association au service des apprentis
+              Des seniors bénévoles au service des apprentis
             </h2>
             <p className="text-lg text-slate-700 mb-6">
-              ORA est une association qui propose un <strong>accompagnement personnalisé, confidentiel et gratuit</strong> pour les jeunes en apprentissage ou en projet d'apprentissage.
+              ORA propose un <strong>accompagnement personnalisé, confidentiel et gratuit</strong> pour les jeunes en apprentissage ou en projet d'apprentissage.
             </p>
             <p className="text-lg text-slate-700 mb-8">
-              Notre mission : t'accompagner vers la réussite de ton apprentissage grâce au mentorat par des <strong>séniors bénévoles</strong> expérimentés qui partagent leur savoir-faire et leur bienveillance.
+              Notre mission : t'accompagner vers la réussite de ton apprentissage grâce au mentorat par des <strong>seniors bénévoles</strong> expérimentés qui partagent leur savoir-faire et leur bienveillance.
             </p>
+
+            <p className="text-lg text-slate-700 mb-8">
+              Talents Seniors Bénévoles (TSB) regroupe 4 associations à travers la France qui mettent à disposition leurs bénévoles pour réaliser les mentorats ORA . Merci à elles !
+            </p>
+
           </div>
 
           <div className="bg-ora-blue/10 rounded-2xl p-8 mb-12 border-2 border-ora-blue/20">
@@ -93,7 +98,7 @@ export function AboutORA() {
               <div className="w-14 h-14 bg-ora-blue/20 rounded-xl flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-ora-blue" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Sans engagement</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3"> engagement simple</h3>
               <p className="text-slate-700">
                 Tu es libre d'arrêter quand tu veux. Aucune obligation, tu décides du rythme et de la durée.
               </p>
@@ -105,7 +110,7 @@ export function AboutORA() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Pour tous</h3>
               <p className="text-slate-700">
-                Tous les jeunes en apprentissage ou en projet d'apprentissage peuvent bénéficier d'ORA, quel que soit leur niveau ou secteur.
+                Tous les jeunes sans discrimination en apprentissage ou en projet d'apprentissage peuvent bénéficier d'ORA.
               </p>
             </div>
           </div>
@@ -116,13 +121,13 @@ export function AboutORA() {
             </h2>
             <div className="space-y-4 text-slate-700">
               <p className="text-lg">
-                <strong>L'apprentissage est un véritable tremplin vers l'emploi :</strong> plus de 70% des apprentis trouvent un emploi dans les 7 mois suivant leur formation.
+                <strong>ORA est né en 2020 par la volonté des Pouvoirs Publics de voir se développer l'apprentissage : "Passerelle vers l'Emploi".</strong> Rapidement, ils ont pris conscience des risques d'échec et ont mobilisés des acteurs associatifs pour les réduire.
               </p>
               <p className="text-lg">
-                Pourtant, <strong>27% des contrats d'apprentissage sont rompus avant leur terme</strong> (source IGAS). Les raisons sont multiples : difficultés d'adaptation, problèmes relationnels en entreprise, manque de confiance, questions d'orientation...
+                En effet, <strong>27% des contrats d'apprentissage sont rompus avant leur terme</strong> (source IGAS). Les raisons sont multiples : difficultés d'adaptation, problèmes relationnels en entreprise, manque de confiance, questions d'orientation...
               </p>
               <p className="text-lg">
-                <strong>ORA est là pour éviter ces ruptures</strong> en offrant un espace d'écoute, de conseil et d'accompagnement personnalisé par des mentors expérimentés.
+                <strong>ORA est bien là pour éviter ces ruptures</strong> en offrant un espace d'écoute, de conseil et d'accompagnement personnalisé par des mentors expérimentés.
               </p>
             </div>
           </div>
@@ -137,7 +142,7 @@ export function AboutORA() {
             <ul className="text-left max-w-2xl mx-auto space-y-2 mb-8 text-lg">
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 flex-shrink-0 mt-0.5" />
-                <span>Ton niveau de formation (CAP, Bac Pro, BTS, Licence, Master...)</span>
+                <span>Ton niveau de formation (CAP, Bac Pro, BTS, ...)</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 flex-shrink-0 mt-0.5" />
@@ -145,14 +150,14 @@ export function AboutORA() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 flex-shrink-0 mt-0.5" />
-                <span>Ta situation géographique (ORA est présent dans plus de 50 départements)</span>
+                <span>Ta situation géographique (ORA est présent dans plus de 40 départements)</span>
               </li>
             </ul>
             <Link
               to="/apprentis/inscription"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-ora-blue rounded-lg font-bold hover:bg-slate-100 transition-colors text-lg"
             >
-              Je veux être accompagné(e)
+              Je veux être accompagné(e) par un mentor
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

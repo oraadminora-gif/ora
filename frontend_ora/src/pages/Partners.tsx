@@ -46,20 +46,18 @@ export function Partners() {
           <div className="flex items-center gap-4 mb-6">
             <Building className="w-12 h-12" />
             <h1 className="text-4xl md:text-5xl font-bold">
-              Nos partenaires
+              Notre réseau associatif
             </h1>
           </div>
           <p className="text-xl text-white/90">
-            ORA s'inscrit dans un réseau solide d'acteurs engagés pour la réussite des jeunes
+            ORA s'apppuie sur un réseau  d'acteurs engagés pour la réussite des jeunes
           </p>
         </div>
       </section>
 
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-8">
-            Partenaires institutionnels
-          </h2>
+          
 
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {partners.map((partner, index) => (
@@ -102,7 +100,7 @@ export function Partners() {
               </h2>
             </div>
             <p className="text-lg text-white/90 mb-6">
-              Vous êtes un CFA, une entreprise, une collectivité ou une association et vous souhaitez nous soutenir dans notre mission ? Contactez-nous pour échanger sur des partenariats possibles.
+              Vous êtes un CFA, une institution, une collectivité ou une association et vous souhaitez nous soutenir dans notre mission ? Contactez-nous pour échanger sur des partenariats possibles.
             </p>
             <Link
               to="/contact"

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, HelpCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, HelpCircle, CircleAlert } from 'lucide-react';
 
 export function ApprenticeInfo() {
   return (
@@ -77,6 +77,37 @@ export function ApprenticeInfo() {
             </div>
           </div>
 
+
+          <h2 className="text-3xl font-bold text-slate-900 mb-8">
+            A quoi je m'engage en demandant un mentor ?
+          </h2>
+          <p className="text-lg text-slate-600 mb-8">
+            Me rendre disponible et ponctuel aux rdv, être franc dans les échanges, volontaire pour réussir mon apprentissage, actif dans ce que vous déciderez ensemble, écouter et prendre conseil.
+          </p>
+
+
+          <div className="bg-slate-50 rounded-xl p-8 mb-12">
+            <div className="flex items-start gap-4">
+              <CircleAlert className="w-8 h-8 text-ora-blue flex-shrink-0" />
+              <div>
+               
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-1">Ces conditions d'engagements te permettront de mettre toutes les chances de ton côté pour ta réussite</h4>
+                   <h4> Le Mentor de son côté s'engage à tes côtés et son bénévolat témoignage déjà de son engagement. Respecte-le et vous réussirez ensemble ... C'est la clé de ta réussite</h4>
+                  </div>
+                  
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+         
+
+
+
+
+
           <h2 className="text-3xl font-bold text-slate-900 mb-8">
             Comment ça marche ?
           </h2>
@@ -124,11 +155,11 @@ export function ApprenticeInfo() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Combien de temps dure l'accompagnement ?</h4>
-                    <p className="text-slate-600">En général, l'accompagnement dure entre 6 mois et 1 an, mais il peut être adapté à tes besoins.</p>
+                    <p className="text-slate-600">En général, l'accompagnement plusieurs jours : il s'adapte à tes besoins pendant ta formation.</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">À quelle fréquence vais-je voir mon mentor ?</h4>
-                    <p className="text-slate-600">Vous vous rencontrez environ 1 à 2 fois par mois, selon vos disponibilités respectives.</p>
+                    <p className="text-slate-600">Vous vous rencontrez regulièrement et selon vos disponibilités respectives.</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Mes échanges sont-ils confidentiels ?</h4>

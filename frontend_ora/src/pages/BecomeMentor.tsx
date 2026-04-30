@@ -25,7 +25,7 @@ export function BecomeMentor() {
               Vous êtes retraité ou senior et vous souhaitez donner du sens à votre temps libre ? Devenez <strong>mentor bénévole</strong> avec ORA et accompagnez des jeunes apprentis vers la réussite !
             </p>
             <p className="text-lg text-slate-700 mb-8">
-              Les mentors d'ORA sont des <strong>retraités issus de secteurs variés</strong> qui apportent une richesse d'expérience. Leur parcours professionnel leur permet de partager des conseils concrets, des anecdotes vécues et une compréhension fine des réalités du monde du travail.
+              Les mentors d'ORA sont des <strong>retraités issus de secteurs variés</strong> qui partagent leurs expériences. Chaque parcours permet de partager des conseils concrets, des expériences vécues et sa compréhension du monde du travail.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export function BecomeMentor() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Transmission</h3>
               <p className="text-slate-700">
-                Transmettez votre connaissance d'un secteur professionnel et d'un métier. Partagez votre savoir-faire et votre savoir-être acquis tout au long de votre carrière.
+                Transmettez votre connaissance à un jeune désorienté qui demande de l'aide. Partagez votre savoir-être, fruit de votre parcours. L'intergéneration compte pour vous.
               </p>
             </div>
 
@@ -67,36 +67,10 @@ export function BecomeMentor() {
               Qui sont les mentors ORA ?
             </h2>
             <p className="text-lg text-slate-700 mb-4">
-              Les mentors ORA sont des <strong>seniors bénévoles</strong>, tous retraités, issus de secteurs d'activité variés :
-            </p>
-            <ul className="space-y-2 text-slate-700 mb-6">
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Commerce, vente, marketing</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Industrie, ingénierie, technique</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Artisanat, métiers manuels</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Services, administration, ressources humaines</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Santé, social, éducation</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-ora-green flex-shrink-0 mt-0.5" />
-                <span>Informatique, numérique, communication</span>
-              </li>
-            </ul>
+              Les mentors ORA sont des <strong>seniors bénévoles</strong>, tous retraités, attentifs dans notre socièté à la réussite de tous les jeunes et prêts à s'engager à leur échelle et là où ils vivent.Ils sont prêts à donner quelques heures de leur temps pour cela. </p>
+            
             <p className="text-lg text-slate-700">
-              Tous partagent la même envie : <strong>transmettre leur expérience</strong> et accompagner des jeunes vers la réussite.
+              Tous partagent la même envie : <strong>transmettre leur savoir être</strong> et accompagner des jeunes vers la réussite.
             </p>
           </div>
 
@@ -119,7 +93,7 @@ export function BecomeMentor() {
                   <div className="w-6 h-6 bg-ora-blue rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
-                  <span><strong>Conseiller</strong> : partager votre expérience professionnelle, vos conseils et votre réseau</span>
+                  <span><strong>Conseiller</strong> : partager votre expérience et  vos conseils</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-ora-blue rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -131,7 +105,7 @@ export function BecomeMentor() {
                   <div className="w-6 h-6 bg-ora-blue rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
-                  <span><strong>Aider à prendre du recul</strong> : l'accompagner dans sa réflexion sur son orientation et ses objectifs</span>
+                  <span><strong>Aider à prendre du recul</strong> : l'accompagner dans sa réflexion sur son devenir et ses objectifs</span>
                 </li>
               </ul>
               <div className="bg-white rounded-lg p-4 mt-6">
@@ -149,7 +123,7 @@ export function BecomeMentor() {
             <ul className="space-y-3 text-slate-700">
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 text-ora-blue flex-shrink-0 mt-0.5" />
-                <span><strong>Être retraité ou senior</strong> avec une expérience professionnelle significative</span>
+                <span><strong>Être retraité ou senior</strong> avec une expérience professionnelle </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 text-ora-blue flex-shrink-0 mt-0.5" />
@@ -165,7 +139,7 @@ export function BecomeMentor() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-6 h-6 text-ora-blue flex-shrink-0 mt-0.5" />
-                <span><strong>S'engager pour une durée de 6 mois minimum</strong> (renouvelable)</span>
+                <span><strong>S'engager dans notre association</strong> </span>
               </li>
             </ul>
           </div>
@@ -180,7 +154,7 @@ export function BecomeMentor() {
             <ul className="space-y-3 text-slate-700">
               <li className="flex items-start gap-3">
                 <TrendingUp className="w-6 h-6 text-ora-green flex-shrink-0 mt-0.5" />
-                <span><strong>Formation initiale</strong> : une journée de formation pour acquérir les clés d'un accompagnement réussi</span>
+                <span><strong>Formation initiale</strong> : une formation pour acquérir les clés d'un accompagnement réussi</span>
               </li>
               <li className="flex items-start gap-3">
                 <TrendingUp className="w-6 h-6 text-ora-green flex-shrink-0 mt-0.5" />

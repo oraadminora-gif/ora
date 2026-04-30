@@ -16,7 +16,7 @@ export function Header() {
 
   const navLinks = [
     { to: '/ora', label: "ORA c'est quoi ?" },
-    { to: '/apprentis', label: 'Je suis apprenti(e)' },
+    { to: '/apprentis', label: 'Tu es apprenti(e)' },
     { to: '/mentors', label: 'Devenir mentor' },
   ];
 

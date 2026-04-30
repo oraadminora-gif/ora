@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import {
   CheckCircle, AlertCircle, MapPin, Loader2,
-  User, GraduationCap, MessageSquare, ShieldCheck,
+  User, GraduationCap, MessageSquare, ShieldCheck, FileText,
 } from 'lucide-react';
 
 interface PoleOption {
@@ -63,84 +63,6 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
   );
 }
 
-// ─── Logos partenaires ORA ────────────────────────────────────────────────────
-const PARTNERS = [
-  { name: 'BTP CFA Rhône',                  logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2021/01/btp-cfa-rhone-2021.jpg' },
-  { name: 'CFA BTP François Rabelais',      logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2020/01/logo-cfa-btp-francois-rablais-ff.jpg' },
-  { name: 'CFA SEPR',                       logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2020/01/logo-cfa-sepr.png' },
-  { name: 'GRETA Formation',                logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2021/01/greta-formation.jpg' },
-  { name: 'CFA UIMM',                       logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/04/logo-cfa-uimm.jpg' },
-  { name: 'IFAIP Interfora',                logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2022/04/logo-ifaip-interfora-centre-de-formations-dapprentis-partenaires-projet-ora.jpg' },
-  { name: 'CFA AFPA La Valette',            logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-afpa-la-valette.jpg' },
-  { name: 'Chambre des Métiers Campus Simone Veil', logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2022/10/logo-chambre-des-metiers-campus-simone-viel.png' },
-  { name: 'Club des Entreprises',           logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/05/logo-cfa-partenaires-ora-club-des-entreprises.jpg' },
-  { name: 'GRETA Lorraine Centre Grand Est',logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/02/logo-greta-lorraine-centre-grand-est.jpg' },
-  { name: 'CFA Bâtiment Allier',            logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-batiment-allier.jpg' },
-  { name: 'CFA Bâtiment Normandie',         logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-batiment-normandie.jpg' },
-  { name: 'CFA AFI LNR',                    logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-afi-lnr.jpg' },
-  { name: 'MFR CFA',                        logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/06/logo-partenaires-ora-mfr-cfa.jpg' },
-  { name: 'CFA Coiffure Arcole',            logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-coiffure-arcole.jpg' },
-  { name: 'CFA Sport et Formation',         logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/03/logo-cfa-sport-et-formation.jpg' },
-  { name: 'Le Prado',                       logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2021/06/logo-partenaire-ora-le-prado-de-lenfant-a-ladulte-agir-pour-sa-vie.jpg' },
-  { name: 'Centre Formation Excellence Havre', logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/04/logo-cfa-centre-formation-excellence-havre.jpg' },
-  { name: 'IFA Marcel Sauvage',             logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/02/logo-ifa-marcel-sauvage-rouen-mont-saint-aignan.jpg' },
-  { name: 'Association Fil',                logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2022/04/logo-association-fil-cours-de-francais-pour-adultes-a-letranger-partenaires-ora.jpg' },
-  { name: 'INBP CFA',                       logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2023/06/logo-partenaires-ora-inbp-cfa.jpg' },
-  { name: 'École Nationale des Fleuristes', logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2025/03/logo-ecole-nationale-des-fleuristes.png' },
-  { name: 'Forma Sup Méditerranée',         logo: 'https://objectifreussirapprentissage.fr/wp-content/uploads/2025/09/logo-forma-sup-med-partenaires-ora.jpg' },
-];
-
-function PartnersBanner() {
-  // Duplique la liste pour un défilement infini sans saut
-  const doubled = [...PARTNERS, ...PARTNERS];
-
-  return (
-    <div className="bg-slate-50 border-y border-slate-100 py-6 overflow-hidden">
-      <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-400 mb-5">
-        Nos CFA &amp; partenaires de formation
-      </p>
-      <div className="relative">
-        {/* Dégradés gauche/droite pour l'effet de fondu */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-50 to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-50 to-transparent z-10" />
-
-        {/* Piste défilante */}
-        <div
-          className="flex gap-10 items-center"
-          style={{
-            animation: 'scroll-partners 40s linear infinite',
-            width: 'max-content',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.animationPlayState = 'paused')}
-          onMouseLeave={e => (e.currentTarget.style.animationPlayState = 'running')}
-        >
-          {doubled.map((p, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 h-14 w-32 flex items-center justify-center grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
-              title={p.name}
-            >
-              <img
-                src={p.logo}
-                alt={p.name}
-                className="max-h-12 max-w-[120px] w-auto object-contain"
-                loading="lazy"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Keyframe injecté via style tag */}
-      <style>{`
-        @keyframes scroll-partners {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
-    </div>
-  );
-}
 
 export function ApprenticeRegistration() {
   const navigate = useNavigate();
@@ -161,7 +83,7 @@ export function ApprenticeRegistration() {
     poleId: '', commune: '', codePostal: '',
     nomEtablissement: '', diplomePrepare: '',
     situation: '' as '' | 'apprentissage' | 'recherche',
-    demande: '', consentGiven: false,
+    demande: '', engagementAccepted: false, consentGiven: false,
   });
 
   const set = (field: string) =>
@@ -187,6 +109,9 @@ export function ApprenticeRegistration() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!formData.engagementAccepted) {
+      setError("Vous devez accepter les règles d'engagement du mentorat"); return;
+    }
     if (!formData.consentGiven) {
       setError('Vous devez accepter la politique de confidentialité'); return;
     }
@@ -256,7 +181,7 @@ export function ApprenticeRegistration() {
             Inscription
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-            Trouve ton mentor
+            Demande un mentor
           </h1>
           <p className="text-lg text-white/70 max-w-xl">
             Remplis ce formulaire pour être mis(e) en relation avec un mentor bénévole
@@ -264,9 +189,6 @@ export function ApprenticeRegistration() {
           </p>
         </div>
       </section>
-
-      {/* ── Bandeau partenaires défilant ──────────────────────────── */}
-      <PartnersBanner />
 
       {/* ── Formulaire ────────────────────────────────────────────── */}
       <section className="max-w-3xl mx-auto px-6 py-14">
@@ -425,6 +347,21 @@ export function ApprenticeRegistration() {
                 value={formData.demande} onChange={set('demande')}
                 className={INPUT + ' resize-none'} />
             </Field>
+          </Section>
+
+          <hr className="border-slate-100" />
+
+          {/* ── Engagement ────────────────────────────────────────── */}
+          <Section icon={<FileText className="w-4 h-4" />} title="Engagement">
+            <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white transition-colors">
+              <input type="checkbox" required checked={formData.engagementAccepted}
+                onChange={e => setFormData(prev => ({ ...prev, engagementAccepted: e.target.checked }))}
+                className="w-4 h-4 text-blue-600 accent-blue-600 mt-0.5 shrink-0" />
+              <span className="text-xs text-slate-600 leading-relaxed">
+                Je m'engage dans le mentorat et en accepte les règles{' '}
+                <span className="text-slate-400">(voir section engagement)</span> *
+              </span>
+            </label>
           </Section>
 
           <hr className="border-slate-100" />

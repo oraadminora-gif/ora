@@ -140,7 +140,7 @@ export function Contact() {
             <InfoCard icon={<Mail className="w-5 h-5 text-blue-500" />} bg="bg-blue-50" title="Email">
               <a href="mailto:contact@ora-france.fr"
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                contact@ora-france.fr
+                ora-france@outlook.com
               </a>
             </InfoCard>
 
@@ -149,7 +149,7 @@ export function Contact() {
             </InfoCard>
 
             <InfoCard icon={<MapPin className="w-5 h-5 text-violet-500" />} bg="bg-violet-50" title="Implantations">
-              <p className="text-sm text-slate-500 mb-2">Plus de 50 départements en France</p>
+              <p className="text-sm text-slate-500 mb-2">Plus de 40 départements en France</p>
               <Link to="/implantations"
                 className="inline-flex items-center gap-1 text-sm text-violet-600 hover:text-violet-800 font-medium transition-colors">
                 Voir la carte <ArrowRight className="w-3.5 h-3.5" />

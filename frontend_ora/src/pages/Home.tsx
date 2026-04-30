@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, MapPin, ShieldCheck, GraduationCap, TrendingUp, UserCheck, HandHeart, Building2, Heart, Lock, SlidersHorizontal, BadgeCheck } from "lucide-react";
 import { StatSection } from "../components/StatSection";
+import { MiniMap } from "../components/MiniMap";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 
@@ -17,7 +18,7 @@ export function Home() {
 
   const stats = useMemo(() => [
     {
-      value: 10000,
+      value: 1000,
       label: "Jeunes accompagnés",
       suffix: "+",
       icon: <UserCheck className="w-6 h-6 text-blue-400" />,
@@ -25,7 +26,7 @@ export function Home() {
       color: "text-blue-400",
     },
     {
-      value: 1500,
+      value: 300,
       label: "Mentors bénévoles",
       suffix: "+",
       icon: <HandHeart className="w-6 h-6 text-orange-400" />,
@@ -72,10 +73,10 @@ export function Home() {
           </span>
 
           <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight tracking-tight">
-           Quelqu'un a envie<br className="hidden sm:block" /> de te voir réussir.
-          Oui! ton futur mentor ORA? A toi d'en décider</h1>
+           ORA a envie<br className="hidden sm:block" /> de te voir réussir.
+          A toi d'en décider</h1>
           <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-xl mx-auto">
-            Un mentor bénévole, issus du monde professionnel, t'accompagne
+            Un mentor bénévole, issu du monde professionnel, t'accompagne
             pendant ton apprentissage — de la recherche de contrat jusqu'à
             ton diplôme.
           </p>
@@ -188,7 +189,7 @@ export function Home() {
                 en vue
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                la forumule du mentorat a prouvé son efficacité car ton mentor apprend à te connaitre
+                la formule du mentorat a prouvé son efficacité car ton mentor apprend à te connaitre
                 et s'adapte à tes difficultés jusqu'à la réussite de ton projet
               </p>
             </div>
@@ -253,9 +254,9 @@ export function Home() {
                 <SlidersHorizontal className="w-5 h-5 text-violet-600" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">Disponible pour ta demande</h3>
+                <h3 className="font-bold text-slate-800 text-sm">Sur mesure</h3>
                 <p className="text-slate-500 text-xs leading-relaxed">
-                  Un mentor adapté à vos besoins et votre situation
+                Un mentor disponible pour ta demande
                 </p>
               </div>
             </div>
@@ -285,62 +286,35 @@ export function Home() {
               Implantations
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              Présents
-            </h2>
+              Présents     </h2>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl"
-            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a6e 60%, #0f172a 100%)' }}
-          >
-            {/* Cercles déco */}
-            <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }} />
-            <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)' }} />
+          <div className="flex flex-col md:flex-row items-center gap-8">
 
-            <div className="relative flex flex-col md:flex-row items-center gap-8 p-8 md:p-12">
-
-              {/* Chiffres clés */}
-              <div className="flex flex-row md:flex-col gap-6 md:gap-4 flex-shrink-0">
-                <div className="text-center">
-                  <p className="text-4xl font-extrabold text-white">
-                    {implantStats?.total_departments_covered ?? 45}
-                  </p>
-                  <p className="text-xs text-white/60 mt-1 uppercase tracking-wide">Départements</p>
-                </div>
-                <div className="w-px md:w-auto md:h-px bg-white/10 self-stretch md:self-auto" />
-                <div className="text-center">
-                  <p className="text-4xl font-extrabold text-white">
-                    {implantStats?.total_poles ?? 25}
-                  </p>
-                  <p className="text-xs text-white/60 mt-1 uppercase tracking-wide">Pôles actifs</p>
-                </div>
-              </div>
-
-              {/* Séparateur vertical */}
-              <div className="hidden md:block w-px self-stretch bg-white/10" />
-
-              {/* Texte + CTA */}
-              <div className="flex-1 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
-                  <MapPin className="w-5 h-5 text-ora-orange" />
-                  <span className="text-white/60 text-sm uppercase tracking-widest font-medium">France métropolitaine </span>
-                </div>
-                <p className="text-white/80 text-sm leading-relaxed mb-6">
-                  Où que tu sois,
-                  un coordinateur est disponible pour te mettre en relation avec le mentor
-                  adapté à ta situation.
-                </p>
-                <Link
-                  to="/implantations"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-ora-blue rounded-full font-semibold text-sm hover:bg-blue-50 transition-colors"
-                >
-                  Trouver mon pôle
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
+            {/* Carte cliquable */}
+            <div className="w-full md:w-1/2 lg:w-3/5">
+              <MiniMap />
             </div>
+
+            {/* Texte + CTA */}
+            <div className="w-full md:w-1/2 lg:w-2/5 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                <MapPin className="w-5 h-5 text-ora-orange" />
+                <span className="text-slate-500 text-sm uppercase tracking-widest font-medium">France métropolitaine</span>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                Où que tu sois, un coordinateur est disponible pour te mettre en relation
+                avec le mentor adapté à ta situation.
+              </p>
+              <Link
+                to="/implantations"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-ora-blue text-white rounded-full font-semibold text-sm hover:bg-ora-dark transition-colors"
+              >
+                Trouver mon pôle
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
           </div>
 
         </div>
