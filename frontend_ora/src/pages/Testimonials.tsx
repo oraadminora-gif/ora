@@ -4,7 +4,7 @@ import { Quote, Filter } from 'lucide-react';
 
 interface Testimonial {
   id: number;
-  type: 'mentee' | 'mentor' | 'parent';
+  type: 'mentee' | 'mentor' | 'cfa';
   name: string;
   age?: number;
   city: string;
@@ -38,7 +38,7 @@ const testimonials: Testimonial[] = [
   },
   {
     id: 4,
-    type: 'parent',
+    type: 'cfa',
     name: 'Sophie, maman de Lucas',
     city: 'Toulouse',
     content: "Mon fils était perdu et démotivé dans son apprentissage. Son mentor ORA a su le remotiver et l'aider à voir les choses autrement. Je suis reconnaissante pour cet accompagnement qui a sauvé son parcours."
@@ -77,13 +77,13 @@ const testimonials: Testimonial[] = [
   }
 ];
 
-type FilterOption = 'all' | 'mentee' | 'mentor' | 'parent';
+type FilterOption = 'all' | 'mentee' | 'mentor' | 'cfa';
 
 const filterOptions: { value: FilterOption; label: string }[] = [
   { value: 'all', label: 'Tous les témoignages' },
   { value: 'mentee', label: 'Apprentis' },
   { value: 'mentor', label: 'Mentors' },
-  { value: 'parent', label: 'Parents' }
+  { value: 'cfa', label: 'CFA' }
 ];
 
 export function Testimonials() {
@@ -97,7 +97,7 @@ export function Testimonials() {
     switch(type) {
       case 'mentee': return 'Apprenti(e)';
       case 'mentor': return 'Mentor';
-      case 'parent': return 'Parent';
+      case 'cfa': return 'CFA';
       default: return '';
     }
   };
@@ -106,7 +106,7 @@ export function Testimonials() {
     switch(type) {
       case 'mentee': return 'bg-ora-blue/20 text-ora-blue';
       case 'mentor': return 'bg-green-100 text-green-700';
-      case 'parent': return 'bg-purple-100 text-purple-700';
+      case 'cfa': return 'bg-purple-100 text-purple-700';
       default: return 'bg-slate-100 text-slate-700';
     }
   };

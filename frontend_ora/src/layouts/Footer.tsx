@@ -8,13 +8,13 @@ export function Footer() {
 
           {/* Logo + description */}
           <div>
-            <div className="mb-4 inline-block bg-white rounded-xl px-3 py-2">
+            <Link to="/" className="mb-4 inline-block bg-white rounded-xl px-3 py-2 hover:opacity-85 transition-opacity">
               <img
                 src="/image.png"
                 alt="ORA"
                 className="h-10 w-auto object-contain"
               />
-            </div>
+            </Link>
             <p className="text-slate-400 text-sm leading-relaxed">
               Objectif Réussir l&apos;Apprentissage — accompagnement personnalisé,
               confidentiel et gratuit par des séniors bénévoles.
@@ -27,7 +27,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-slate-400">
               <li><Link to="/apprentis" className="hover:text-white transition-colors">Je suis apprenti(e)</Link></li>
               <li><Link to="/mentors" className="hover:text-white transition-colors">Devenir mentor</Link></li>
-              <li><Link to="/temoignages" className="hover:text-white transition-colors">Témoignages</Link></li>
               <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
@@ -36,7 +35,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Ressources</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link to="/partenaires" className="hover:text-white transition-colors">Nos partenaires</Link></li>
+              <li><Link to="/partenaires" className="hover:text-white transition-colors">Notre réseau associatif</Link></li>
               <li><Link to="/implantations" className="hover:text-white transition-colors">Nos implantations</Link></li>
               <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
             </ul>
@@ -55,7 +54,7 @@ export function Footer() {
 
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-500">
           <p>© 2026 ORA - Joashams</p>
-          <p className="mt-1">Coordonné par Talents Seniors Bénévoles</p>
+          <p className="mt-1">Pour Talents Seniors Bénévoles</p>
         </div>
       </div>
     </footer>

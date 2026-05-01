@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Mail, MapPin, Send, CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 
 export function Contact() {
@@ -100,8 +100,8 @@ export function Contact() {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-5">
-                <Field label="Téléphone">
-                  <input type="tel" value={formData.phone} onChange={set('phone')}
+                <Field label="Téléphone *">
+                  <input type="tel" required value={formData.phone} onChange={set('phone')}
                     placeholder="06 00 00 00 00"
                     className={INPUT} />
                 </Field>
@@ -144,10 +144,6 @@ export function Contact() {
               </a>
             </InfoCard>
 
-            <InfoCard icon={<Phone className="w-5 h-5 text-emerald-500" />} bg="bg-emerald-50" title="Téléphone">
-              <p className="text-sm text-slate-500">Lun – Ven · 9h – 18h</p>
-            </InfoCard>
-
             <InfoCard icon={<MapPin className="w-5 h-5 text-violet-500" />} bg="bg-violet-50" title="Implantations">
               <p className="text-sm text-slate-500 mb-2">Plus de 40 départements en France</p>
               <Link to="/implantations"
@@ -156,19 +152,6 @@ export function Contact() {
               </Link>
             </InfoCard>
 
-            <div className="bg-gradient-to-br from-ora-blue/5 to-blue-100 rounded-2xl p-5 border border-blue-100">
-              <p className="text-sm font-bold text-slate-900 mb-1">Tu es apprenti(e) ?</p>
-              <p className="text-xs text-slate-500 mb-3">
-                Inscris-toi directement via notre formulaire dédié pour être mis en relation avec un mentor.
-              </p>
-              <Link
-                to="/apprentis/inscription"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-ora-blue text-white rounded-xl text-xs font-bold hover:bg-ora-dark transition-colors"
-              >
-                S'inscrire comme apprenti(e)
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
           </div>
         </div>
       </section>

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, MapPin, ShieldCheck, GraduationCap, TrendingUp, UserCheck, HandHeart, Building2, Heart, Lock, SlidersHorizontal, BadgeCheck } from "lucide-react";
+import { ArrowRight, MapPin, ShieldCheck, GraduationCap, TrendingUp, UserCheck, HandHeart, Building2, Heart, Lock, SlidersHorizontal, BadgeCheck, Quote } from "lucide-react";
 import { StatSection } from "../components/StatSection";
-import { MiniMap } from "../components/MiniMap";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 
@@ -55,7 +54,7 @@ export function Home() {
     <div>
       {/* ─── HERO ─────────────────────────────────────────────── */}
       <section
-        className="relative text-white py-16 text-center overflow-hidden"
+        className="relative text-white py-16 overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a6e 50%, #0f172a 100%)' }}
       >
         {/* Cercles décoratifs */}
@@ -66,20 +65,52 @@ export function Home() {
         <div className="pointer-events-none absolute top-1/2 left-1/2 w-[700px] h-[700px] rounded-full opacity-5"
           style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 60%)', transform: 'translate(-50%, -50%)' }} />
 
-        <div className="relative max-w-2xl mx-auto px-4">
-          {/* Badge */}
-          <span className="inline-block mb-6 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest border border-blue-400/30 text-blue-300 bg-blue-500/10">
-            Gratuit · Bénévole · Confidentiel
-          </span>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12 md:gap-16">
 
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight tracking-tight">
-           ORA a envie<br className="hidden sm:block" /> de te voir réussir.
-          A toi d'en décider</h1>
-          <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-xl mx-auto">
-            Un mentor bénévole, issu du monde professionnel, t'accompagne
-            pendant ton apprentissage — de la recherche de contrat jusqu'à
-            ton diplôme.
-          </p>
+          {/* Image — gauche */}
+          <div className="relative flex-shrink-0 flex items-center justify-center order-1">
+            {/* Halo décoratif derrière l'image */}
+            <div className="absolute inset-0 scale-110 rounded-3xl blur-2xl opacity-30"
+              style={{ background: 'linear-gradient(135deg, #f97316, #3b82f6)' }} />
+            <img
+              src="/image_hero.png"
+              alt="ORA – Objectif Réussir Apprentissage"
+              className="relative w-64 md:w-80 lg:w-96 h-auto rounded-3xl shadow-2xl ring-1 ring-white/10"
+            />
+          </div>
+
+          {/* Texte — droite */}
+          <div className="flex-1 text-center md:text-left order-2">
+            <span className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest border border-blue-400/30 text-blue-300 bg-blue-500/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              Gratuit · Bénévole · Confidentiel
+            </span>
+
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-[1.1] tracking-tight">
+              ORA a envie<br />
+              <span className="bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
+                de te voir réussir.
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl font-light text-white/50 mb-6 tracking-wide">
+              À toi d'en décider.
+            </p>
+
+            <p className="text-base text-white/70 leading-relaxed max-w-lg mb-2">
+              Un mentor bénévole, issu du monde professionnel, t'accompagne
+              pendant ton apprentissage — de la recherche de contrat jusqu'à
+              ton diplôme.
+            </p>
+
+            {/* Séparateur minimaliste */}
+            <div className="flex items-center gap-3 mt-6 mb-0 justify-center md:justify-start">
+              <span className="h-px w-10 bg-orange-400/60" />
+              <span className="text-xs text-white/40 uppercase tracking-widest">Objectif Réussir l'Apprentissage</span>
+              <span className="h-px w-10 bg-blue-400/60" />
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -116,7 +147,7 @@ export function Home() {
               </div>
             </div>
             <Link
-              to="/apprentis/inscription"
+              to="/ora"
               className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-ora-orange text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
             >
               LE MENTORAT C'EST POUR MOI
@@ -138,7 +169,7 @@ export function Home() {
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <Link
-                to="/mentors/inscription"
+                to="/mentors"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-ora-blue text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
               >
                 Devenir Mentor
@@ -152,6 +183,52 @@ export function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─── TERRITOIRE ────────────────────────────────────────── */}
+      <section className="py-8 bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="text-center mb-6">
+            <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-blue bg-ora-blue/10">
+              Implantations
+            </span>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Présents
+            </h2>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-8">
+
+            {/* Carte statique cliquable */}
+            <div className="w-full md:w-1/2 lg:w-3/5">
+              <Link to="/implantations" className="block rounded-2xl overflow-hidden hover:opacity-90 transition-opacity" aria-label="Voir la carte des implantations">
+                <img src="/map-france.png" alt="Carte des implantations ORA en France" className="w-full h-auto block" />
+              </Link>
+            </div>
+
+            {/* Texte + CTA */}
+            <div className="w-full md:w-1/2 lg:w-2/5 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                <MapPin className="w-5 h-5 text-ora-orange" />
+                <span className="text-slate-500 text-sm uppercase tracking-widest font-medium">France métropolitaine</span>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                Où que tu sois, un coordinateur est disponible pour te mettre en relation
+                avec le mentor adapté à ta situation.
+              </p>
+              <Link
+                to="/implantations"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-ora-blue text-white rounded-full font-semibold text-sm hover:bg-ora-dark transition-colors"
+              >
+                Trouver mon pôle
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
           </div>
 
         </div>
@@ -277,123 +354,69 @@ export function Home() {
         </div>
       </section>
 
-      {/* ─── TERRITOIRE ────────────────────────────────────────── */}
-      <section className="py-16 bg-slate-50">
+      {/* ─── ILS NOUS SOUTIENNENT / FONT CONFIANCE / TÉMOIGNENT ── */}
+      <section className="py-16 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center mb-10">
-            <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-blue bg-ora-blue/10">
-              Implantations
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              Présents     </h2>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center gap-8">
-
-            {/* Carte cliquable */}
-            <div className="w-full md:w-1/2 lg:w-3/5">
-              <MiniMap />
-            </div>
-
-            {/* Texte + CTA */}
-            <div className="w-full md:w-1/2 lg:w-2/5 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
-                <MapPin className="w-5 h-5 text-ora-orange" />
-                <span className="text-slate-500 text-sm uppercase tracking-widest font-medium">France métropolitaine</span>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                Où que tu sois, un coordinateur est disponible pour te mettre en relation
-                avec le mentor adapté à ta situation.
-              </p>
-              <Link
-                to="/implantations"
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-ora-blue text-white rounded-full font-semibold text-sm hover:bg-ora-dark transition-colors"
-              >
-                Trouver mon pôle
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ─── TÉMOIGNAGES ───────────────────────────────────────── */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center mb-12">
-            <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-orange bg-ora-orange/10">
-              Ils témoignent
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              Ce qu'ils en disent
-            </h2>
-          </div>
 
           <div className="grid md:grid-cols-3 gap-6">
 
-            {/* Léa */}
-            <div className="relative bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 border border-slate-100 hover:shadow-md transition-shadow">
-              <span className="text-5xl font-serif leading-none text-ora-orange/30 select-none">"</span>
-              <p className="text-slate-700 text-sm leading-relaxed -mt-4">
-                Grâce à mon mentor ORA, j'ai repris confiance en moi. J'avais des difficultés
-                avec mon maître d'apprentissage et je pensais tout arrêter. Mon mentor m'a
-                écoutée et j'ai pu aller jusqu'au bout de mon CAP pâtisserie&nbsp;!
-              </p>
-              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-slate-200">
-                <div className="w-9 h-9 rounded-full bg-ora-blue/15 flex items-center justify-center text-ora-blue font-bold text-sm">L</div>
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm">Léa, 19 ans</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-ora-blue/10 text-ora-blue font-medium">Apprentie · Lyon</span>
-                </div>
+            {/* Ils nous soutiennent */}
+            <div className="flex flex-col bg-slate-50 rounded-2xl p-6 border-t-4 border-emerald-500 hover:shadow-md transition-shadow">
+              <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
+                <HandHeart className="w-5 h-5 text-emerald-600" />
               </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Ils nous soutiennent</h3>
+              <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5">
+                Ces partenaires nous financent et nous permettent de pérenniser ORA au profit
+                des jeunes apprentis.
+              </p>
+              <Link
+                to="/partenaires"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full font-semibold text-xs hover:bg-emerald-700 transition-colors self-start"
+              >
+                Voir notre réseau associatif
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
-            {/* Michel */}
-            <div className="relative bg-slate-900 rounded-2xl p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
-              <span className="text-5xl font-serif leading-none text-white/20 select-none">"</span>
-              <p className="text-white/80 text-sm leading-relaxed -mt-4">
-                Accompagner ces jeunes, leur transmettre mon expérience du monde de l'entreprise,
-                les voir grandir et réussir… c'est une expérience incroyablement enrichissante&nbsp;!
-              </p>
-              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-white/10">
-                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-sm">M</div>
-                <div>
-                  <p className="font-semibold text-white text-sm">Michel, 68 ans</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Mentor · Paris</span>
-                </div>
+            {/* Ils nous font confiance */}
+            <div className="flex flex-col bg-slate-50 rounded-2xl p-6 border-t-4 border-ora-blue hover:shadow-md transition-shadow">
+              <div className="w-11 h-11 rounded-xl bg-ora-blue/10 flex items-center justify-center mb-4">
+                <GraduationCap className="w-5 h-5 text-ora-blue" />
               </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Ils nous font confiance</h3>
+              <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5">
+                Ces CFA reconnaissent la qualité et l'efficacité de nos mentorats auprès des
+                jeunes de leurs établissements.
+              </p>
+              <Link
+                to="/partenaires"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-ora-blue text-white rounded-full font-semibold text-xs hover:bg-ora-dark transition-colors self-start"
+              >
+                Voir nos CFA partenaires
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
-            {/* Thomas */}
-            <div className="relative bg-slate-50 rounded-2xl p-6 flex flex-col gap-4 border border-slate-100 hover:shadow-md transition-shadow">
-              <span className="text-5xl font-serif leading-none text-ora-orange/30 select-none">"</span>
-              <p className="text-slate-700 text-sm leading-relaxed -mt-4">
-                Mon mentor m'a aidé à y voir plus clair sur mes objectifs. Aujourd'hui, j'ai
-                validé mon BTS et je suis en poste dans l'entreprise où j'étais apprenti&nbsp;!
-              </p>
-              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-slate-200">
-                <div className="w-9 h-9 rounded-full bg-ora-blue/15 flex items-center justify-center text-ora-blue font-bold text-sm">T</div>
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm">Thomas, 20 ans</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-ora-blue/10 text-ora-blue font-medium">Apprenti · Lille</span>
-                </div>
+            {/* Ils témoignent */}
+            <div className="flex flex-col bg-slate-50 rounded-2xl p-6 border-t-4 border-ora-orange hover:shadow-md transition-shadow">
+              <div className="w-11 h-11 rounded-xl bg-ora-orange/10 flex items-center justify-center mb-4">
+                <Quote className="w-5 h-5 text-ora-orange" />
               </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">Ils témoignent</h3>
+              <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5">
+                Des jeunes, des mentors et des formateurs dans l'apprentissage témoignent de
+                leur satisfaction sur le mentorat ORA.
+              </p>
+              <Link
+                to="/temoignages"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-ora-orange text-white rounded-full font-semibold text-xs hover:opacity-90 transition-opacity self-start"
+              >
+                Voir les témoignages
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
-          </div>
-
-          <div className="text-center mt-10">
-            <Link
-              to="/temoignages"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-slate-200 text-slate-700 font-semibold text-sm hover:border-ora-blue hover:text-ora-blue transition-colors"
-            >
-              Voir tous les témoignages
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
 
         </div>

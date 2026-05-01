@@ -358,10 +358,12 @@ export function ApprenticeRegistration() {
                 onChange={e => setFormData(prev => ({ ...prev, engagementAccepted: e.target.checked }))}
                 className="w-4 h-4 text-blue-600 accent-blue-600 mt-0.5 shrink-0" />
               <span className="text-xs text-slate-600 leading-relaxed">
-                Je m'engage dans le mentorat et en accepte les règles{' '}
-                <span className="text-slate-400">(voir section engagement)</span> *
+                Je m'engage dans le mentorat et en accepte les règles *
               </span>
             </label>
+            <p className="text-[11px] text-slate-400 mt-2">
+              (voir la page <Link to="/apprentis" className="underline hover:text-slate-600">tu es apprenti(e)</Link> section : A quoi je m'engage en demandant un mentor ?)
+            </p>
           </Section>
 
           <hr className="border-slate-100" />
