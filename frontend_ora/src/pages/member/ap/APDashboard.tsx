@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Loader2, AlertCircle, Search, AlertTriangle,
   Clock, BookOpen, MapPin, GraduationCap, Users, ChevronRight,
-  CheckCircle, XCircle, Pencil, Mail, ChevronDown,
+  CheckCircle, XCircle, Mail, ChevronDown,
 } from 'lucide-react';
 import api from '../../../services/api';
 import type { APDashboardData, APMesMenutorat, APMesMentoratPage } from './APDashboard.types';
@@ -171,20 +171,14 @@ function JeuneEditSection({ mentoratId, initial }: {
 
   if (!editing) {
     return (
-      <div className="flex items-center justify-between gap-2 mt-1.5">
-        <div className="flex flex-wrap gap-1.5 text-[11px]">
-          {situationLabel
-            ? <span className="font-semibold text-ora-blue">{situationLabel}</span>
-            : <span className="text-slate-300 italic">Situation non renseignée</span>
-          }
-          {displayNom && (
-            <><span className="text-slate-300">·</span><span className="text-slate-500">{displayNom}</span></>
-          )}
-        </div>
-        <button onClick={e => { e.stopPropagation(); setEditing(true); }}
-          className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-ora-blue transition-colors" title="Modifier">
-          <Pencil className="w-2.5 h-2.5" />
-        </button>
+      <div className="flex flex-wrap gap-1.5 text-[11px] mt-1.5">
+        {situationLabel
+          ? <span className="font-semibold text-ora-blue">{situationLabel}</span>
+          : <span className="text-slate-300 italic">Situation non renseignée</span>
+        }
+        {displayNom && (
+          <><span className="text-slate-300">·</span><span className="text-slate-500">{displayNom}</span></>
+        )}
       </div>
     );
   }

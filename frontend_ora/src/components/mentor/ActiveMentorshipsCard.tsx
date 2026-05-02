@@ -464,22 +464,26 @@ function JeuneEditSection({ mentoratId, initial }: {
           >{lbl}</button>
         ))}
       </div>
-      <select
-        value={selectValue}
-        onChange={e => handleSelectChange(e.target.value)}
-        className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue"
-      >
-        <option value="">— Établissement / CFA —</option>
-        {etabs.map(e => (
-          <option key={e.id} value={String(e.id)}>{e.nom}{e.code_postal ? ` (${e.code_postal})` : ''}</option>
-        ))}
-        <option value="autre">Autre…</option>
-      </select>
-      {selectValue === 'autre' && (
-        <input type="text" value={autreNom} onChange={e => setAutreNom(e.target.value)}
-          placeholder="Nom de l'établissement…"
-          className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue"
-        />
+      {situation === 'apprentissage' && (
+        <>
+          <select
+            value={selectValue}
+            onChange={e => handleSelectChange(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue"
+          >
+            <option value="">— Établissement / CFA —</option>
+            {etabs.map(e => (
+              <option key={e.id} value={String(e.id)}>{e.nom}{e.code_postal ? ` (${e.code_postal})` : ''}</option>
+            ))}
+            <option value="autre">Autre…</option>
+          </select>
+          {selectValue === 'autre' && (
+            <input type="text" value={autreNom} onChange={e => setAutreNom(e.target.value)}
+              placeholder="Nom de l'établissement…"
+              className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue"
+            />
+          )}
+        </>
       )}
       <div className="flex gap-2">
         <button type="button" onClick={() => setEditing(false)}

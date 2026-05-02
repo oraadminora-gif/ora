@@ -546,7 +546,7 @@ export function APMentoratSuiviModal({
             </div>
 
             {/* Établissement */}
-            <div>
+            {data.jeune_situation === 'apprentissage' && <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Établissement / CFA</label>
               <div className="space-y-2">
                 <div className="flex gap-2">
@@ -585,7 +585,7 @@ export function APMentoratSuiviModal({
                   </div>
                 )}
               </div>
-            </div>
+            </div>}
           </section>
 
           {/* ── Financements ── */}

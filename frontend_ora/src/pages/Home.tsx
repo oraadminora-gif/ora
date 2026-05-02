@@ -88,7 +88,7 @@ export function Home() {
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-[1.1] tracking-tight">
               ORA a envie<br />
-              <span className="bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
+              <span className="text-ora-orange">
                 de te voir réussir.
               </span>
             </h1>
