@@ -1,0 +1,6565 @@
+[
+  {
+    "model": "core.pole",
+    "pk": 4,
+    "fields": {
+      "code": "69",
+      "name": "ORA69",
+      "villes": [
+        "Lyon"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "ora69@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-27T22:57:11.740Z",
+      "updated_at": "2026-03-04T01:44:14.601Z",
+      "departments": [
+        2
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 5,
+    "fields": {
+      "code": "78",
+      "name": "ORA78",
+      "villes": [
+        "Versailles",
+        "Mantes",
+        "Cergy"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "ora78@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-27T22:59:47.333Z",
+      "updated_at": "2026-02-28T14:20:14.762Z",
+      "departments": [
+        79,
+        96
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 6,
+    "fields": {
+      "code": "33",
+      "name": "ORA33",
+      "villes": [
+        "Bordeaux"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "ora33@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-27T23:01:22.610Z",
+      "updated_at": "2026-04-19T19:17:17.372Z",
+      "departments": [
+        36
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 7,
+    "fields": {
+      "code": "75",
+      "name": "ORA75",
+      "villes": [],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "ora75@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-27T23:02:16.757Z",
+      "updated_at": "2026-02-28T13:38:13.304Z",
+      "departments": [
+        1,
+        92,
+        93,
+        95
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 8,
+    "fields": {
+      "code": "26",
+      "name": "ORA26",
+      "villes": [
+        "Valence",
+        "Montélimar",
+        "Annonay",
+        "Privas"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "ora26@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-28T07:32:39.701Z",
+      "updated_at": "2026-02-28T14:28:34.086Z",
+      "departments": [
+        9,
+        29
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 9,
+    "fields": {
+      "code": "14",
+      "name": "ORA14",
+      "villes": [
+        "Caen"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "ora14@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:19:59.143Z",
+      "updated_at": "2026-02-28T14:26:48.977Z",
+      "departments": [
+        16
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 10,
+    "fields": {
+      "code": "22",
+      "name": "ORA22",
+      "villes": [
+        "Saint Brieuc"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "ORA22@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:25:00.622Z",
+      "updated_at": "2026-02-28T14:24:34.439Z",
+      "departments": [
+        25
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 11,
+    "fields": {
+      "code": "29",
+      "name": "ORA29",
+      "villes": [
+        "Brest",
+        "Morlaix",
+        "Quimper",
+        "Concarneau"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "ora29@yahoo.fr",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:26:16.046Z",
+      "updated_at": "2026-02-28T14:27:58.801Z",
+      "departments": [
+        32
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 12,
+    "fields": {
+      "code": "31",
+      "name": "ORA31",
+      "villes": [
+        "Toulouse"
+      ],
+      "etat_activite": "a_letude",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:26:59.314Z",
+      "updated_at": "2026-02-28T14:23:41.440Z",
+      "departments": [
+        34
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 13,
+    "fields": {
+      "code": "35",
+      "name": "ORA35",
+      "villes": [
+        "Rennes",
+        "Saint Malo"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:28:42.221Z",
+      "updated_at": "2026-02-28T14:19:28.339Z",
+      "departments": [
+        38
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 14,
+    "fields": {
+      "code": "38",
+      "name": "ORA38",
+      "villes": [
+        "Grenoble",
+        "Bourgoin"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:29:16.011Z",
+      "updated_at": "2026-02-28T14:23:23.420Z",
+      "departments": [
+        41
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 15,
+    "fields": {
+      "code": "44",
+      "name": "ORA44",
+      "villes": [
+        "Nantes"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:30:05.269Z",
+      "updated_at": "2026-02-28T14:11:57.887Z",
+      "departments": [
+        47
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 16,
+    "fields": {
+      "code": "50",
+      "name": "ORA50",
+      "villes": [],
+      "etat_activite": "a_letude",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:30:50.477Z",
+      "updated_at": "2026-02-28T13:30:50.477Z",
+      "departments": [
+        53
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 17,
+    "fields": {
+      "code": "54",
+      "name": "ORA54",
+      "villes": [
+        "Nancy"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:31:22.730Z",
+      "updated_at": "2026-02-28T14:27:10.358Z",
+      "departments": [
+        57
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 18,
+    "fields": {
+      "code": "57",
+      "name": "ORA57",
+      "villes": [
+        "Metz"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:31:59.864Z",
+      "updated_at": "2026-02-28T14:25:27.356Z",
+      "departments": [
+        60
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 19,
+    "fields": {
+      "code": "60",
+      "name": "ORA60",
+      "villes": [
+        "Compiègne"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:32:43.242Z",
+      "updated_at": "2026-02-28T14:25:48.920Z",
+      "departments": [
+        63
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 20,
+    "fields": {
+      "code": "71",
+      "name": "ORA71",
+      "villes": [
+        "Chalon sur Saone"
+      ],
+      "etat_activite": "a_letude",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:35:16.284Z",
+      "updated_at": "2026-02-28T14:26:11.693Z",
+      "departments": [
+        73
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 21,
+    "fields": {
+      "code": "72",
+      "name": "ORA72",
+      "villes": [
+        "Le Mans"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:35:49.821Z",
+      "updated_at": "2026-02-28T14:27:27.557Z",
+      "departments": [
+        74
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 22,
+    "fields": {
+      "code": "73",
+      "name": "ORA73",
+      "villes": [
+        "Chambéry",
+        "Aix les Bains"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:36:34.764Z",
+      "updated_at": "2026-02-28T14:20:44.783Z",
+      "departments": [
+        75
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 23,
+    "fields": {
+      "code": "74",
+      "name": "ORA74",
+      "villes": [
+        "Annecy",
+        "Annemasse",
+        "Bonneville",
+        "Thonon",
+        "Sallanches"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:37:07.728Z",
+      "updated_at": "2026-02-28T14:21:59.388Z",
+      "departments": [
+        76
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 24,
+    "fields": {
+      "code": "85",
+      "name": "ORA85",
+      "villes": [
+        "La Roche sur Yon"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:40:41.701Z",
+      "updated_at": "2026-02-28T14:18:56.366Z",
+      "departments": [
+        80,
+        86
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 25,
+    "fields": {
+      "code": "68",
+      "name": "ORA ALSACE",
+      "villes": [
+        "Colmar",
+        "Mulhouse",
+        "Strasbourg"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:42:34.601Z",
+      "updated_at": "2026-02-28T14:25:02.884Z",
+      "departments": [
+        70,
+        71
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 26,
+    "fields": {
+      "code": "34",
+      "name": "ORA LR",
+      "villes": [
+        "Montpellier",
+        "Perpignan",
+        "Narbonne",
+        "Nimes"
+      ],
+      "etat_activite": "fragile",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:43:42.709Z",
+      "updated_at": "2026-02-28T14:22:42.209Z",
+      "departments": [
+        13,
+        33,
+        37,
+        69
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 27,
+    "fields": {
+      "code": "06",
+      "name": "ORA PACA",
+      "villes": [
+        "Nice",
+        "Marseille",
+        "Avignon"
+      ],
+      "etat_activite": "demarre",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T13:44:49.698Z",
+      "updated_at": "2026-03-02T21:19:04.207Z",
+      "departments": [
+        6,
+        8,
+        15,
+        84,
+        85
+      ]
+    }
+  },
+  {
+    "model": "core.pole",
+    "pk": 28,
+    "fields": {
+      "code": "63",
+      "name": "ORA63",
+      "villes": [
+        "Clermont",
+        "Vichy",
+        "Montluçon",
+        "Moulins",
+        "Saint Etienne"
+      ],
+      "etat_activite": "experimente",
+      "status": "ACTIVE",
+      "contact_email": "",
+      "contact_phone": "",
+      "created_at": "2026-02-28T14:16:50.569Z",
+      "updated_at": "2026-02-28T14:17:54.559Z",
+      "departments": [
+        5,
+        17,
+        45,
+        46
+      ]
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 1,
+    "fields": {
+      "code": "75",
+      "name": "Paris"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 2,
+    "fields": {
+      "code": "69",
+      "name": "Rhône"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 3,
+    "fields": {
+      "code": "01",
+      "name": "Ain"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 4,
+    "fields": {
+      "code": "02",
+      "name": "Aisne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 5,
+    "fields": {
+      "code": "03",
+      "name": "Allier"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 6,
+    "fields": {
+      "code": "04",
+      "name": "Alpes-de-Haute-Provence"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 7,
+    "fields": {
+      "code": "05",
+      "name": "Hautes-Alpes"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 8,
+    "fields": {
+      "code": "06",
+      "name": "Alpes-Maritimes"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 9,
+    "fields": {
+      "code": "07",
+      "name": "Ardèche"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 10,
+    "fields": {
+      "code": "08",
+      "name": "Ardennes"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 11,
+    "fields": {
+      "code": "09",
+      "name": "Ariège"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 12,
+    "fields": {
+      "code": "10",
+      "name": "Aube"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 13,
+    "fields": {
+      "code": "11",
+      "name": "Aude"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 14,
+    "fields": {
+      "code": "12",
+      "name": "Aveyron"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 15,
+    "fields": {
+      "code": "13",
+      "name": "Bouches-du-Rhône"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 16,
+    "fields": {
+      "code": "14",
+      "name": "Calvados"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 17,
+    "fields": {
+      "code": "15",
+      "name": "Cantal"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 18,
+    "fields": {
+      "code": "16",
+      "name": "Charente"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 19,
+    "fields": {
+      "code": "17",
+      "name": "Charente-Maritime"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 20,
+    "fields": {
+      "code": "18",
+      "name": "Cher"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 21,
+    "fields": {
+      "code": "19",
+      "name": "Corrèze"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 22,
+    "fields": {
+      "code": "2A",
+      "name": "Corse-du-Sud"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 23,
+    "fields": {
+      "code": "2B",
+      "name": "Haute-Corse"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 24,
+    "fields": {
+      "code": "21",
+      "name": "Côte-d'Or"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 25,
+    "fields": {
+      "code": "22",
+      "name": "Côtes-d'Armor"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 26,
+    "fields": {
+      "code": "23",
+      "name": "Creuse"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 27,
+    "fields": {
+      "code": "24",
+      "name": "Dordogne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 28,
+    "fields": {
+      "code": "25",
+      "name": "Doubs"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 29,
+    "fields": {
+      "code": "26",
+      "name": "Drôme"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 30,
+    "fields": {
+      "code": "27",
+      "name": "Eure"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 31,
+    "fields": {
+      "code": "28",
+      "name": "Eure-et-Loir"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 32,
+    "fields": {
+      "code": "29",
+      "name": "Finistère"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 33,
+    "fields": {
+      "code": "30",
+      "name": "Gard"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 34,
+    "fields": {
+      "code": "31",
+      "name": "Haute-Garonne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 35,
+    "fields": {
+      "code": "32",
+      "name": "Gers"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 36,
+    "fields": {
+      "code": "33",
+      "name": "Gironde"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 37,
+    "fields": {
+      "code": "34",
+      "name": "Hérault"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 38,
+    "fields": {
+      "code": "35",
+      "name": "Ille-et-Vilaine"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 39,
+    "fields": {
+      "code": "36",
+      "name": "Indre"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 40,
+    "fields": {
+      "code": "37",
+      "name": "Indre-et-Loire"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 41,
+    "fields": {
+      "code": "38",
+      "name": "Isère"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 42,
+    "fields": {
+      "code": "39",
+      "name": "Jura"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 43,
+    "fields": {
+      "code": "40",
+      "name": "Landes"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 44,
+    "fields": {
+      "code": "41",
+      "name": "Loir-et-Cher"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 45,
+    "fields": {
+      "code": "42",
+      "name": "Loire"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 46,
+    "fields": {
+      "code": "43",
+      "name": "Haute-Loire"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 47,
+    "fields": {
+      "code": "44",
+      "name": "Loire-Atlantique"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 48,
+    "fields": {
+      "code": "45",
+      "name": "Loiret"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 49,
+    "fields": {
+      "code": "46",
+      "name": "Lot"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 50,
+    "fields": {
+      "code": "47",
+      "name": "Lot-et-Garonne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 51,
+    "fields": {
+      "code": "48",
+      "name": "Lozère"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 52,
+    "fields": {
+      "code": "49",
+      "name": "Maine-et-Loire"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 53,
+    "fields": {
+      "code": "50",
+      "name": "Manche"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 54,
+    "fields": {
+      "code": "51",
+      "name": "Marne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 55,
+    "fields": {
+      "code": "52",
+      "name": "Haute-Marne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 56,
+    "fields": {
+      "code": "53",
+      "name": "Mayenne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 57,
+    "fields": {
+      "code": "54",
+      "name": "Meurthe-et-Moselle"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 58,
+    "fields": {
+      "code": "55",
+      "name": "Meuse"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 59,
+    "fields": {
+      "code": "56",
+      "name": "Morbihan"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 60,
+    "fields": {
+      "code": "57",
+      "name": "Moselle"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 61,
+    "fields": {
+      "code": "58",
+      "name": "Nièvre"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 62,
+    "fields": {
+      "code": "59",
+      "name": "Nord"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 63,
+    "fields": {
+      "code": "60",
+      "name": "Oise"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 64,
+    "fields": {
+      "code": "61",
+      "name": "Orne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 65,
+    "fields": {
+      "code": "62",
+      "name": "Pas-de-Calais"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 66,
+    "fields": {
+      "code": "63",
+      "name": "Puy-de-Dôme"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 67,
+    "fields": {
+      "code": "64",
+      "name": "Pyrénées-Atlantiques"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 68,
+    "fields": {
+      "code": "65",
+      "name": "Hautes-Pyrénées"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 69,
+    "fields": {
+      "code": "66",
+      "name": "Pyrénées-Orientales"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 70,
+    "fields": {
+      "code": "67",
+      "name": "Bas-Rhin"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 71,
+    "fields": {
+      "code": "68",
+      "name": "Haut-Rhin"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 72,
+    "fields": {
+      "code": "70",
+      "name": "Haute-Saône"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 73,
+    "fields": {
+      "code": "71",
+      "name": "Saône-et-Loire"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 74,
+    "fields": {
+      "code": "72",
+      "name": "Sarthe"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 75,
+    "fields": {
+      "code": "73",
+      "name": "Savoie"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 76,
+    "fields": {
+      "code": "74",
+      "name": "Haute-Savoie"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 77,
+    "fields": {
+      "code": "76",
+      "name": "Seine-Maritime"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 78,
+    "fields": {
+      "code": "77",
+      "name": "Seine-et-Marne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 79,
+    "fields": {
+      "code": "78",
+      "name": "Yvelines"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 80,
+    "fields": {
+      "code": "79",
+      "name": "Deux-Sèvres"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 81,
+    "fields": {
+      "code": "80",
+      "name": "Somme"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 82,
+    "fields": {
+      "code": "81",
+      "name": "Tarn"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 83,
+    "fields": {
+      "code": "82",
+      "name": "Tarn-et-Garonne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 84,
+    "fields": {
+      "code": "83",
+      "name": "Var"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 85,
+    "fields": {
+      "code": "84",
+      "name": "Vaucluse"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 86,
+    "fields": {
+      "code": "85",
+      "name": "Vendée"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 87,
+    "fields": {
+      "code": "86",
+      "name": "Vienne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 88,
+    "fields": {
+      "code": "87",
+      "name": "Haute-Vienne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 89,
+    "fields": {
+      "code": "88",
+      "name": "Vosges"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 90,
+    "fields": {
+      "code": "89",
+      "name": "Yonne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 91,
+    "fields": {
+      "code": "90",
+      "name": "Territoire de Belfort"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 92,
+    "fields": {
+      "code": "91",
+      "name": "Essonne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 93,
+    "fields": {
+      "code": "92",
+      "name": "Hauts-de-Seine"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 94,
+    "fields": {
+      "code": "93",
+      "name": "Seine-Saint-Denis"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 95,
+    "fields": {
+      "code": "94",
+      "name": "Val-de-Marne"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 96,
+    "fields": {
+      "code": "95",
+      "name": "Val-d'Oise"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 97,
+    "fields": {
+      "code": "971",
+      "name": "Guadeloupe"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 98,
+    "fields": {
+      "code": "972",
+      "name": "Martinique"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 99,
+    "fields": {
+      "code": "973",
+      "name": "Guyane"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 100,
+    "fields": {
+      "code": "974",
+      "name": "La Réunion"
+    }
+  },
+  {
+    "model": "core.department",
+    "pk": 101,
+    "fields": {
+      "code": "976",
+      "name": "Mayotte"
+    }
+  },
+  {
+    "model": "core.association",
+    "pk": 3,
+    "fields": {
+      "code": "AGIR",
+      "name": "AGIR",
+      "is_active": true,
+      "created_at": "2026-02-27T17:41:42.053Z"
+    }
+  },
+  {
+    "model": "core.association",
+    "pk": 4,
+    "fields": {
+      "code": "ECTI",
+      "name": "ECTI",
+      "is_active": true,
+      "created_at": "2026-02-27T17:41:42.055Z"
+    }
+  },
+  {
+    "model": "core.association",
+    "pk": 5,
+    "fields": {
+      "code": "EGEE",
+      "name": "EGEE",
+      "is_active": true,
+      "created_at": "2026-02-27T17:41:42.056Z"
+    }
+  },
+  {
+    "model": "core.association",
+    "pk": 6,
+    "fields": {
+      "code": "OTECI",
+      "name": "OTECI",
+      "is_active": true,
+      "created_at": "2026-02-27T17:41:42.057Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 1,
+    "fields": {
+      "nom": "CFA BTP Dardilly",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.565Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 2,
+    "fields": {
+      "nom": "CFA Chimie Biologie La Forbine",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.580Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 3,
+    "fields": {
+      "nom": "CFA Dardilly ?",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.587Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 4,
+    "fields": {
+      "nom": "CFA Greta Vénissieux",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.593Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 5,
+    "fields": {
+      "nom": "CFA HR Rabelais",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.598Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 6,
+    "fields": {
+      "nom": "CFAI",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.604Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 7,
+    "fields": {
+      "nom": "Ecole Progress Santé",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.608Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 8,
+    "fields": {
+      "nom": "LP 1er Film",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.613Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 9,
+    "fields": {
+      "nom": "LP Charlie Chaplin",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.619Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 10,
+    "fields": {
+      "nom": "LP Edmond Labbe",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.624Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 11,
+    "fields": {
+      "nom": "LP Edouard Branly",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.628Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 12,
+    "fields": {
+      "nom": "LP G. Lamarque",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.633Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 13,
+    "fields": {
+      "nom": "LP Gustave Eiffel",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.638Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 14,
+    "fields": {
+      "nom": "LP Hector Guimard",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.643Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 15,
+    "fields": {
+      "nom": "LP Hélène Boucher",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.649Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 16,
+    "fields": {
+      "nom": "LP R. Pellet",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.653Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 17,
+    "fields": {
+      "nom": "LP Tony Garnier",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.659Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 18,
+    "fields": {
+      "nom": "Lycée des Métiers Marie Curie",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.663Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 19,
+    "fields": {
+      "nom": "SEPR",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.668Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 20,
+    "fields": {
+      "nom": "Université",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.672Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 21,
+    "fields": {
+      "nom": "LP Colbert",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.680Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 22,
+    "fields": {
+      "nom": "LP Simon Rousseau (Santé)",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.684Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 23,
+    "fields": {
+      "nom": "UCPA",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.689Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 24,
+    "fields": {
+      "nom": "Ecole Terrade",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.694Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 25,
+    "fields": {
+      "nom": "LP Jacques de Flesselles",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.698Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 26,
+    "fields": {
+      "nom": "CFA Compagnons Devoir",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.702Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 27,
+    "fields": {
+      "nom": "CFA Non Renseigné (NR)",
+      "code_postal": "",
+      "pole": 4,
+      "is_active": true,
+      "created_at": "2026-03-02T17:30:34.708Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 28,
+    "fields": {
+      "nom": "AHp",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.168Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 29,
+    "fields": {
+      "nom": "Altéa à Mérignac",
+      "code_postal": "33400",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.174Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 30,
+    "fields": {
+      "nom": "Altea Business & Digital School",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.180Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 31,
+    "fields": {
+      "nom": "Campus du lac",
+      "code_postal": "33200",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.184Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 32,
+    "fields": {
+      "nom": "Campus du lac",
+      "code_postal": "33000",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.192Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 33,
+    "fields": {
+      "nom": "Campus du lac",
+      "code_postal": "33115",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.197Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 34,
+    "fields": {
+      "nom": "Campus du lac Libourne",
+      "code_postal": "33500",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.201Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 35,
+    "fields": {
+      "nom": "CFA Campus du LAC",
+      "code_postal": "33500",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.207Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 36,
+    "fields": {
+      "nom": "CFA Bordeaux lac",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.212Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 37,
+    "fields": {
+      "nom": "Lycée Bremontier Bordeaux",
+      "code_postal": "33400",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.217Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 38,
+    "fields": {
+      "nom": "Lycée de Gascogne Talence",
+      "code_postal": "33400",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.221Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 39,
+    "fields": {
+      "nom": "Lycée d'Atélier de Gascogne Talence",
+      "code_postal": "33400",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.225Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 40,
+    "fields": {
+      "nom": "Lycée d'Atélier de Talence",
+      "code_postal": "33400",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.230Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 41,
+    "fields": {
+      "nom": "MFR DAX",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.234Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 42,
+    "fields": {
+      "nom": "Nathalie Lecornu",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.240Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 43,
+    "fields": {
+      "nom": "Saint Genes",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.244Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 44,
+    "fields": {
+      "nom": "St Vincent de Paul",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.248Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 45,
+    "fields": {
+      "nom": "SUP DE PUB",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.254Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 46,
+    "fields": {
+      "nom": "Super U Galgon",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.260Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 47,
+    "fields": {
+      "nom": "Sylvia Terrade",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.265Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 48,
+    "fields": {
+      "nom": "UniversitÃ© Bordeaux",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.272Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 49,
+    "fields": {
+      "nom": "Vaelia",
+      "code_postal": "33700",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.277Z"
+    }
+  },
+  {
+    "model": "core.etablissement",
+    "pk": 50,
+    "fields": {
+      "nom": "Vaelia MÃ©rignac",
+      "code_postal": "",
+      "pole": 6,
+      "is_active": true,
+      "created_at": "2026-03-02T17:51:11.282Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 15,
+    "fields": {
+      "first_name": "jeune1",
+      "last_name": "Kab1",
+      "email": "joa751977@gmail.com",
+      "phone": "+33614828584",
+      "birth_date": "2001-06-10",
+      "gender": "F",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": 2,
+      "nom_etablissement": "CFA BTP Dardilly",
+      "etablissement": 1,
+      "diplome_prepare": "CAP",
+      "situation": "apprentissage",
+      "request_date": "2026-03-02",
+      "status": "CLOSED",
+      "needs_description": "Je veux un logement et apprendre le français",
+      "urgency_level": 1,
+      "pole": 4,
+      "raison_transfert": "Il est à Lyon donc c'est mieux qu'il soit accompagné là bas",
+      "created_at": "2026-03-02T18:06:50.080Z",
+      "updated_at": "2026-03-02T22:22:59.296Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 16,
+    "fields": {
+      "first_name": "jeune2",
+      "last_name": "Kab2",
+      "email": "joa751977@gmail.com",
+      "phone": "+33614828485",
+      "birth_date": "2005-03-04",
+      "gender": "F",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": 2,
+      "nom_etablissement": "",
+      "etablissement": 8,
+      "diplome_prepare": "BP",
+      "situation": "apprentissage",
+      "request_date": "2026-03-02",
+      "status": "MATCHED",
+      "needs_description": "Logement et permis de conduire",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-02T22:38:45.295Z",
+      "updated_at": "2026-03-03T16:51:24.122Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 17,
+    "fields": {
+      "first_name": "Jeune3",
+      "last_name": "Kab3",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "birth_date": "2015-03-21",
+      "gender": "F",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": 2,
+      "nom_etablissement": "",
+      "etablissement": 4,
+      "diplome_prepare": "BEP",
+      "situation": "recherche",
+      "request_date": "2026-03-03",
+      "status": "CLOSED",
+      "needs_description": "je veux apprendre l'Anglais et puis démarche administrative",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-03T21:48:27.713Z",
+      "updated_at": "2026-03-09T21:30:32.193Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 18,
+    "fields": {
+      "first_name": "Jeune4",
+      "last_name": "Kab4",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "birth_date": "1998-09-26",
+      "gender": "M",
+      "city": "Bordeau",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": 36,
+      "nom_etablissement": "LP Gustave Eiffel",
+      "etablissement": 13,
+      "diplome_prepare": "LIC_PRO",
+      "situation": "apprentissage",
+      "request_date": "2026-03-04",
+      "status": "ASSIGNED",
+      "needs_description": "j'ai besoin d'être logé et les démarches administratives",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-04T21:49:12.858Z",
+      "updated_at": "2026-03-04T22:05:32.496Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 19,
+    "fields": {
+      "first_name": "Jeune5",
+      "last_name": "Kab5",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "birth_date": "2002-11-26",
+      "gender": "O",
+      "city": "Bordeau",
+      "commune": "",
+      "code_postal": "",
+      "latitude": 44.851897,
+      "longitude": -0.587877,
+      "department": null,
+      "nom_etablissement": "Campus du lac",
+      "etablissement": 31,
+      "diplome_prepare": "",
+      "situation": "recherche",
+      "request_date": "2026-03-04",
+      "status": "NEW",
+      "needs_description": "Démarche adminstrative, logement",
+      "urgency_level": 1,
+      "pole": 6,
+      "raison_transfert": "",
+      "created_at": "2026-03-04T21:53:42.316Z",
+      "updated_at": "2026-03-04T22:32:16.894Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 20,
+    "fields": {
+      "first_name": "Jeune6",
+      "last_name": "kab6",
+      "email": "kis@yahoo.fr",
+      "phone": "0997015862",
+      "birth_date": "2015-01-20",
+      "gender": "M",
+      "city": "Bordeau",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": null,
+      "nom_etablissement": "Lycée d'Atélier de Gascogne Talence",
+      "etablissement": 39,
+      "diplome_prepare": "BTS",
+      "situation": "recherche",
+      "request_date": "2026-03-04",
+      "status": "ASSIGNED",
+      "needs_description": "Logement, apprendre le Français",
+      "urgency_level": 1,
+      "pole": 6,
+      "raison_transfert": "",
+      "created_at": "2026-03-04T21:58:01.536Z",
+      "updated_at": "2026-03-04T22:36:22.500Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 21,
+    "fields": {
+      "first_name": "Jeune8",
+      "last_name": "Kab8",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "1998-03-11",
+      "gender": "O",
+      "city": "Tassin-la-demi-lune",
+      "commune": "",
+      "code_postal": "",
+      "latitude": null,
+      "longitude": null,
+      "department": 2,
+      "nom_etablissement": "",
+      "etablissement": null,
+      "diplome_prepare": "LIC_PRO",
+      "situation": "recherche",
+      "request_date": "2026-03-05",
+      "status": "ASSIGNED",
+      "needs_description": "Logement, et puis mieux m'exprimer en français",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-05T07:17:39.299Z",
+      "updated_at": "2026-03-05T07:19:51.578Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 22,
+    "fields": {
+      "first_name": "Jeune9",
+      "last_name": "Kab9",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "2000-03-04",
+      "gender": "F",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": 7,
+      "diplome_prepare": "LIC_PRO",
+      "situation": "apprentissage",
+      "request_date": "2026-03-05",
+      "status": "MATCHED",
+      "needs_description": "Je veux apprendre apprendre le français, logement",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-05T22:37:07.141Z",
+      "updated_at": "2026-04-09T13:33:40.957Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 23,
+    "fields": {
+      "first_name": "Jeune_test",
+      "last_name": "Kab_test",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "2009-03-13",
+      "gender": "",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "CFA",
+      "etablissement": null,
+      "diplome_prepare": "LIC_PRO",
+      "situation": "apprentissage",
+      "request_date": "2026-03-06",
+      "status": "NEW",
+      "needs_description": "Difficultés scolaires",
+      "urgency_level": 1,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-06T13:11:29.111Z",
+      "updated_at": "2026-03-06T13:14:55.296Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 24,
+    "fields": {
+      "first_name": "Test_demande",
+      "last_name": "Kab",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "2012-07-11",
+      "gender": "O",
+      "city": "Lyon",
+      "commune": "",
+      "code_postal": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": 22,
+      "diplome_prepare": "",
+      "situation": "apprentissage",
+      "request_date": "2026-03-06",
+      "status": "ASSIGNED",
+      "needs_description": "Autre",
+      "urgency_level": 1,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-06T13:29:24.338Z",
+      "updated_at": "2026-04-19T13:49:30.610Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 25,
+    "fields": {
+      "first_name": "Jeune 11",
+      "last_name": "kab11",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828548",
+      "birth_date": "1999-03-06",
+      "gender": "M",
+      "city": "Lyon",
+      "commune": "Lyon",
+      "code_postal": "69005",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "CFA",
+      "etablissement": null,
+      "diplome_prepare": "LIC_PRO",
+      "situation": "apprentissage",
+      "request_date": "2026-03-09",
+      "status": "CLOSED",
+      "needs_description": "Difficultés en entreprise, Changement d'entreprise, Confiance en soi",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-09T09:50:00.998Z",
+      "updated_at": "2026-04-09T13:04:17.444Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 26,
+    "fields": {
+      "first_name": "Jo",
+      "last_name": "Kab",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "2002-05-07",
+      "gender": "F",
+      "city": "Tassin-la-demi-lune",
+      "commune": "Tassin-la-demi-lune",
+      "code_postal": "69160",
+      "latitude": 45.761251,
+      "longitude": 4.75677,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": 27,
+      "diplome_prepare": "BTS",
+      "situation": "apprentissage",
+      "request_date": "2026-03-12",
+      "status": "ASSIGNED",
+      "needs_description": "Logement, Difficultés scolaires",
+      "urgency_level": 4,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-03-12T20:27:19.535Z",
+      "updated_at": "2026-03-12T20:29:26.521Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 27,
+    "fields": {
+      "first_name": "Luc",
+      "last_name": "shams",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "birth_date": "2003-07-05",
+      "gender": "M",
+      "city": "Tassin-la-demi-lune",
+      "commune": "Tassin-la-demi-lune",
+      "code_postal": "69160",
+      "latitude": 45.761251,
+      "longitude": 4.75677,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": null,
+      "diplome_prepare": "",
+      "situation": "recherche",
+      "request_date": "2026-04-10",
+      "status": "ASSIGNED",
+      "needs_description": "Je suis entrain de chercher un logement",
+      "urgency_level": 1,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-04-09T22:32:05.410Z",
+      "updated_at": "2026-04-09T22:34:08.410Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 28,
+    "fields": {
+      "first_name": "Pascal",
+      "last_name": "Harmel",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "birth_date": "2010-04-08",
+      "gender": "F",
+      "city": "Lyon 5",
+      "commune": "Lyon 5",
+      "code_postal": "69002",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": null,
+      "diplome_prepare": "BP",
+      "situation": "apprentissage",
+      "request_date": "2026-04-10",
+      "status": "ASSIGNED",
+      "needs_description": "Je désire avoir un logement et puis un permis de conduire",
+      "urgency_level": 1,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-04-10T07:30:50.990Z",
+      "updated_at": "2026-04-10T07:34:32.648Z"
+    }
+  },
+  {
+    "model": "core.youngrequest",
+    "pk": 29,
+    "fields": {
+      "first_name": "Gladys",
+      "last_name": "Kis",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828485",
+      "birth_date": "2000-05-07",
+      "gender": "F",
+      "city": "Lyon 5",
+      "commune": "Lyon 5",
+      "code_postal": "69005",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "department": null,
+      "nom_etablissement": "",
+      "etablissement": 10,
+      "diplome_prepare": "MASTER",
+      "situation": "recherche",
+      "request_date": "2026-04-12",
+      "status": "CLOSED",
+      "needs_description": "Une école et un financement",
+      "urgency_level": 3,
+      "pole": 4,
+      "raison_transfert": "",
+      "created_at": "2026-04-12T19:54:34.280Z",
+      "updated_at": "2026-04-12T20:23:12.401Z"
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 1,
+    "fields": {
+      "mentor": 4,
+      "young_request": 15,
+      "pole": 4,
+      "ap_responsable": 37,
+      "created_at": "2026-03-02T19:00:47.015Z",
+      "assigned_at": "2026-03-02",
+      "expected_end_date": null,
+      "closed_at": "2026-03-02",
+      "status": "CLOSED",
+      "closure_reason": "",
+      "message_cloture": "Bonjour jeune1,\n\nJe me permets de vous écrire pour vous informer que votre mentorat avec Francis DUFOUR est officiellement clôturé avec succès.\n\nAu cours de nos 3 rencontres (soit 3h d'accompagnement), nous espérons que cette expérience vous a apporté les outils et la confiance nécessaires pour la suite de votre parcours.\n\nCe fut un plaisir de vous accompagner pendant cette période.\n\nBien cordialement,\nFrancis DUFOUR",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-02-27",
+      "notes_suivi": "Résolu",
+      "problematiques": [
+        "recherche_contrat",
+        "logement",
+        "prob_administratif"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 2,
+    "fields": {
+      "mentor": 4,
+      "young_request": 16,
+      "pole": 4,
+      "ap_responsable": 37,
+      "created_at": "2026-03-02T22:40:16.272Z",
+      "assigned_at": "2026-03-02",
+      "expected_end_date": "2026-03-05",
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "Bonjour jeune2,\n\nJe me permets de vous informer que votre mentorat avec Francis DUFOUR prend fin à compter d'aujourd'hui.\n\nNous espérons que cet accompagnement vous aura été utile. Une équipe reste disponible pour assurer la suite de votre suivi.\n\nBien cordialement,\nFrancis DUFOUR",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-03-03",
+      "notes_suivi": "[AP - 2026-03-05] c''est déja cloturé\n[AP résolu - 2026-03-04] C'est bon! \nSalut et bon courage",
+      "problematiques": [
+        "logement",
+        "orientation",
+        "fragilite_mentale"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 3,
+    "fields": {
+      "mentor": 6,
+      "young_request": 17,
+      "pole": 4,
+      "ap_responsable": 37,
+      "created_at": "2026-03-03T21:50:44.949Z",
+      "assigned_at": "2026-03-03",
+      "expected_end_date": "2026-03-05",
+      "closed_at": "2026-03-09",
+      "status": "CLOSED",
+      "closure_reason": "",
+      "message_cloture": "Bonjour Jeune3,\n\nJe me permets de vous écrire pour vous informer que votre mentorat avec Yves Hunckler est officiellement clôturé avec succès.\n\nAu cours de nos 2 rencontres (soit 2.8h d'accompagnement), nous espérons que cette expérience vous a apporté les outils et la confiance nécessaires pour la suite de votre parcours.\n\nCe fut un plaisir de vous accompagner pendant cette période.\n\nBien cordialement,\nYves Hunckler",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-03-09",
+      "notes_suivi": "C'est cool",
+      "problematiques": [
+        "logement",
+        "prob_administratif",
+        "soutien_scolaire"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 4,
+    "fields": {
+      "mentor": 17,
+      "young_request": 18,
+      "pole": 6,
+      "ap_responsable": 45,
+      "created_at": "2026-03-04T22:05:32.483Z",
+      "assigned_at": "2026-03-04",
+      "expected_end_date": null,
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": null,
+      "notes_suivi": "",
+      "problematiques": [],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 5,
+    "fields": {
+      "mentor": 23,
+      "young_request": 20,
+      "pole": 6,
+      "ap_responsable": 44,
+      "created_at": "2026-03-04T22:36:22.497Z",
+      "assigned_at": "2026-03-04",
+      "expected_end_date": "2026-03-04",
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-03-01",
+      "notes_suivi": "",
+      "problematiques": [
+        "fle",
+        "logement",
+        "fragilite_mentale"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 6,
+    "fields": {
+      "mentor": 5,
+      "young_request": 21,
+      "pole": 4,
+      "ap_responsable": 37,
+      "created_at": "2026-03-05T07:19:51.574Z",
+      "assigned_at": "2026-03-05",
+      "expected_end_date": "2026-03-07",
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-03-06",
+      "notes_suivi": "",
+      "problematiques": [
+        "orientation",
+        "logement",
+        "fragilite_mentale"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 7,
+    "fields": {
+      "mentor": 6,
+      "young_request": 25,
+      "pole": 4,
+      "ap_responsable": 38,
+      "created_at": "2026-03-09T11:03:52.817Z",
+      "assigned_at": "2026-03-09",
+      "expected_end_date": null,
+      "closed_at": "2026-04-09",
+      "status": "CLOSED",
+      "closure_reason": "",
+      "message_cloture": "Bonjour Jeune,\n\nJe me permets de vous écrire pour vous informer que votre mentorat avec Yves Hunckler est officiellement clôturé avec succès.\n\nAu cours de nos 3 rencontres (soit 3.4h d'accompagnement), nous espérons que cette expérience vous a apporté les outils et la confiance nécessaires pour la suite de votre parcours.\n\nCe fut un plaisir de vous accompagner pendant ces 1 mois.\n\nBien cordialement,\nYves Hunckler",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-04-07",
+      "notes_suivi": "",
+      "problematiques": [],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 8,
+    "fields": {
+      "mentor": 6,
+      "young_request": 22,
+      "pole": 4,
+      "ap_responsable": 38,
+      "created_at": "2026-03-09T20:13:34.886Z",
+      "assigned_at": "2026-03-09",
+      "expected_end_date": "2026-03-14",
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "Bonjour Jeune9,\n\nJe me permets de vous écrire pour vous informer que votre mentorat avec Yves Hunckler est officiellement clôturé avec succès.\n\nAu cours de nos 3 rencontres (soit 5.5h d'accompagnement), nous espérons que cette expérience vous a apporté les outils et la confiance nécessaires pour la suite de votre parcours.\n\nCe fut un plaisir de vous accompagner pendant ces 1 mois.\n\nBien cordialement,\nYves Hunckler",
+      "alerte_rouge": true,
+      "dernier_contact": "2026-04-10",
+      "notes_suivi": "[AP - 2026-04-10] Alors ça va?\nC'est bon félicitation",
+      "problematiques": [
+        "logement",
+        "soutien_moral",
+        "fragilite_mentale"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 9,
+    "fields": {
+      "mentor": 16,
+      "young_request": 26,
+      "pole": 4,
+      "ap_responsable": 37,
+      "created_at": "2026-03-12T20:29:26.506Z",
+      "assigned_at": "2026-03-12",
+      "expected_end_date": "2027-02-14",
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-03-16",
+      "notes_suivi": "T'as ton premier montoré",
+      "problematiques": [
+        "logement",
+        "fragilite_mentale"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 10,
+    "fields": {
+      "mentor": 6,
+      "young_request": 27,
+      "pole": 4,
+      "ap_responsable": 38,
+      "created_at": "2026-04-09T22:34:08.394Z",
+      "assigned_at": "2026-04-09",
+      "expected_end_date": null,
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-04-09",
+      "notes_suivi": "A suivre ...",
+      "problematiques": [],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 11,
+    "fields": {
+      "mentor": 15,
+      "young_request": 28,
+      "pole": 4,
+      "ap_responsable": 38,
+      "created_at": "2026-04-10T07:34:32.630Z",
+      "assigned_at": "2026-04-10",
+      "expected_end_date": null,
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-04-22",
+      "notes_suivi": "",
+      "problematiques": [],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 12,
+    "fields": {
+      "mentor": 6,
+      "young_request": 29,
+      "pole": 4,
+      "ap_responsable": 39,
+      "created_at": "2026-04-12T19:55:58.122Z",
+      "assigned_at": "2026-04-12",
+      "expected_end_date": null,
+      "closed_at": "2026-04-12",
+      "status": "CLOSED",
+      "closure_reason": "Objectif atteint",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-04-10",
+      "notes_suivi": "",
+      "problematiques": [
+        "prob_administratif",
+        "fragilite_mentale",
+        "logement"
+      ],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.mentorat",
+    "pk": 13,
+    "fields": {
+      "mentor": 13,
+      "young_request": 24,
+      "pole": 4,
+      "ap_responsable": 11,
+      "created_at": "2026-04-19T13:49:30.593Z",
+      "assigned_at": "2026-04-19",
+      "expected_end_date": null,
+      "closed_at": null,
+      "status": "ACTIVE",
+      "closure_reason": "",
+      "message_cloture": "",
+      "alerte_rouge": false,
+      "dernier_contact": "2026-04-16",
+      "notes_suivi": "",
+      "problematiques": [],
+      "cloture_en_attente": false,
+      "cloture_action_demandee": "",
+      "cloture_reason_demandee": "",
+      "cloture_message_demandee": ""
+    }
+  },
+  {
+    "model": "core.financement",
+    "pk": 1,
+    "fields": {
+      "nom": "DJEPVA",
+      "code": "c_djepva",
+      "type": "national"
+    }
+  },
+  {
+    "model": "core.financement",
+    "pk": 2,
+    "fields": {
+      "nom": "ASE Lyon 2025",
+      "code": "c_ase_lyon",
+      "type": "local"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 1,
+    "fields": {
+      "mentorat": 1,
+      "financement": 1,
+      "code_specifique": "",
+      "added_at": "2026-03-02T19:04:45.145Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 2,
+    "fields": {
+      "mentorat": 2,
+      "financement": 2,
+      "code_specifique": "",
+      "added_at": "2026-03-03T16:21:49.644Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 3,
+    "fields": {
+      "mentorat": 5,
+      "financement": 1,
+      "code_specifique": "",
+      "added_at": "2026-03-04T22:39:39.671Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 4,
+    "fields": {
+      "mentorat": 6,
+      "financement": 1,
+      "code_specifique": "",
+      "added_at": "2026-03-05T19:42:41.106Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 5,
+    "fields": {
+      "mentorat": 2,
+      "financement": 1,
+      "code_specifique": "",
+      "added_at": "2026-03-09T11:12:20.407Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 6,
+    "fields": {
+      "mentorat": 7,
+      "financement": 2,
+      "code_specifique": "",
+      "added_at": "2026-03-09T21:26:47.420Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 7,
+    "fields": {
+      "mentorat": 8,
+      "financement": 2,
+      "code_specifique": "",
+      "added_at": "2026-03-12T12:52:46.704Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 8,
+    "fields": {
+      "mentorat": 12,
+      "financement": 2,
+      "code_specifique": "",
+      "added_at": "2026-04-12T20:06:05.095Z"
+    }
+  },
+  {
+    "model": "core.mentoratfinancement",
+    "pk": 9,
+    "fields": {
+      "mentorat": 10,
+      "financement": 1,
+      "code_specifique": "",
+      "added_at": "2026-05-01T22:32:25.853Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 15,
+    "fields": {
+      "mentorat": 1,
+      "date_rencontre": "2026-03-02",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "Prise de contact",
+      "created_at": "2026-03-02T21:28:57.302Z",
+      "updated_at": "2026-03-02T21:28:57.302Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 16,
+    "fields": {
+      "mentorat": 1,
+      "date_rencontre": "2026-03-01",
+      "duree_minutes": 60,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "Partage",
+      "created_at": "2026-03-02T21:29:30.606Z",
+      "updated_at": "2026-03-02T21:29:30.606Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 17,
+    "fields": {
+      "mentorat": 1,
+      "date_rencontre": "2026-02-27",
+      "duree_minutes": 60,
+      "type_rencontre": "EMAIL",
+      "objectifs_atteints": true,
+      "notes": "je prévois",
+      "created_at": "2026-03-02T21:48:53.086Z",
+      "updated_at": "2026-03-02T21:48:53.086Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 18,
+    "fields": {
+      "mentorat": 2,
+      "date_rencontre": "2026-03-02",
+      "duree_minutes": 60,
+      "type_rencontre": "EMAIL",
+      "objectifs_atteints": true,
+      "notes": "contact par mail pour voir la tête du candidat",
+      "created_at": "2026-03-02T22:44:07.259Z",
+      "updated_at": "2026-03-02T22:44:07.259Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 19,
+    "fields": {
+      "mentorat": 2,
+      "date_rencontre": "2026-03-03",
+      "duree_minutes": 105,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": false,
+      "notes": "Partage d'expérience",
+      "created_at": "2026-03-03T06:54:57.866Z",
+      "updated_at": "2026-03-03T06:54:57.866Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 20,
+    "fields": {
+      "mentorat": 3,
+      "date_rencontre": "2026-03-03",
+      "duree_minutes": 45,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "Prise de contact",
+      "created_at": "2026-03-03T22:03:26.043Z",
+      "updated_at": "2026-03-03T22:03:26.043Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 21,
+    "fields": {
+      "mentorat": 6,
+      "date_rencontre": "2026-03-05",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "recherche d'établissement",
+      "created_at": "2026-03-05T17:35:37.462Z",
+      "updated_at": "2026-03-05T17:35:37.462Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 22,
+    "fields": {
+      "mentorat": 6,
+      "date_rencontre": "2026-03-06",
+      "duree_minutes": 120,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "la vie de chaque jour",
+      "created_at": "2026-03-06T12:44:30.634Z",
+      "updated_at": "2026-03-06T12:44:30.634Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 23,
+    "fields": {
+      "mentorat": 7,
+      "date_rencontre": "2026-03-09",
+      "duree_minutes": 61,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "prise de contact",
+      "created_at": "2026-03-09T19:00:00.044Z",
+      "updated_at": "2026-03-09T19:00:00.044Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 24,
+    "fields": {
+      "mentorat": 7,
+      "date_rencontre": "2026-03-09",
+      "duree_minutes": 120,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "accompagnement",
+      "created_at": "2026-03-09T19:00:25.709Z",
+      "updated_at": "2026-03-09T19:00:25.709Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 25,
+    "fields": {
+      "mentorat": 8,
+      "date_rencontre": "2026-03-09",
+      "duree_minutes": 60,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "prise de contact",
+      "created_at": "2026-03-09T20:18:40.284Z",
+      "updated_at": "2026-03-09T20:18:40.284Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 26,
+    "fields": {
+      "mentorat": 8,
+      "date_rencontre": "2026-03-09",
+      "duree_minutes": 120,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "Orientation",
+      "created_at": "2026-03-09T20:19:02.823Z",
+      "updated_at": "2026-03-09T20:19:02.823Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 27,
+    "fields": {
+      "mentorat": 3,
+      "date_rencontre": "2026-03-09",
+      "duree_minutes": 120,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "Orientation",
+      "created_at": "2026-03-09T21:29:20.128Z",
+      "updated_at": "2026-03-09T21:29:20.128Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 28,
+    "fields": {
+      "mentorat": 8,
+      "date_rencontre": "2026-03-12",
+      "duree_minutes": 153,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "Entretien",
+      "created_at": "2026-03-12T13:28:57.866Z",
+      "updated_at": "2026-03-12T13:28:57.866Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 29,
+    "fields": {
+      "mentorat": 9,
+      "date_rencontre": "2026-03-12",
+      "duree_minutes": 60,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "Prise de contact",
+      "created_at": "2026-03-12T20:41:12.330Z",
+      "updated_at": "2026-03-12T20:41:12.330Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 30,
+    "fields": {
+      "mentorat": 9,
+      "date_rencontre": "2026-03-12",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "test",
+      "created_at": "2026-03-12T20:56:29.899Z",
+      "updated_at": "2026-03-12T20:56:29.899Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 31,
+    "fields": {
+      "mentorat": 9,
+      "date_rencontre": "2026-03-16",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": false,
+      "notes": "atyteint",
+      "created_at": "2026-03-16T11:39:12.014Z",
+      "updated_at": "2026-03-16T11:39:12.014Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 32,
+    "fields": {
+      "mentorat": 7,
+      "date_rencontre": "2026-04-07",
+      "duree_minutes": 20,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "Encore phone",
+      "created_at": "2026-04-08T06:56:15.197Z",
+      "updated_at": "2026-04-08T06:56:15.197Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 33,
+    "fields": {
+      "mentorat": 10,
+      "date_rencontre": "2026-04-09",
+      "duree_minutes": 60,
+      "type_rencontre": "TELEPHONE",
+      "objectifs_atteints": true,
+      "notes": "Prise de contact",
+      "created_at": "2026-04-09T22:35:41.724Z",
+      "updated_at": "2026-04-09T22:35:41.724Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 34,
+    "fields": {
+      "mentorat": 8,
+      "date_rencontre": "2026-04-10",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "Update",
+      "created_at": "2026-04-10T06:26:15.021Z",
+      "updated_at": "2026-04-10T06:26:15.021Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 35,
+    "fields": {
+      "mentorat": 12,
+      "date_rencontre": "2026-04-10",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "cool",
+      "created_at": "2026-04-12T20:07:06.855Z",
+      "updated_at": "2026-04-12T20:07:06.855Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 36,
+    "fields": {
+      "mentorat": 13,
+      "date_rencontre": "2026-05-01",
+      "duree_minutes": 300,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "8",
+      "created_at": "2026-05-01T07:37:06.448Z",
+      "updated_at": "2026-05-01T07:37:06.448Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 37,
+    "fields": {
+      "mentorat": 13,
+      "date_rencontre": "2026-04-16",
+      "duree_minutes": 60,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "",
+      "created_at": "2026-05-01T07:41:50.095Z",
+      "updated_at": "2026-05-01T07:41:50.095Z"
+    }
+  },
+  {
+    "model": "core.suivimentorat",
+    "pk": 38,
+    "fields": {
+      "mentorat": 11,
+      "date_rencontre": "2026-04-22",
+      "duree_minutes": 350,
+      "type_rencontre": "PRESENTIEL",
+      "objectifs_atteints": true,
+      "notes": "",
+      "created_at": "2026-05-01T07:49:47.927Z",
+      "updated_at": "2026-05-01T07:49:47.927Z"
+    }
+  },
+  {
+    "model": "core.evaluationmentor",
+    "pk": 1,
+    "fields": {
+      "mentorat": 2,
+      "token": "cd65da8278569307e55835115c7ea4799c385b240f6279a9d57bf238ec771d68",
+      "rating": null,
+      "comment": "",
+      "submitted_at": null,
+      "email_sent_at": "2026-03-03T16:27:29.440Z"
+    }
+  },
+  {
+    "model": "core.evaluationmentor",
+    "pk": 2,
+    "fields": {
+      "mentorat": 7,
+      "token": "66f99d8f29c70ea5ed714dd963b88be6ba0e7dd742e48cfff8c97420872c0b27",
+      "rating": null,
+      "comment": "",
+      "submitted_at": null,
+      "email_sent_at": "2026-03-09T19:01:26.341Z"
+    }
+  },
+  {
+    "model": "core.evaluationmentor",
+    "pk": 3,
+    "fields": {
+      "mentorat": 3,
+      "token": "558676d60ce75160729f75a0c9ccfd369dae35c3efd479c4979e2b0a8c4a30aa",
+      "rating": null,
+      "comment": "",
+      "submitted_at": null,
+      "email_sent_at": "2026-03-09T21:30:36.295Z"
+    }
+  },
+  {
+    "model": "core.evaluationmentor",
+    "pk": 4,
+    "fields": {
+      "mentorat": 8,
+      "token": "74ec8d4ac87cc0c38b9ba72d09b63279aa005f143fe5efe2b82f6e8da57b22bc",
+      "rating": null,
+      "comment": "",
+      "submitted_at": null,
+      "email_sent_at": "2026-03-12T12:50:28.601Z"
+    }
+  },
+  {
+    "model": "core.evaluationmentor",
+    "pk": 5,
+    "fields": {
+      "mentorat": 12,
+      "token": "48b1b03b76ee938ed2a5f953bf8ae055ab971499ea4303477c00664cada43173",
+      "rating": null,
+      "comment": "",
+      "submitted_at": null,
+      "email_sent_at": "2026-04-12T20:23:13.772Z"
+    }
+  },
+  {
+    "model": "core.candidaturementor",
+    "pk": 1,
+    "fields": {
+      "code_postal": "69005",
+      "commune": "Lyon 5",
+      "pole": 4,
+      "association": 4,
+      "first_name": "Didier",
+      "last_name": "SUMBULA",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "experience_pro": "15 d'expérience",
+      "domaines": [
+        "Transport / Logistique",
+        "Hôtellerie / Restauration"
+      ],
+      "disponibilite": "flexible",
+      "motivation": "Cool",
+      "statut": "VALIDATED",
+      "notes_rejet": "",
+      "validated_by": 11,
+      "validated_at": "2026-03-31T22:13:42.123Z",
+      "mentor_created": null,
+      "created_at": "2026-03-31T21:40:31.323Z"
+    }
+  },
+  {
+    "model": "core.candidaturementor",
+    "pk": 2,
+    "fields": {
+      "code_postal": "69160",
+      "commune": "Tassin-la-demi-lune",
+      "pole": 4,
+      "association": 3,
+      "first_name": "Sabin",
+      "last_name": "SHAMUKEKE KABANZA",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "experience_pro": "cool",
+      "domaines": [
+        "Santé / Social",
+        "Transport / Logistique"
+      ],
+      "disponibilite": "flexible",
+      "motivation": "cool",
+      "statut": "REJECTED",
+      "notes_rejet": "test",
+      "validated_by": 11,
+      "validated_at": "2026-03-31T22:13:42.135Z",
+      "mentor_created": null,
+      "created_at": "2026-03-31T21:55:54.371Z"
+    }
+  },
+  {
+    "model": "core.candidaturementor",
+    "pk": 3,
+    "fields": {
+      "code_postal": "69002",
+      "commune": "Lyon 2",
+      "pole": 4,
+      "association": null,
+      "first_name": "JoaM",
+      "last_name": "SHAMSM",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "experience_pro": "",
+      "domaines": [],
+      "disponibilite": "",
+      "motivation": "Il suffit que vous soyez jeune pour que je vous aime",
+      "statut": "PENDING",
+      "notes_rejet": "",
+      "validated_by": null,
+      "validated_at": null,
+      "mentor_created": null,
+      "created_at": "2026-04-12T17:27:46.487Z"
+    }
+  },
+  {
+    "model": "core.contactmessage",
+    "pk": 1,
+    "fields": {
+      "name": "SHamukeke Kabanza Joachim",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "subject": "press",
+      "message": "je veux comprendre le fonctionnement de ton ora",
+      "is_read": true,
+      "created_at": "2026-03-31T22:57:27.916Z"
+    }
+  },
+  {
+    "model": "core.contactmessage",
+    "pk": 2,
+    "fields": {
+      "name": "Yannick Nsadisi",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "subject": "mentor",
+      "message": "Je veux devenir mentor",
+      "is_read": true,
+      "created_at": "2026-03-31T23:19:24.474Z"
+    }
+  },
+  {
+    "model": "core.contactmessage",
+    "pk": 3,
+    "fields": {
+      "name": "Joa1",
+      "email": "joa751977@gmail.com",
+      "phone": "0614828584",
+      "subject": "other",
+      "message": "Message test tout simplement pour voir le fonctionnement",
+      "is_read": true,
+      "created_at": "2026-04-11T12:15:46.560Z"
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$URts4pWFeVu1xF4H6vLmlU$kQi7hK0IsbIaO+2NYlPsNPhTb2KGn62jfv4qrSbmKUI=",
+      "email": "cn@ora.fr",
+      "first_name": "Directeur",
+      "last_name": "National",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2026-02-16T08:56:31.987Z",
+      "last_login": "2026-05-16T12:46:31.233Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$fJ3RhdsNwoS43hWbpdRaqg$Pl/Fpk3vfIFicq3yiPXZYGwtmjt3fegaxJZZwVR96Ao=",
+      "email": "acp.idf@ora.fr",
+      "first_name": "Marie",
+      "last_name": "Coordinator",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-16T08:56:32.730Z",
+      "last_login": "2026-05-16T12:40:55.194Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$sY7F3mo4vOJ72SeH8wwVLy$yYleyFTQoacHgGCLOv3mk5FM9yb4EX4J8hQImnx+WvM=",
+      "email": "ap.idf@ora.fr",
+      "first_name": "Jean",
+      "last_name": "Animateur",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-16T08:56:33.440Z",
+      "last_login": "2026-02-22T23:23:27.338Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$5sLCfPvGRoY4klB79Lx62i$0Hls8Jc5ec93DbQbXslsVcuKkmCepq5wqrtBVGH6ao4=",
+      "email": "mentor.idf@ora.fr",
+      "first_name": "Pierre",
+      "last_name": "Mentor",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-16T08:56:34.155Z",
+      "last_login": "2026-02-27T22:04:47.810Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$fIGn57dNZ9WIPQb2uAJRv8$PwulnrrjYM09IvQRPMr5WDk+Xv/GfXxfN9MIYsUG0mY=",
+      "email": "admin@ora.fr",
+      "first_name": "admin",
+      "last_name": "admin",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2026-02-16T10:36:19.990Z",
+      "last_login": "2026-02-17T13:22:46.241Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$onPbW82qTzJfCaBZJYJXg3$fgOSyZ69jnw+TA6pWrVy5S/BmN6YoMUeAClLyLM/Hik=",
+      "email": "eric@yahoo.fr",
+      "first_name": "Eric",
+      "last_name": "De Fraguier",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-17T15:14:45Z",
+      "last_login": "2026-02-24T08:15:10.961Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$LIE55SHH9z7bESpxMuN2gV$ZeRRex1yQ8L+cpvBNeuLB2bPaDWLWWBtuKf5Q5R9ll8=",
+      "email": "philippe@ora.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-17T15:41:35.436Z",
+      "last_login": "2026-02-28T20:14:59.037Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$tN4O32M8I483iFlrdSryum$9PczCjuM9pY2LUlNcA73CBYHZUfOsdKNk5mjkfwvoto=",
+      "email": "manon_mentor@ora.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-18T12:32:47.941Z",
+      "last_login": "2026-02-27T18:07:41.468Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$9uw7wcagOJgRsbYKUJpjCR$4RIcOp/wdAVYW2xgTZ1InThA6bJ6lkhNul0k287JqMc=",
+      "email": "joaAP@ora.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-18T13:37:01.547Z",
+      "last_login": "2026-02-22T23:18:36.500Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$X7ier39jPjLwRpXgQj25Va$1Myag0H3b3AlSUCrTq75J5mKqQfkrVNM60dq9PcW1jU=",
+      "email": "joa_mentor@ora.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-20T11:24:35.192Z",
+      "last_login": "2026-02-21T12:44:24.803Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$0euUwOgd8kyOfm23JMSopc$8yELTFaUaTOFW8DdHomo/ubwcVRQbUAN+POWKNDCmb8=",
+      "email": "ap_autoa",
+      "first_name": "Ap_auto1@ora.fr",
+      "last_name": "APP",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-21T15:35:43.342Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$ceSRPzT88jf1OOK1stC0Ax$j+Qzv9FW0WELKn/acXCiV8afTghB3A4O3u/kYRXk7Gw=",
+      "email": "ap_2@ora.fr",
+      "first_name": "AP_2",
+      "last_name": "AP_2",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-21T23:33:37.593Z",
+      "last_login": "2026-02-23T11:42:07.239Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$s3GZTipdlu6DpkWhBeOOt8$ua8m7eDpSJwuNs2qudju3AFlk3VKLJUe9jPnn8cSGE8=",
+      "email": "mentor_2@ora.fr",
+      "first_name": "mentor_2",
+      "last_name": "mentor_2",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-21T23:52:32.940Z",
+      "last_login": "2026-02-22T23:22:59.842Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$jU6YXlWNV2cDQ03Flnf93m$47BXLdIcnQRtF70hL+tumPN3EUlMfFjZWwD2B07VEhs=",
+      "email": "ylamache@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-27T23:14:59.915Z",
+      "last_login": "2026-04-18T07:31:09.858Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$102ibX86IEMkbze6nzTIB2$fD31kN+rvme0Lv0FjUincFeiHAI7dq16waU0sZprisQ=",
+      "email": "eric.defraguier@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2026-02-27T23:17:40.224Z",
+      "last_login": "2026-05-16T12:39:37.289Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$LBAyv5VarkIvIxnsia7por$WpQONAVWgHYK0wYw3rt6TBrxaMNiHd1R5pTz8B7nRlQ=",
+      "email": "pierre.reynard2013@yahoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-27T23:19:38.936Z",
+      "last_login": "2026-05-01T23:33:06.993Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$C1j3MPZOa9NWMsGeRndwkn$mgDkdpFB+v8dlnqnXQ88LlvSdrvBQvT7t2bHY4Wf0j0=",
+      "email": "jacquesbartier9@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-27T23:22:06.918Z",
+      "last_login": "2026-05-01T23:38:03.453Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$iSyfiW30cOKTEfiG8LT1DS$XYBWl+GOEDJT9eIEir7n8WwIQPuN2nfIhKmYGHt5E6w=",
+      "email": "jpedelaborde.agirabcd@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-27T23:24:01.405Z",
+      "last_login": "2026-03-06T12:50:35.797Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$6AffrNmgkeTEE2VedZuZqO$fSO7cbQxOjDOwvs577MdSdgUtdLrKOObGQieC0vzyMM=",
+      "email": "ppujole.agir@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2026-02-27T23:25:40Z",
+      "last_login": "2026-04-19T13:23:21.221Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$rCwQFNWmRz0NvoXmF6r9CK$4OYL7GrZW9sUB05FC92m4Dg/msYVDEGVcSgOvS8R/V4=",
+      "email": "roucoux.patrick@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:38:59.255Z",
+      "last_login": "2026-02-28T20:17:36.984Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$jFL5vmZAvWOsdRqKOI1EN0$DboV5vBXXGIWIGHZT26VaDLXNJiNn1rmbT6PTg0dQzM=",
+      "email": "jean-luc.molherat@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:42:33.971Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$eJBLJQtv5TptymRTFLb1Hl$xpzH6jot5Gjjfoh3Q5u76LEkmJVzwvV9yusx6d4k4tA=",
+      "email": "jacques.bernard.ecti@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:44:43.209Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$xH2BCWxDhOxLPL76SeAUzK$Ms4+khJsdAm5+rnJH/3iByszA589/4V1iuxYAyoNNHQ=",
+      "email": "commelin.ml@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:50:35.708Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$4ReqY2eayfqJ1ZocWLYAJd$yuK6W7s+m81U3118yXSOcvvpx13RVyJzdxG0/fZyvEo=",
+      "email": "gerard.charrier3@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:52:42.047Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$WOGXgfITba8xtP2oqPEKbA$2GcRHjMJuLpH6ueAdaouL+Wlx8mp4zQbJntHgbdZ7NA=",
+      "email": "annie-francoise.legrand@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:54:55.278Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$8BjSqBeocflPwINihHLxhY$1Ji4d+rs1zyWOD93aL0MfBb+C7m3uDxMK6cyhbTM8s4=",
+      "email": "mharsch@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:57:00.588Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$IDbDX6cq1FmOtDOPN6mTwB$BV3jjbPcvJIOiLCuKTCpjiXZGgkgb9tBEeP5KOLWguQ=",
+      "email": "cpaulic@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T14:59:10.862Z",
+      "last_login": "2026-03-01T22:46:09.163Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$uSRPp6PIu5U20G8ytr3aBQ$TO/SAPwGFRkvpnkmOKqXk3L5NFjUJ+d9gdQG0z823sU=",
+      "email": "gbergerot@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:01:05.631Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$dgXcOJmrwzoB72NrLOLwqL$NpLv+IQeZX/dyXRBifdPPwygj6seUUPU/6ktMIveYd0=",
+      "email": "herve.marchi@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:03:15.030Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$nUtDAvx0yT9YKJDUEETLTo$XV4CjJthfP0iyEB+G1mwrjl9mejx+sBw/5P7W4UxuFU=",
+      "email": "chantal.grau@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:05:09.025Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$e3DNdXKD1AJgBIesohPr04$DC+DItSpaVW+ekR0jl3TctolgrSkhjAYF26n9cZJl7E=",
+      "email": "d.utard@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:07:16.936Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Li1iRj6VGUkJlYnz40QAED$BVLFE0e82hKyjQ2U6LKXmAufBg9WkB3cbOQSY/gjSXM=",
+      "email": "anne.silberstein@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:09:12.464Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Ty5DBBL1CEzNJYo8LsYDXu$YtnnZxDKwPzWZ1UpQg4cIY2NP04BqZ3f2RDNnuvLiGc=",
+      "email": "olivier1057@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:11:04.320Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$xWw6KYhNridafp5bfFBTNB$QCp/h1iVltnUaMc9RDE6FVQqprcdWnwpKU6hD2v8j5E=",
+      "email": "jacqueline.coulon32@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:15:00.135Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$OPWot46T2IFh1gDSHtR5Bo$gnS2ScUXGv53W9yYxgqAG1ZLV422MUIok3s6T8vOX+4=",
+      "email": "pat.leon.shaman@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:16:58.430Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$VNmlYdYo5OO65Z86BMHEMY$juC9neKRzi4j6fMbrwn5sdXuMHaMd5LSJjQEN1PueV4=",
+      "email": "jn.p@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:23:25.173Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$YR8QUMnZDuwbR2mM8rhWXW$+8hisnQd0p/dHg406NtEdjflOWrdBIAzWMmS+47pK34=",
+      "email": "bernard.souquet11@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:25:30.801Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$V9Dd3UmetX54x8NOm8JfZX$uPkQPKGv27nWzoyaTjyhllyVtu0YnDTLshBeYwOSUzc=",
+      "email": "philou37@live.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:27:50.331Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$a7kMn16Lwp3tEsTYOC1SuJ$NwENfpNyZ4AR6OhxtuG1AQuL05pr8hUXMFeOCx5AKv8=",
+      "email": "mbrault@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:29:49.973Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$hxAyMPmcYB4LhymyW833lv$4mX3Ki32BSSBl4/j4vsh9/6yToxnVGUphasCf0jskCA=",
+      "email": "gsemelin@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:32:06.982Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$8C5DH61lRLas8krPHe3wSg$fslJGY/znqYyn6Jvb35ERDzLYf2du6iMpIeRcEZhghk=",
+      "email": "mnchampetier@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T15:34:33.019Z",
+      "last_login": "2026-02-28T20:15:29.405Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$pRWPAaBa50yDo7SIzDATpd$xIU2epdWDUnOByXJ3EoG944bM6EBMhVJ9z1qXVSbmzk=",
+      "email": "muriel.bocquenet.cfc@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:27:52.090Z",
+      "last_login": "2026-03-03T17:26:47.854Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$hlXL72FVPagGpmEIeSFGHv$ahZMEn+5yjI2/ZuuAx8TG/Eu+JGLnGqIUb8R4bxJTdc=",
+      "email": "benoit.gibert.ecti@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:34:31.832Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$zkK1UtjetNLa1zz4PyxfE7$lU1zUcS0Jk+AMxzf6QoNqhEeo2X73TNECCAtqmkXG3o=",
+      "email": "mpettinotti@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:37:27.044Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$hxeGRxiQURZ863l30I66FV$/+wtHl4w84HR19kmOuDjw7Y0M9UEryM47H9DTJv2XK0=",
+      "email": "dussourd.sandrine@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:39:01.319Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$gxhgkmRnvnRbPOMj2EM7Lw$X8xz4kOytSz9ujVgCiju0QAOni5aJBqU/K5xRgMuSAY=",
+      "email": "francisdufour.agirabcd@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:42:39.011Z",
+      "last_login": "2026-05-15T19:59:28.860Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$i1JahQaKJGJ0xVMmxq8JTt$diUCaVTNWbd2C58oK6WPHhOEWkBXIH3TTTAcvQcaX2Y=",
+      "email": "p.logez@yahoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:45:19.395Z",
+      "last_login": "2026-04-12T19:58:42.138Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$bvQJMyInbeMgIU34P5ePdF$zZ5N+dvyzYvNIQKUzhUJNOYfYdwjzxChz3ghDCf0/84=",
+      "email": "cjacquet73@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:46:57.997Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$RTYK1bThf3ClhnVsbe9h5r$nG9MfVGJvsPexWTZaedJSAphwHvlqIWfND1/ytd/1jI=",
+      "email": "marieline.robinet@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:54:11.893Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$nv922BgAqUfsiXDjF9k69K$1kGxsxQ/6K2BChBfcOdii4UyQypWPWnPXGPR8CQo/EY=",
+      "email": "d250biron@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:57:21.815Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$wT2HYosjcB5YdeA1M9nVgM$g20vnuRUiZ1Yr5AptVccbZfVn2DfhH7dULw/Vuml3vc=",
+      "email": "vdaubenfeld@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T19:59:14.218Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$4WokU3tDfWXlo3Kgs4Es1w$Ni7BaFZiq3/QaVO+7P7EgZXDHbfDMY4dh4ZX0KP/YOA=",
+      "email": "c_paragot@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:01:33.117Z",
+      "last_login": "2026-03-05T06:37:24.855Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$LsD1dH8ibAwr2SEOQMFcx9$/m74qqst1dFxF4qxdpsYYqjiGcuDQKK41kGhxxNGq+0=",
+      "email": "coulombier.jeanpaul@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:03:23.367Z",
+      "last_login": "2026-04-10T22:13:03.332Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$6iHoZu7UQcFiImEweOqaqm$yybFMrMIjxAL+pbvCLt4g9v+rWzKLZLRqnAJIvNQsKg=",
+      "email": "philippe.daleman@numericable.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:05:39.138Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$6wnPIBWc5DsW9GfOlY2mpK$Z9mK/LSmesSrapj9EDcD2QqTuK6fo5DD6tzDmN1tSck=",
+      "email": "rousmichele@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:07:57.859Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$ufA7S3ZIIVI2LGpPTp1Oon$S7QMTZ+DkT9a4Fr8/JGw3mr4cHfqN4wEBEgInMzYkfM=",
+      "email": "sroditis@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:09:32.679Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$qWobRFKjeRsC1mHI2qQ2oP$gOnq1euFay2OHtbEJN0aSZDLfwLpo715XozEm4W+Fmo=",
+      "email": "odilefarret12@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:11:23.672Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$TgRFHTn28ZAJCnsIKcty8N$SOdM7YjAkfs41iQonvRYRHQA6eJ7/+wWe5h+O567JFQ=",
+      "email": "clafond@egee.asso.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-02-28T20:13:31.936Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$PqJOzfwIyfdaRw3nfnVbN2$JueYu8SmuRyKKH2IY3aP98uA+SFy9dnHn5r3MMSc5Rs=",
+      "email": "arolland38@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T21:59:19.648Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$qsH20NPF9l9LiqvZ6ZL0LJ$U0BgkSTrlPZnPVgzIIpEmh0dIySHRvM7CDOS/w7wqBw=",
+      "email": "bruno.margain@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:01:22.021Z",
+      "last_login": "2026-04-10T08:05:19.508Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$RgDb1itpsVJFt8K5uLXPVS$o4uW30OXstqbJo0Yi6IWmvRAlhkR3G0JgDfo+VPmtxc=",
+      "email": "ecilla@sfr.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:05:55.588Z",
+      "last_login": "2026-04-10T08:04:17.827Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$THLu1WMiDPnUI7TkBSwu8Y$/xCoDRpWtXwgAyoNU18Ys3F4dHI/t0iPorMWvKwx438=",
+      "email": "dufour-francis74@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:08:24.555Z",
+      "last_login": "2026-03-05T06:42:06.602Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$WLZv3MrvtjK9qXAUF6jTk6$5xtV/uGvlRJDDjWUeMqMHRhnbfgObeRajzWkc7cIs4o=",
+      "email": "enel.francoise@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:12:01.326Z",
+      "last_login": "2026-04-10T08:04:44.656Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$cMR3lbnPoCpmZ9TuUnZpgK$b5uqyQw9GpiP3dxmsFWzFxQfww6D35ozPm9PdqskvTg=",
+      "email": "yves.hunckler@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:14:49.346Z",
+      "last_login": "2026-05-01T22:27:57.013Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$FC30UBAwhCtenLQZp2ZN1K$0AjFJpcdO+IRO/pVT6WCmARjiERiC2tucdp87fAsGUg=",
+      "email": "michel.couble@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:26:46.172Z",
+      "last_login": "2026-04-10T08:07:08.438Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$n2o69x2M92MPFfNlUvjoNp$sWH323T/9IiuoOKT+Ah2HXLpOKw/UsWNCUFh/ZZaxBk=",
+      "email": "philippe.ledoux69@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:29:52.167Z",
+      "last_login": "2026-04-10T08:07:32.961Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$oVdqFJNTjDxYDoW3cfwQLU$v04AA8WBCrOuyp6hM8D97PcyP4nrlYzaL2EhD0WYpiI=",
+      "email": "jlpothin@wanadoo.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:32:39.907Z",
+      "last_login": "2026-04-10T08:08:19.417Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$dU5or1eg1buVB10FTKAwwU$6A9xf39EcOEcngXJV4t05jJJKtlfoVrdGn4MeCB05ns=",
+      "email": "obarbot73@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:35:31.592Z",
+      "last_login": "2026-04-10T08:05:52.321Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$u3o1vmG8amZ91hRs1A9XWg$IRdjXbEL2vaUmue/0oElHR5Cgm+72gjAekmPK8S3y/M=",
+      "email": "henca2011@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-01T22:42:27.719Z",
+      "last_login": "2026-04-10T08:09:30.699Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$adaRDz1w6MIQf0dQSvV7aT$hgZ3wDdFR/AdWnLD55qkdfNx8OCfqLRa3JaFbgbYe7Y=",
+      "email": "alain.jeannerot@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-02T10:34:58.729Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$pwaW4vSG96fEnvgPvCxdIv$QzMo4LOnRuXHN1JOXtrnPc/u9qW1Hnjw7l97Jnm5jCU=",
+      "email": "cat.colombier3@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-02T10:36:07.386Z",
+      "last_login": "2026-04-10T22:09:38.687Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$r0jULBi1U8pIzekLg7sps8$T/HBZhhfQuX64pputOjLSor1oSTP2ek446pV0aZBsns=",
+      "email": "catherine.philippe75@orange.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-02T10:37:13.691Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$PCJKY1Gsn88WSYH5kniBHu$7vGAxVQM4C2KCwnQVBkNfRqdMxi0Owwno28EFVpZ8QU=",
+      "email": "th.chazelle@aol.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-02T10:47:52.050Z",
+      "last_login": "2026-04-10T22:08:32.937Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$yl49zRmhXIB2FYXE80tU9F$pp6lE3lgcronMxdKiyvbRpWaoWVgmQ8uASOLHs7QjnQ=",
+      "email": "claude.darracq@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-02T10:50:39.037Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$uhvxPQPd7lxd5jkasORWm3$8uF/D6WC0Dyj0p7EWLeXSLpIYFEjlONcHPoDRDXFCC4=",
+      "email": "joa.shamu@yahoo.fr",
+      "first_name": "joachim kabanza",
+      "last_name": "SHAMUKEKE",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-03-06T07:37:44.343Z",
+      "last_login": "2026-03-06T07:54:39.909Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$jHC7FyXH3FN4FEdEBU9nmO$4TeJXs59hhIPD5v3xG2786Lw6mbZhcGowF4Tyem2iuY=",
+      "email": "patrice.rochais@gmail.com",
+      "first_name": "Patrice",
+      "last_name": "Rochais",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-04-10T21:44:31.026Z",
+      "last_login": "2026-04-10T21:45:38.727Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$GqrvYINyZ9rbrXs56zXlQe$94W05dEJPY4VIcsh1gAay6s2x8Ee6mppIz2oSA3uNQs=",
+      "email": "soravia.philippe@neuf.fr",
+      "first_name": "Philippe",
+      "last_name": "Soravia",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-04-10T21:44:31.696Z",
+      "last_login": "2026-04-10T21:47:47.859Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$lbGkb4gf8GE1eLmmhEof9s$PQNZBHtd8k3KWXpAj2g3t4AKqof4TuZDStXNp41iei4=",
+      "email": "alain.bornand@hotmail.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-04-10T21:53:49.593Z",
+      "last_login": "2026-04-10T21:54:24.522Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$vxI4BmLmSKScwHhXnNqiCY$z6IdSLpIbZw3KfqYjI7ygI3XhDRSky38YgGVMiswTCw=",
+      "email": "alain.nestier@gmail.com",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-04-10T21:55:04.176Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.user",
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$b25sldiJlftPKjjTXEX3zL$aSTYQK+hkDY0ryHpSUAliKylIsC+zYVaseD8TK4irJg=",
+      "email": "vanhasbrouck@free.fr",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2026-04-10T22:00:58.314Z",
+      "last_login": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 8,
+    "fields": {
+      "user": [
+        "roucoux.patrick@orange.fr"
+      ],
+      "pole": 8,
+      "association": 4,
+      "first_name": "Patrick",
+      "last_name": "ROUCOUX",
+      "email": "roucoux.patrick@orange.fr",
+      "phone": "06 45 65 29 56",
+      "city": "Annonay",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:39:23.554Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 9,
+    "fields": {
+      "user": [
+        "jean-luc.molherat@orange.fr"
+      ],
+      "pole": 14,
+      "association": 5,
+      "first_name": "Jean-Luc",
+      "last_name": "Molhérat",
+      "email": "jean-luc.molherat@orange.fr",
+      "phone": "06 43 92 83 33",
+      "city": "Bourgoin-Jallieu",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:42:38.868Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 10,
+    "fields": {
+      "user": [
+        "jacques.bernard.ecti@gmail.com"
+      ],
+      "pole": 28,
+      "association": 4,
+      "first_name": "Jacques",
+      "last_name": "BERNARD",
+      "email": "jacques.bernard.ecti@gmail.com",
+      "phone": "06 85 82 01 10",
+      "city": "Clermont Ferrand",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:44:47.125Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 11,
+    "fields": {
+      "user": [
+        "eric.defraguier@orange.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "first_name": "Eric",
+      "last_name": "de FRAGUIER",
+      "email": "eric.defraguier@orange.fr",
+      "phone": "06 70 76 02 20",
+      "city": "Lyon",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:47:04.462Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 12,
+    "fields": {
+      "user": [
+        "commelin.ml@gmail.com"
+      ],
+      "pole": 22,
+      "association": 5,
+      "first_name": "Marie Laure",
+      "last_name": "COMMELIN",
+      "email": "commelin.ml@gmail.com",
+      "phone": "06 29 53 34 63",
+      "city": "Chambéry",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:50:40.024Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 13,
+    "fields": {
+      "user": [
+        "gerard.charrier3@wanadoo.fr"
+      ],
+      "pole": 23,
+      "association": 5,
+      "first_name": "Gérard",
+      "last_name": "CHARRIER",
+      "email": "gerard.charrier3@wanadoo.fr",
+      "phone": "06 71 57 34 59",
+      "city": "Annecy",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:52:46.054Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 14,
+    "fields": {
+      "user": [
+        "annie-francoise.legrand@wanadoo.fr"
+      ],
+      "pole": 20,
+      "association": 4,
+      "first_name": "Annie",
+      "last_name": "LEGRAND",
+      "email": "annie-francoise.legrand@wanadoo.fr",
+      "phone": "06 87 33 91 39",
+      "city": "Chalon sur Saone",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:54:58.509Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 15,
+    "fields": {
+      "user": [
+        "mharsch@egee.asso.fr"
+      ],
+      "pole": 10,
+      "association": 5,
+      "first_name": "Michel",
+      "last_name": "HARSCH",
+      "email": "mharsch@egee.asso.fr",
+      "phone": "06 89 86 80 26",
+      "city": "Langueux",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:57:04.468Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 16,
+    "fields": {
+      "user": [
+        "cpaulic@egee.asso.fr"
+      ],
+      "pole": 11,
+      "association": 5,
+      "first_name": "Evelyne",
+      "last_name": "HIRRIEN",
+      "email": "cpaulic@egee.asso.fr",
+      "phone": "06 59 46 23 54",
+      "city": "Locquirec",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T14:59:14.164Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 17,
+    "fields": {
+      "user": [
+        "gbergerot@egee.asso.fr"
+      ],
+      "pole": 13,
+      "association": 5,
+      "first_name": "Gérard",
+      "last_name": "BERGEROT",
+      "email": "gbergerot@egee.asso.fr",
+      "phone": "06 22 60 60 15",
+      "city": "Saint Malo",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:01:08.753Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 18,
+    "fields": {
+      "user": [
+        "herve.marchi@gmail.com"
+      ],
+      "pole": 17,
+      "association": 4,
+      "first_name": "Hervé",
+      "last_name": "MARCHI",
+      "email": "herve.marchi@gmail.com",
+      "phone": "06 09 89 41 20",
+      "city": "Nancy",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:03:18.474Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 19,
+    "fields": {
+      "user": [
+        "chantal.grau@orange.fr"
+      ],
+      "pole": 18,
+      "association": 5,
+      "first_name": "Chantal",
+      "last_name": "GRAU",
+      "email": "chantal.grau@orange.fr",
+      "phone": "06 12 49 06 83",
+      "city": "Metz",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:05:13.082Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 20,
+    "fields": {
+      "user": [
+        "d.utard@wanadoo.fr"
+      ],
+      "pole": 25,
+      "association": 5,
+      "first_name": "Danièle",
+      "last_name": "UTARD",
+      "email": "d.utard@wanadoo.fr",
+      "phone": "06 81 39 77 72",
+      "city": "Wickerschwihr",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:07:19.911Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 21,
+    "fields": {
+      "user": [
+        "anne.silberstein@gmail.com"
+      ],
+      "pole": 19,
+      "association": 5,
+      "first_name": "Anne",
+      "last_name": "SILBERSTEIN",
+      "email": "anne.silberstein@gmail.com",
+      "phone": "06 64 06 46 13",
+      "city": "Compiègne",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:09:16.221Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 22,
+    "fields": {
+      "user": [
+        "olivier1057@gmail.com"
+      ],
+      "pole": 7,
+      "association": 6,
+      "first_name": "Olivier",
+      "last_name": "SAUTEREY",
+      "email": "olivier1057@gmail.com",
+      "phone": "06 30 75 38 02",
+      "city": "",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:11:07.920Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 23,
+    "fields": {
+      "user": [
+        "pierre.reynard2013@yahoo.fr"
+      ],
+      "pole": 5,
+      "association": 4,
+      "first_name": "Pierre",
+      "last_name": "REYNARD",
+      "email": "pierre.reynard2013@yahoo.fr",
+      "phone": "07 86 36 81 92",
+      "city": "Versailles",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:13:18.874Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 24,
+    "fields": {
+      "user": [
+        "jacqueline.coulon32@orange.fr"
+      ],
+      "pole": 9,
+      "association": 4,
+      "first_name": "Jacqueline",
+      "last_name": "COULON",
+      "email": "jacqueline.coulon32@orange.fr",
+      "phone": "06 09 64 39 24",
+      "city": "Hoolgate",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:15:03.366Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 25,
+    "fields": {
+      "user": [
+        "pat.leon.shaman@gmail.com"
+      ],
+      "pole": 16,
+      "association": 5,
+      "first_name": "Patrick",
+      "last_name": "LEON",
+      "email": "pat.leon.shaman@gmail.com",
+      "phone": "06 33 02 46 79",
+      "city": "",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:17:03.505Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 26,
+    "fields": {
+      "user": [
+        "ppujole.agir@gmail.com"
+      ],
+      "pole": 6,
+      "association": 3,
+      "first_name": "Philippe",
+      "last_name": "PUJOLE",
+      "email": "ppujole.agir@gmail.com",
+      "phone": "06 08 70 91 33",
+      "city": "Bordeaux",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:20:06.363Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 27,
+    "fields": {
+      "user": [
+        "jn.p@orange.fr"
+      ],
+      "pole": 12,
+      "association": 4,
+      "first_name": "Jean-Noël",
+      "last_name": "PALLUET",
+      "email": "jn.p@orange.fr",
+      "phone": "06 16 74 29 51",
+      "city": "Lavernose , Lacasse",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:23:28.462Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 28,
+    "fields": {
+      "user": [
+        "bernard.souquet11@orange.fr"
+      ],
+      "pole": 26,
+      "association": 3,
+      "first_name": "ORA LR\tAGIR\t\tBernard",
+      "last_name": "SOUQUET",
+      "email": "bernard.souquet11@orange.fr",
+      "phone": "06 88 76 07 77",
+      "city": "Narbonne",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:25:34.196Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 29,
+    "fields": {
+      "user": [
+        "philou37@live.fr"
+      ],
+      "pole": 15,
+      "association": 3,
+      "first_name": "Philippe",
+      "last_name": "LEFRANCOIS",
+      "email": "philou37@live.fr",
+      "phone": "06 27 32 16 26",
+      "city": "Nantes",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:28:02.670Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 30,
+    "fields": {
+      "user": [
+        "mbrault@egee.asso.fr"
+      ],
+      "pole": 21,
+      "association": 5,
+      "first_name": "Michel",
+      "last_name": "Brault",
+      "email": "mbrault@egee.asso.fr",
+      "phone": "06 40 56 15 69",
+      "city": "Le Mans",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:29:53.220Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 31,
+    "fields": {
+      "user": [
+        "gsemelin@orange.fr"
+      ],
+      "pole": 24,
+      "association": 4,
+      "first_name": "Gerard",
+      "last_name": "SEMELIN",
+      "email": "gsemelin@orange.fr",
+      "phone": "06 64 76 03 47",
+      "city": "NOIRMOUTIER",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:32:10.945Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 32,
+    "fields": {
+      "user": [
+        "mnchampetier@gmail.com"
+      ],
+      "pole": 27,
+      "association": 4,
+      "first_name": "Marie-Noelle",
+      "last_name": "CHAMPETIER",
+      "email": "mnchampetier@gmail.com",
+      "phone": "06 60 16 40 22",
+      "city": "Nice",
+      "is_coordinator": true,
+      "is_active": true,
+      "created_at": "2026-02-28T15:34:36.812Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 33,
+    "fields": {
+      "user": [
+        "muriel.bocquenet.cfc@gmail.com"
+      ],
+      "pole": 8,
+      "association": 5,
+      "first_name": "Murielle",
+      "last_name": "BOCQUENET",
+      "email": "muriel.bocquenet.cfc@gmail.com",
+      "phone": "06 08 32 15 25",
+      "city": "Valence",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:27:55.573Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 34,
+    "fields": {
+      "user": [
+        "benoit.gibert.ecti@gmail.com"
+      ],
+      "pole": 14,
+      "association": 4,
+      "first_name": "Benoît",
+      "last_name": "GIBERT",
+      "email": "benoit.gibert.ecti@gmail.com",
+      "phone": "06 72 99 26 05",
+      "city": "Grenoble",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:34:34.864Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 35,
+    "fields": {
+      "user": [
+        "mpettinotti@egee.asso.fr"
+      ],
+      "pole": 28,
+      "association": 5,
+      "first_name": "Marie Hélène",
+      "last_name": "PETTINOTTI",
+      "email": "mpettinotti@egee.asso.fr",
+      "phone": "06 15 98 04 40",
+      "city": "Clermont Ferrand",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:37:30.193Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 36,
+    "fields": {
+      "user": [
+        "dussourd.sandrine@gmail.com"
+      ],
+      "pole": 28,
+      "association": 6,
+      "first_name": "Sandrine",
+      "last_name": "DUSSOURD",
+      "email": "dussourd.sandrine@gmail.com",
+      "phone": "07 65 21 97 43",
+      "city": "Clermont Ferrand",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:39:04.896Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 37,
+    "fields": {
+      "user": [
+        "jacquesbartier9@gmail.com"
+      ],
+      "pole": 4,
+      "association": 5,
+      "first_name": "Jacques",
+      "last_name": "BARTIER",
+      "email": "jacquesbartier9@gmail.com",
+      "phone": "06 79 70 12 46",
+      "city": "Jonage",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:40:57.355Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 38,
+    "fields": {
+      "user": [
+        "francisdufour.agirabcd@gmail.com"
+      ],
+      "pole": 4,
+      "association": 3,
+      "first_name": "Francis",
+      "last_name": "DUFOUR",
+      "email": "francisdufour.agirabcd@gmail.com",
+      "phone": "06 66 02 22 13",
+      "city": "Lyon",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:42:42.137Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 39,
+    "fields": {
+      "user": [
+        "p.logez@yahoo.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "first_name": "Pierre",
+      "last_name": "LOGEZ",
+      "email": "p.logez@yahoo.fr",
+      "phone": "06 27 36 07 56",
+      "city": "Lyon",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:45:22.274Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 40,
+    "fields": {
+      "user": [
+        "cjacquet73@gmail.com"
+      ],
+      "pole": 22,
+      "association": 3,
+      "first_name": "Chantal",
+      "last_name": "JACQUET",
+      "email": "cjacquet73@gmail.com",
+      "phone": "06 08 47 35 86",
+      "city": "Challes les eaux",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:47:01.714Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 41,
+    "fields": {
+      "user": [
+        "marieline.robinet@gmail.com"
+      ],
+      "pole": 7,
+      "association": 3,
+      "first_name": "MARIE-LINE",
+      "last_name": "ROBINET",
+      "email": "marieline.robinet@gmail.com",
+      "phone": "06 25 73 65 42",
+      "city": "",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:55:48.985Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 42,
+    "fields": {
+      "user": [
+        "d250biron@gmail.com"
+      ],
+      "pole": 7,
+      "association": 3,
+      "first_name": "Danielle",
+      "last_name": "BIRON",
+      "email": "d250biron@gmail.com",
+      "phone": "06 66 77 22 72",
+      "city": "",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:57:25.060Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 43,
+    "fields": {
+      "user": [
+        "vdaubenfeld@egee.asso.fr"
+      ],
+      "pole": 7,
+      "association": 5,
+      "first_name": "Veronique",
+      "last_name": "DAUBENFELD",
+      "email": "vdaubenfeld@egee.asso.fr",
+      "phone": "06 21 09 75 93",
+      "city": "",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T19:59:17.227Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 44,
+    "fields": {
+      "user": [
+        "c_paragot@orange.fr"
+      ],
+      "pole": 6,
+      "association": 3,
+      "first_name": "Christian",
+      "last_name": "PARAGOT",
+      "email": "c_paragot@orange.fr",
+      "phone": "‭06 67 27 81 91‬",
+      "city": "Bordeaux",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:01:35.873Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 45,
+    "fields": {
+      "user": [
+        "coulombier.jeanpaul@gmail.com"
+      ],
+      "pole": 6,
+      "association": 4,
+      "first_name": "JEAN-PAUL",
+      "last_name": "COULOMBIER",
+      "email": "coulombier.jeanpaul@gmail.com",
+      "phone": "06 73 67 47 73",
+      "city": "Bordeaux",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:03:26.407Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 46,
+    "fields": {
+      "user": [
+        "philippe.daleman@numericable.fr"
+      ],
+      "pole": 6,
+      "association": 5,
+      "first_name": "Philippe\t‬",
+      "last_name": "d'ALEMAN",
+      "email": "philippe.daleman@numericable.fr",
+      "phone": "‭06 09 11 53 57",
+      "city": "Bordeaux",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:05:42.397Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 47,
+    "fields": {
+      "user": [
+        "rousmichele@gmail.com"
+      ],
+      "pole": 12,
+      "association": 3,
+      "first_name": "Michèle",
+      "last_name": "ROUS",
+      "email": "rousmichele@gmail.com",
+      "phone": "06 62 64 93 78",
+      "city": "",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:08:01.357Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 48,
+    "fields": {
+      "user": [
+        "sroditis@egee.asso.fr"
+      ],
+      "pole": 12,
+      "association": 5,
+      "first_name": "Sylvie",
+      "last_name": "RODITIS",
+      "email": "sroditis@egee.asso.fr",
+      "phone": "06 75 09 39 14",
+      "city": "",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:09:35.759Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 49,
+    "fields": {
+      "user": [
+        "odilefarret12@gmail.com"
+      ],
+      "pole": 26,
+      "association": 4,
+      "first_name": "Odile",
+      "last_name": "FARRET",
+      "email": "odilefarret12@gmail.com",
+      "phone": "06 87 60 47 92",
+      "city": "Montpellier",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:11:26.720Z"
+    }
+  },
+  {
+    "model": "core.animateur",
+    "pk": 50,
+    "fields": {
+      "user": [
+        "clafond@egee.asso.fr"
+      ],
+      "pole": 26,
+      "association": 5,
+      "first_name": "Catherine",
+      "last_name": "LAFOND",
+      "email": "clafond@egee.asso.fr",
+      "phone": "06 09 22 14 06",
+      "city": "Perpignan",
+      "is_coordinator": false,
+      "is_active": true,
+      "created_at": "2026-02-28T20:13:35.087Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 1,
+    "fields": {
+      "user": [
+        "arolland38@gmail.com"
+      ],
+      "pole": 4,
+      "association": 3,
+      "department": null,
+      "city": "ROYAS",
+      "code_postal": "38440",
+      "commune": "",
+      "latitude": 45.505587,
+      "longitude": 5.100541,
+      "first_name": "Anne",
+      "last_name": "ROLLAND",
+      "email": "arolland38@gmail.com",
+      "phone": "06 77 69 49 59",
+      "max_capacity": 3,
+      "disponibilite_reelle": 3,
+      "observations": "",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-01T21:59:27.350Z",
+      "updated_at": "2026-04-11T17:08:03.451Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 2,
+    "fields": {
+      "user": [
+        "bruno.margain@wanadoo.fr"
+      ],
+      "pole": 4,
+      "association": 3,
+      "department": null,
+      "city": "Caluire",
+      "code_postal": "69300",
+      "commune": "",
+      "latitude": 45.797623,
+      "longitude": 4.848745,
+      "first_name": "Bruno",
+      "last_name": "MARGAIN",
+      "email": "bruno.margain@wanadoo.fr",
+      "phone": "07 70 85 46 47",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "ne pas prioriser dans les affectations AGIR pas avant 1er avril 26",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:02:54.831Z",
+      "updated_at": "2026-03-01T22:03:06.255Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 3,
+    "fields": {
+      "user": [
+        "ecilla@sfr.fr"
+      ],
+      "pole": 4,
+      "association": 3,
+      "department": null,
+      "city": "Vaugneray",
+      "code_postal": "69670",
+      "commune": "",
+      "latitude": 45.726545,
+      "longitude": 4.653848,
+      "first_name": "Evelyne",
+      "last_name": "CILLA",
+      "email": "ecilla@sfr.fr",
+      "phone": "06 84 78 74 34",
+      "max_capacity": 4,
+      "disponibilite_reelle": 4,
+      "observations": "Malade",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:06:18.222Z",
+      "updated_at": "2026-03-12T21:52:28.012Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 4,
+    "fields": {
+      "user": [
+        "dufour-francis74@orange.fr"
+      ],
+      "pole": 4,
+      "association": 3,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69005",
+      "commune": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "first_name": "Francis",
+      "last_name": "DUFOUR",
+      "email": "dufour-francis74@orange.fr",
+      "phone": "06 66 02 22 13",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-01T22:08:37.293Z",
+      "updated_at": "2026-03-03T16:51:24.111Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 5,
+    "fields": {
+      "user": [
+        "enel.francoise@gmail.com"
+      ],
+      "pole": 4,
+      "association": 3,
+      "department": null,
+      "city": "",
+      "code_postal": "69270",
+      "commune": "",
+      "latitude": 45.825612,
+      "longitude": 4.858032,
+      "first_name": "Françoise",
+      "last_name": "ENEL",
+      "email": "enel.francoise@gmail.com",
+      "phone": "06 75 23 42 04",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "indisponible pour l'instant. Si reprise mentoré côté Nord de la Métropole",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-01T22:12:05.212Z",
+      "updated_at": "2026-03-05T07:19:51.577Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 6,
+    "fields": {
+      "user": [
+        "yves.hunckler@orange.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69006",
+      "commune": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "first_name": "Yves",
+      "last_name": "Hunckler",
+      "email": "yves.hunckler@orange.fr",
+      "phone": "06 70 48 21 77",
+      "max_capacity": 3,
+      "disponibilite_reelle": 1,
+      "observations": "formé le 11 mars 25",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:14:52.800Z",
+      "updated_at": "2026-04-12T19:55:58.136Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 7,
+    "fields": {
+      "user": [
+        "p.logez@yahoo.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69003",
+      "commune": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "first_name": "Pierre",
+      "last_name": "Logez",
+      "email": "p.logez@yahoo.fr",
+      "phone": "06 27 36 07 56",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "Ok ASE : formé le 11 mars 25 ; ok pour rejoindre la Prospection ORA",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:17:58.794Z",
+      "updated_at": "2026-03-01T22:17:58.794Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 8,
+    "fields": {
+      "user": [
+        "alain.bornand@hotmail.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69006",
+      "commune": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "first_name": "Alain",
+      "last_name": "Bornand",
+      "email": "alain.bornand@hotmail.fr",
+      "phone": "06 86 17 63 90",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "formé le 16 avril, privilégié métier utile : 1er mentorat épuisant (perso) ; en pause jusque Mai 26",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:20:22.017Z",
+      "updated_at": "2026-04-10T21:54:00.769Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 9,
+    "fields": {
+      "user": [
+        "soravia.philippe@neuf.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Bron",
+      "code_postal": "69500",
+      "commune": "",
+      "latitude": 45.73548,
+      "longitude": 4.911201,
+      "first_name": "Philippe",
+      "last_name": "Soravia",
+      "email": "soravia.philippe@neuf.fr",
+      "phone": "06 30 50 53 84",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "formé en Juin 25 ; s'engage en sept 25 ; premier profil MNA difficile !",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:23:09.467Z",
+      "updated_at": "2026-03-01T22:23:09.467Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 10,
+    "fields": {
+      "user": [
+        "michel.couble@wanadoo.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Ste Euphémie",
+      "code_postal": "01600",
+      "commune": "",
+      "latitude": 45.965706,
+      "longitude": 4.79287,
+      "first_name": "Michel",
+      "last_name": "Couble",
+      "email": "michel.couble@wanadoo.fr",
+      "phone": "06 09 44 92 83",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "formé en sept 2",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-01T22:26:49.759Z",
+      "updated_at": "2026-03-01T22:26:49.760Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 11,
+    "fields": {
+      "user": [
+        "philippe.ledoux69@gmail.com"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "",
+      "code_postal": "69290",
+      "commune": "",
+      "latitude": 45.745346,
+      "longitude": 4.730163,
+      "first_name": "Philippe",
+      "last_name": "Ledoux",
+      "email": "philippe.ledoux69@gmail.com",
+      "phone": "06 74 09 00 56",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "formé en sept 25 ; à affecter après décembre 25 (Ouest lyonnais ou toute la Métropole)",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:29:56.123Z",
+      "updated_at": "2026-03-01T22:29:56.123Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 12,
+    "fields": {
+      "user": [
+        "jlpothin@wanadoo.fr"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "",
+      "code_postal": "69290",
+      "commune": "",
+      "latitude": 45.745346,
+      "longitude": 4.730163,
+      "first_name": "Jean Louis",
+      "last_name": "Pothin",
+      "email": "jlpothin@wanadoo.fr",
+      "phone": "06 43 83 24 52",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "formé nov 25",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:32:44.718Z",
+      "updated_at": "2026-03-01T22:32:44.719Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 13,
+    "fields": {
+      "user": [
+        "obarbot73@gmail.com"
+      ],
+      "pole": 4,
+      "association": 4,
+      "department": null,
+      "city": "Ste Foy les Lyon",
+      "code_postal": "69110",
+      "commune": "",
+      "latitude": 45.736615,
+      "longitude": 4.79394,
+      "first_name": "Olivier",
+      "last_name": "Barbot",
+      "email": "obarbot73@gmail.com",
+      "phone": "07 81 27 36 22",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "formé nov 25 ,  ok pour un second si nécessaire  ( absent première 15zaine de mars) sauf si embraye sur CPE ?",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:35:34.791Z",
+      "updated_at": "2026-04-19T13:49:30.609Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 14,
+    "fields": {
+      "user": [
+        "vanhasbrouck@free.fr"
+      ],
+      "pole": 4,
+      "association": 6,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69007",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Karine",
+      "last_name": "Vanhasbrouck",
+      "email": "vanhasbrouck@free.fr",
+      "phone": "06 08 80 69 09",
+      "max_capacity": 5,
+      "disponibilite_reelle": 0,
+      "observations": "Ne souhaite pas faire répétiteur..et pour l'instant en retrait",
+      "is_active": false,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:37:36.789Z",
+      "updated_at": "2026-04-11T12:05:33.969Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 15,
+    "fields": {
+      "user": [
+        "patrice.rochais@gmail.com"
+      ],
+      "pole": 4,
+      "association": 6,
+      "department": null,
+      "city": "Vienne",
+      "code_postal": "38200",
+      "commune": "",
+      "latitude": 45.526486,
+      "longitude": 4.88366,
+      "first_name": "Patrice",
+      "last_name": "Rochais",
+      "email": "patrice.rochais@gmail.com",
+      "phone": "06 74 97 05 66",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "actif, pret à continuer",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:39:29.659Z",
+      "updated_at": "2026-04-10T07:34:32.646Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 16,
+    "fields": {
+      "user": [
+        "henca2011@gmail.com"
+      ],
+      "pole": 4,
+      "association": 5,
+      "department": null,
+      "city": "Lyon",
+      "code_postal": "69001",
+      "commune": "",
+      "latitude": 45.758,
+      "longitude": 4.835,
+      "first_name": "Henri",
+      "last_name": "DE JAEGHERE",
+      "email": "henca2011@gmail.com",
+      "phone": "06 24 92 34 19",
+      "max_capacity": 4,
+      "disponibilite_reelle": 3,
+      "observations": "pas dispo avant avril pas de mentore ase",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-01T22:42:30.748Z",
+      "updated_at": "2026-03-12T21:53:21.749Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 17,
+    "fields": {
+      "user": [
+        "alain.jeannerot@gmail.com"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "Libourne",
+      "code_postal": "",
+      "commune": "",
+      "latitude": 44.920384,
+      "longitude": -0.226836,
+      "first_name": "Alain",
+      "last_name": "JEANNEROT",
+      "email": "alain.jeannerot@gmail.com",
+      "phone": "06 09 93 66 09",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:35:05.980Z",
+      "updated_at": "2026-03-02T11:05:24.854Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 18,
+    "fields": {
+      "user": [
+        "cat.colombier3@gmail.com"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Catherine",
+      "last_name": "COLOMBIER",
+      "email": "cat.colombier3@gmail.com",
+      "phone": "",
+      "max_capacity": 1,
+      "disponibilite_reelle": 1,
+      "observations": "",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-02T10:36:11.031Z",
+      "updated_at": "2026-03-02T10:36:11.031Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 19,
+    "fields": {
+      "user": [
+        "catherine.philippe75@orange.fr"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "Libourne",
+      "code_postal": "",
+      "commune": "",
+      "latitude": 44.920384,
+      "longitude": -0.226836,
+      "first_name": "Catherine",
+      "last_name": "PHILIPPE",
+      "email": "catherine.philippe75@orange.fr",
+      "phone": "06 32 71 81 39",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:37:23.396Z",
+      "updated_at": "2026-03-02T11:06:30.016Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 20,
+    "fields": {
+      "user": [
+        "c_paragot@orange.fr"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Christian",
+      "last_name": "PARAGOT",
+      "email": "c_paragot@orange.fr",
+      "phone": "",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:39:21.527Z",
+      "updated_at": "2026-03-02T10:39:21.527Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 21,
+    "fields": {
+      "user": [
+        "coulombier.jeanpaul@gmail.com"
+      ],
+      "pole": 6,
+      "association": 4,
+      "department": null,
+      "city": "bdx",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "JEAN-PAUL",
+      "last_name": "COULOMBIER",
+      "email": "coulombier.jeanpaul@gmail.com",
+      "phone": "06 73 67 47 73",
+      "max_capacity": 4,
+      "disponibilite_reelle": 4,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:41:30.925Z",
+      "updated_at": "2026-04-10T22:31:30.115Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 22,
+    "fields": {
+      "user": [
+        "philippe.daleman@numericable.fr"
+      ],
+      "pole": 6,
+      "association": 5,
+      "department": null,
+      "city": "",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "PHILIPPE",
+      "last_name": "D'ALEMAN",
+      "email": "philippe.daleman@numericable.fr",
+      "phone": "",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:42:57.825Z",
+      "updated_at": "2026-03-02T10:42:57.825Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 23,
+    "fields": {
+      "user": [
+        "ppujole.agir@gmail.com"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "Bordeau",
+      "code_postal": "",
+      "commune": "",
+      "latitude": 44.851897,
+      "longitude": -0.587877,
+      "first_name": "PHILIPPE",
+      "last_name": "PUJOLE",
+      "email": "ppujole.agir@gmail.com",
+      "phone": "06 08 70 91 33",
+      "max_capacity": 5,
+      "disponibilite_reelle": 4,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:45:31.752Z",
+      "updated_at": "2026-03-04T22:36:22.500Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 24,
+    "fields": {
+      "user": [
+        "th.chazelle@aol.com"
+      ],
+      "pole": 6,
+      "association": 4,
+      "department": null,
+      "city": "bdx",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Thierry",
+      "last_name": "CHAZELLE",
+      "email": "th.chazelle@aol.com",
+      "phone": "603671570",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:48:04.713Z",
+      "updated_at": "2026-03-02T11:04:01.600Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 25,
+    "fields": {
+      "user": [
+        "alain.nestier@gmail.com"
+      ],
+      "pole": 6,
+      "association": 5,
+      "department": null,
+      "city": "",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Alain",
+      "last_name": "NESTIER",
+      "email": "alain.nestier@gmail.com",
+      "phone": "",
+      "max_capacity": 5,
+      "disponibilite_reelle": 5,
+      "observations": "",
+      "is_active": true,
+      "is_trained": true,
+      "training_date": null,
+      "created_at": "2026-03-02T10:49:10.839Z",
+      "updated_at": "2026-04-10T21:55:14.404Z"
+    }
+  },
+  {
+    "model": "core.mentor",
+    "pk": 26,
+    "fields": {
+      "user": [
+        "claude.darracq@gmail.com"
+      ],
+      "pole": 6,
+      "association": 3,
+      "department": null,
+      "city": "",
+      "code_postal": "",
+      "commune": "",
+      "latitude": null,
+      "longitude": null,
+      "first_name": "Claude",
+      "last_name": "DARRACQ",
+      "email": "claude.darracq@gmail.com",
+      "phone": "",
+      "max_capacity": 1,
+      "disponibilite_reelle": 1,
+      "observations": "",
+      "is_active": true,
+      "is_trained": false,
+      "training_date": null,
+      "created_at": "2026-03-02T10:50:43.781Z",
+      "updated_at": "2026-03-04T21:26:24.310Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 1,
+    "fields": {
+      "user": [
+        "cn@ora.fr"
+      ],
+      "first_name": "Directeur",
+      "last_name": "National",
+      "email": "cn@ora.fr",
+      "phone": "",
+      "ville": "",
+      "fonction": "membre",
+      "association": null,
+      "pole": null,
+      "is_active": true,
+      "is_super_admin": true,
+      "cn_acces_complet": true,
+      "created_at": "2026-02-16T08:56:32.728Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 4,
+    "fields": {
+      "user": [
+        "ylamache@egee.asso.fr"
+      ],
+      "first_name": "Yvon",
+      "last_name": "Lamache",
+      "email": "ylamache@egee.asso.fr",
+      "phone": "06 63 30 61 40",
+      "ville": "Caen",
+      "fonction": "resp_anim",
+      "association": 5,
+      "pole": null,
+      "is_active": true,
+      "is_super_admin": false,
+      "cn_acces_complet": false,
+      "created_at": "2026-02-27T23:16:45.867Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 5,
+    "fields": {
+      "user": [
+        "eric.defraguier@orange.fr"
+      ],
+      "first_name": "Eric",
+      "last_name": "de Fraguier",
+      "email": "eric.defraguier@orange.fr",
+      "phone": "06 70 76 02 20",
+      "ville": "Lyon 5",
+      "fonction": "resp_reseau",
+      "association": 4,
+      "pole": 4,
+      "is_active": true,
+      "is_super_admin": true,
+      "cn_acces_complet": true,
+      "created_at": "2026-02-27T23:18:54.977Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 6,
+    "fields": {
+      "user": [
+        "pierre.reynard2013@yahoo.fr"
+      ],
+      "first_name": "Pierre",
+      "last_name": "Reynard",
+      "email": "pierre.reynard2013@yahoo.fr",
+      "phone": "07 86 36 81 92",
+      "ville": "Versailles",
+      "fonction": "resp_doc",
+      "association": 4,
+      "pole": 5,
+      "is_active": true,
+      "is_super_admin": false,
+      "cn_acces_complet": false,
+      "created_at": "2026-02-27T23:20:59.783Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 7,
+    "fields": {
+      "user": [
+        "jacquesbartier9@gmail.com"
+      ],
+      "first_name": "Jacques",
+      "last_name": "Bartier",
+      "email": "jacquesbartier9@gmail.com",
+      "phone": "06 79 70 12 46",
+      "ville": "Jonages",
+      "fonction": "resp_finance",
+      "association": 5,
+      "pole": 4,
+      "is_active": true,
+      "is_super_admin": false,
+      "cn_acces_complet": false,
+      "created_at": "2026-02-27T23:23:18.127Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 8,
+    "fields": {
+      "user": [
+        "jpedelaborde.agirabcd@gmail.com"
+      ],
+      "first_name": "Jean",
+      "last_name": "Pedelaborde",
+      "email": "jpedelaborde.agirabcd@gmail.com",
+      "phone": "06 28 06 38 06",
+      "ville": "Paris",
+      "fonction": "resp_com",
+      "association": 3,
+      "pole": 7,
+      "is_active": true,
+      "is_super_admin": false,
+      "cn_acces_complet": false,
+      "created_at": "2026-02-27T23:25:07.620Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 9,
+    "fields": {
+      "user": [
+        "ppujole.agir@gmail.com"
+      ],
+      "first_name": "Philippe",
+      "last_name": "Pujole",
+      "email": "ppujole.agir@gmail.com",
+      "phone": "06 08 70 91 33",
+      "ville": "Bordeaux",
+      "fonction": "resp_si",
+      "association": 3,
+      "pole": 6,
+      "is_active": true,
+      "is_super_admin": true,
+      "cn_acces_complet": true,
+      "created_at": "2026-02-27T23:27:15.324Z"
+    }
+  },
+  {
+    "model": "core.cnmember",
+    "pk": 10,
+    "fields": {
+      "user": [
+        "joa.shamu@yahoo.fr"
+      ],
+      "first_name": "joachim kabanza",
+      "last_name": "SHAMUKEKE",
+      "email": "joa.shamu@yahoo.fr",
+      "phone": "0614828584",
+      "ville": "Lubumbashi",
+      "fonction": "membre",
+      "association": null,
+      "pole": null,
+      "is_active": true,
+      "is_super_admin": true,
+      "cn_acces_complet": true,
+      "created_at": "2026-03-06T07:37:45.107Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 4,
+    "fields": {
+      "young_request": 15,
+      "mentor": 4,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 180,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-02T19:00:47.030Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 5,
+    "fields": {
+      "young_request": 16,
+      "mentor": 4,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 183,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-02T22:40:16.276Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 6,
+    "fields": {
+      "young_request": 17,
+      "mentor": 6,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 170,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-03T21:50:44.955Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 7,
+    "fields": {
+      "young_request": 18,
+      "mentor": 5,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 135,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-04T22:05:32.496Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 8,
+    "fields": {
+      "young_request": 20,
+      "mentor": 23,
+      "decided_by": [
+        "ppujole.agir@gmail.com"
+      ],
+      "ai_score": 170,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-04T22:36:22.501Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 9,
+    "fields": {
+      "young_request": 21,
+      "mentor": 5,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 110,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-05T07:19:51.579Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 10,
+    "fields": {
+      "young_request": 25,
+      "mentor": 6,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 165,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-09T11:03:52.821Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 11,
+    "fields": {
+      "young_request": 22,
+      "mentor": 6,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 168,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-09T20:13:34.902Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 12,
+    "fields": {
+      "young_request": 26,
+      "mentor": 16,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 310,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-03-12T20:29:26.522Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 13,
+    "fields": {
+      "young_request": 27,
+      "mentor": 6,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 266,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-04-09T22:34:08.411Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 14,
+    "fields": {
+      "young_request": 28,
+      "mentor": 15,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 285,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-04-10T07:34:32.650Z"
+    }
+  },
+  {
+    "model": "core.matchingdecision",
+    "pk": 15,
+    "fields": {
+      "young_request": 24,
+      "mentor": 13,
+      "decided_by": [
+        "eric.defraguier@orange.fr"
+      ],
+      "ai_score": 260,
+      "overridden": false,
+      "justification": "",
+      "created_at": "2026-04-19T13:49:30.612Z"
+    }
+  }
+]

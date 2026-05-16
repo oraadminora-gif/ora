@@ -4,14 +4,22 @@ Configuration ORA Backend - Mentorat Jeunes
 
 from pathlib import Path
 from datetime import timedelta
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-in-production-ora-mentorat-2026'
+# Lit ENVIRONMENT=development|production dans .env
+# puis utilise le préfixe DEV_ ou PROD_ pour toutes les variables
+_ENV = config('ENVIRONMENT', default='development').upper()[:4]   # 'DEV' ou 'PROD'
 
-DEBUG = True
+def env(key, default=None, **kwargs):
+    return config(f'{_ENV}_{key}', default=default, **kwargs)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-in-production-ora-mentorat-2026')
+
+DEBUG = env('DEBUG', default=True, cast=bool)
+
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 # Applications Django
 INSTALLED_APPS = [
@@ -65,11 +73,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ora_backend.wsgi.application'
 
-# Base de données SQLite (dev)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME', default='ora_db'),
+        'USER': env('DB_USER', default='postgres'),
+        'PASSWORD': env('DB_PASSWORD', default=''),
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default='5432'),
     }
 }
 
@@ -132,25 +143,24 @@ SIMPLE_JWT = {
 }
 
 # CORS - Frontend Vite/React
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:5173",
-]
+CORS_ALLOWED_ORIGINS = env(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173',
+    cast=Csv(),
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
 # ==================== EMAIL ====================
-# Brevo (ex-Sendinblue) — clé API stable, 300 emails/jour gratuits
-# Credentials : SMTP & API → SMTP sur brevo.com
+# Brevo (ex-Sendinblue) — SMTP, 300 emails/jour gratuits
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp-relay.brevo.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = 'joa.shamu@gmail.com'
-EMAIL_HOST_PASSWORD = '8Ay4UW3tEwIQv2Kq'  # clé SMTP Brevo — regénérer si besoin sur brevo.com
+EMAIL_HOST_USER     = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 
-DEFAULT_FROM_EMAIL = 'ORA Mentorat <joa.shamu@gmail.com>'
+DEFAULT_FROM_EMAIL  = env('DEFAULT_FROM_EMAIL', default='ORA Mentorat <noreply@ora.fr>')
 
 # URL du frontend (utilisée dans les liens envoyés par email)
-FRONTEND_URL = 'http://localhost:5173'  # En prod : 'https://votre-domaine.fr'
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
