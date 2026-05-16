@@ -219,8 +219,8 @@ export function ApprenticeRegistration() {
                 <input type="email" required placeholder="marie@exemple.fr" value={formData.email}
                   onChange={set('email')} className={INPUT} />
               </Field>
-              <Field label="Téléphone">
-                <input type="tel" placeholder="06 00 00 00 00" value={formData.phone}
+              <Field label="Téléphone *">
+                <input type="tel" required placeholder="06 00 00 00 00" value={formData.phone}
                   onChange={set('phone')} className={INPUT} />
               </Field>
             </div>

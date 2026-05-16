@@ -25,6 +25,7 @@ import { CGV }                     from './pages/CGV';
 import { Login }                   from './pages/Login';
 import { NotFound }                from './pages/NotFound';
 import { EvaluationPage }          from './pages/EvaluationPage';
+import { CharteGraphique }         from './pages/CharteGraphique';
 
 // ── Dashboards membres — lazy (lourds, chargés seulement après login) ──
 const MentorDashboard           = lazy(() => import('./pages/member/mentor/MentorDashboard').then(m => ({ default: m.MentorDashboard })));
@@ -94,6 +95,7 @@ function App() {
             <Route path="/mentions-legales"          element={<MentionsLegales />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
             <Route path="/cgv"                       element={<CGV />} />
+            <Route path="/charte"                    element={<CharteGraphique />} />
             <Route path="/login"                     element={<Login />} />
             <Route path="/evaluer-mentor/:token"     element={<EvaluationPage />} />
           </Route>

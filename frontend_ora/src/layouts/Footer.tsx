@@ -25,7 +25,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Navigation</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link to="/apprentis" className="hover:text-white transition-colors">Je suis apprenti(e)</Link></li>
+              <li><Link to="/apprentis" className="hover:text-white transition-colors">Tu es apprenti(e)</Link></li>
               <li><Link to="/mentors" className="hover:text-white transition-colors">Devenir mentor</Link></li>
               <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
@@ -55,6 +55,9 @@ export function Footer() {
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-500">
           <p>© 2026 ORA - Joashams</p>
           <p className="mt-1">Pour Talents Seniors Bénévoles</p>
+          <Link to="/charte" className="inline-block mt-3 text-[11px] text-slate-600 hover:text-slate-400 transition-colors">
+            Charte grahique
+          </Link>
         </div>
       </div>
     </footer>

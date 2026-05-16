@@ -1,463 +1,512 @@
 # Manuel d'utilisation — Plateforme ORA
 
-> **ORA** (Objectif Réussir l'Apprentissage) est une plateforme de gestion du mentorat pour apprentis.
-> Elle connecte des jeunes en apprentissage avec des mentors bénévoles, encadrés par des animateurs de pôle.
+> **ORA — Objectif Réussir l'Apprentissage**
+> Plateforme de mise en relation entre jeunes apprentis et mentors bénévoles seniors,
+> coordonnée par des animateurs de pôle répartis sur toute la France.
 
 ---
 
 ## Table des matières
 
-1. [Vue d'ensemble des rôles](#1-vue-densemble-des-rôles)
-2. [Site public — Pages et navigation](#2-site-public--pages-et-navigation)
-3. [Connexion et navigation membre](#3-connexion-et-navigation-membre)
-4. [Rôle Mentor](#4-rôle-mentor)
-5. [Rôle AP — Animateur de Pôle](#5-rôle-ap--animateur-de-pôle)
-6. [Rôle ACP — Animateur Coordinateur de Pôle](#6-rôle-acp--animateur-coordinateur-de-pôle)
-7. [Rôle CN — Coordination Nationale](#7-rôle-cn--coordination-nationale)
-8. [Cycle de vie complet d'un mentorat](#8-cycle-de-vie-complet-dun-mentorat)
+1. [Vue d'ensemble](#1-vue-densemble)
+2. [Site public](#2-site-public)
+3. [Guide du Jeune](#3-guide-du-jeune)
+4. [Guide du Mentor](#4-guide-du-mentor)
+5. [Guide de l'AP — Animateur de Pôle](#5-guide-de-lap--animateur-de-pôle)
+6. [Guide de l'ACP — Animateur Coordinateur de Pôle](#6-guide-de-lacp--animateur-coordinateur-de-pôle)
+7. [Guide du CN — Coordination Nationale](#7-guide-du-cn--coordination-nationale)
+8. [Cycle de vie d'un mentorat](#8-cycle-de-vie-dun-mentorat)
 9. [Système d'évaluation](#9-système-dévaluation)
 10. [Gestion des financements](#10-gestion-des-financements)
 11. [Administration Django](#11-administration-django)
+12. [Design System](#12-design-system)
 
 ---
 
-## 1. Vue d'ensemble des rôles
+## 1. Vue d'ensemble
 
-| Rôle | Qui ? | Responsabilités principales |
-|------|-------|-----------------------------|
-| **Jeune (public)** | Apprenti ou chercheur d'apprentissage | S'inscrire, évaluer son mentor |
-| **Mentor** | Professionnel bénévole | Suivre ses jeunes en mentorat |
-| **AP** | Animateur de Pôle | Encadrer les mentors, valider les clôtures |
-| **ACP** | Animateur Coordinateur de Pôle | Affectation, suivi global du pôle, KPIs. **Hérite aussi des droits AP** : peut valider des clôtures et suivre les mentors de son association. |
-| **CN (limité)** | Membre CN lecture seule | Consulter les données nationales |
-| **CN (complet)** | Membre CN admin | Gérer mentors, pôles, animateurs, membres CN |
+### 1.1 Qui fait quoi ?
 
-> **Périmètre des données :**
-> - L'**AP** voit les mentors de **son association dans son pôle** uniquement.
-> - L'**ACP** voit tous les mentors et mentorats de **son pôle** (toutes associations confondues).
-> - La **CN** voit l'ensemble du territoire national.
+| Profil | Rôle dans la plateforme |
+|--------|------------------------|
+| **Jeune** | S'inscrit via le formulaire public, reçoit un mentor, évalue le mentorat en fin de parcours |
+| **Mentor** | Professionnel retraité bénévole, suit ses jeunes, enregistre ses rencontres, demande la clôture |
+| **AP** (Animateur de Pôle) | Encadre les mentors de **son association** au sein du pôle, valide les clôtures |
+| **ACP** (Animateur Coordinateur) | Pilote l'ensemble du pôle, affecte les mentors aux demandes, gère animateurs et établissements. **Hérite des droits AP** |
+| **CN** (Coordination Nationale) | Vue nationale : gère pôles, mentors, animateurs et statistiques selon son niveau d'accès |
 
----
+### 1.2 Périmètre des données
 
-## 2. Site public — Pages et navigation
+| Profil | Ce qu'il voit |
+|--------|--------------|
+| **Mentor** | Uniquement ses propres mentorats |
+| **AP** | Les mentors de **son association dans son pôle** |
+| **ACP** | **Tous** les mentors et mentorats de **son pôle** |
+| **CN** | L'ensemble du territoire national |
 
-### 2.1 Navigation principale
+### 1.3 Statuts clés
 
-La barre de navigation (en haut de toutes les pages publiques) contient :
+| Objet | Statuts possibles |
+|-------|------------------|
+| Demande jeune | `NEW` → `PENDING` → `ASSIGNED` → `CLOSED` |
+| Mentorat | `PENDING` → `ACTIVE` → `CLOSED` (fin normale) ou `ABORTED` (arrêt) |
+| Pôle | `ACTIVE` / `INACTIVE` |
 
-| Lien | URL | Description |
-|------|-----|-------------|
-| Logo ORA | `/` | Retour à l'accueil |
-| ORA c'est quoi ? | `/ora` | Présentation de l'association |
-| Je suis apprenti(e) | `/apprentis` | Informations pour les jeunes |
-| Devenir mentor | `/mentors` | Informations pour les mentors bénévoles |
-| **Mon espace** *(si connecté)* | dashboard selon rôle | Accès à l'espace membre |
-| **Connexion** *(si non connecté)* | `/login` | Page de connexion |
+> **Important :** les statuts s'écrivent en **MAJUSCULES** dans le code et les comparaisons.
 
 ---
 
-### 2.2 Page d'accueil
+## 2. Site public
 
-**URL :** `/`
+Le site public est entièrement accessible sans connexion. Il présente ORA aux jeunes, aux futurs mentors et aux partenaires.
 
-La page d'accueil se compose des sections suivantes, dans cet ordre :
+### 2.1 Navigation principale (Header)
 
-#### Section Hero
-Bandeau avec fond dégradé bleu marine foncé, accroche principale **"Quelqu'un a envie de te voir réussir."** et sous-titre de présentation d'ORA. Badge de confiance affiché (ex: "1 200+ jeunes accompagnés").
+Barre fixe en haut, fond noir (`#1a1a1a`), visible sur toutes les pages publiques.
 
-#### Section "Trois portes" (entrées principales)
-Trois cartes d'entrée positionnées juste sous le Hero :
+| Élément | URL | Visible si |
+|---------|-----|-----------|
+| Logo ORA | `/` | Toujours — retour à l'accueil |
+| ORA c'est quoi ? | `/ora` | Toujours |
+| Tu es apprenti(e) | `/apprentis` | Toujours |
+| Devenir mentor | `/mentors` | Toujours |
+| **Mon espace** | Dashboard selon rôle | Connecté |
+| **Déconnexion** | — | Connecté |
+| **🔒 Espace Membre** | `/login` | Non connecté |
 
-| Carte | Couleur | Public | Bouton(s) |
-|-------|---------|--------|-----------|
-| **Trouver mon Alternance** | Orange | Jeune en recherche de contrat | "ME FAIRE ACCOMPAGNER" → `/apprentis/inscription` |
-| **Je suis Apprenti(e)** | Corail | Jeune déjà en apprentissage | "M'INSCRIRE MAINTENANT" → `/apprentis/inscription` |
-| **CFA, Greta, Mentors…** | Bleu | Institutions et mentors bénévoles | "Devenir Mentor" → `/mentors/inscription` + "Contact Institutionnel" → `/contact` |
-
-> Les deux premières cartes redirigent vers le même formulaire d'inscription jeune.
-
-#### Section Statistiques (première occurrence)
-4 chiffres clés affichés dynamiquement (alimentés en temps réel depuis la base de données) :
-- 6 000+ jeunes accompagnés
-- 3 000+ mentors bénévoles
-- Nombre de départements couverts (mis à jour dynamiquement)
-- Nombre de pôles actifs (mis à jour dynamiquement)
-
-#### Section "Pourquoi choisir ORA ?"
-3 arguments illustrés par des icônes Lucide :
-- **Zéro Décrochage** (icône ShieldCheck)
-- **Réussite Diplômante** (icône GraduationCap)
-- **Confiance Boostée** (icône TrendingUp)
-
-#### Section "Nos valeurs"
-4 valeurs présentées en grille 2×2 de cartes horizontales avec icône colorée et fond teinté :
-- **Bienveillant** (fond bleu clair)
-- **Confidentiel** (fond violet clair)
-- **Sur-mesure** (fond orange clair)
-- **100% Gratuit** (fond vert clair)
-
-#### Section "Présents sur tout le territoire"
-Bloc dégradé sombre avec chiffres clés (départements couverts, pôles actifs, associations partenaires) et texte descriptif + bouton "Voir nos implantations" → `/implantations`.
-
-#### Section Témoignages
-3 cartes de témoignages (Léa — apprentie, Michel — mentor, Thomas — apprenti) avec badges de rôle colorés. Lien **"Voir tous les témoignages"** → `/temoignages`.
-
-#### Section Statistiques "ORA en chiffres" (deuxième occurrence — bas de page)
-Répétition condensée des 4 chiffres clés. La mention "ORA en chiffres" est positionnée **sous** les compteurs.
+Sur mobile : les liens sont regroupés dans un menu hamburger (☰ / ✕).
 
 ---
 
-### 2.3 Pages d'information publiques
+### 2.2 Page d'accueil (`/`)
+
+La page d'accueil présente ORA de haut en bas, en sept sections.
+
+#### Section 1 — Hero
+
+Fond dégradé bleu marine foncé, deux colonnes :
+
+- **Gauche** : image illustrative `image_hero.png` avec halo lumineux orange/bleu
+- **Droite** :
+  - Badge animé : « Gratuit · Bénévole · Confidentiel » avec point pulsant bleu
+  - Titre principal : *"ORA a envie / **de te voir réussir.**"* (le second vers en orange `#F05A28`)
+  - Sous-titre discret : *"À toi d'en décider."*
+  - Description courte du dispositif
+  - Séparateur avec le nom complet *Objectif Réussir l'Apprentissage*
+
+#### Section 2 — Deux portes (entrées principales)
+
+Grille 3 colonnes : la première carte occupe 2/3, la seconde 1/3.
+
+| Carte | Destinataire | Contenu | Bouton principal |
+|-------|-------------|---------|-----------------|
+| **Tu veux être accompagné(e) ?** *(orange, large)* | Jeunes | 2 sous-cartes : "Je m'oriente vers l'apprentissage" et "Je suis déjà en apprentissage" | **LE MENTORAT C'EST POUR MOI** → `/ora` |
+| **Vous souhaitez prendre contact ?** *(bleu)* | Mentors potentiels, CFA, institutions | Texte d'invitation | **Devenir Mentor** → `/mentors` · **Autre contact** → `/contact` |
+
+#### Section 3 — Présents (Carte France)
+
+Fond clair (`bg-slate-50`), deux colonnes :
+
+- **Gauche** : carte de France statique (`map-france.png`) — cliquable → `/implantations`
+- **Droite** : texte + bouton **"Trouver mon pôle"** → `/implantations`
+
+#### Section 4 — ORA en chiffres
+
+4 compteurs animés :
+
+| Valeur | Label | Source |
+|--------|-------|--------|
+| 1 000+ | Jeunes accompagnés | Fixe |
+| 300+ | Mentors bénévoles | Fixe |
+| *dynamique* | Départements couverts | API `/public/stats/` |
+| *dynamique* | Pôles actifs | API `/public/stats/` |
+
+#### Section 5 — Pourquoi choisir l'accompagnement ORA ?
+
+3 arguments illustrés :
+
+| Icône | Titre | Couleur |
+|-------|-------|---------|
+| ShieldCheck | **le mentorat** | Bleu |
+| GraduationCap | **en vue** | Orange |
+| TrendingUp | **Confiance retrouvée** | Vert |
+
+#### Section 6 — Nos valeurs
+
+4 cartes en grille 2×2 :
+
+| Valeur | Icône | Couleur |
+|--------|-------|---------|
+| Bienveillance | Heart | Rose |
+| Confidentialité | Lock | Bleu |
+| Sur mesure | SlidersHorizontal | Violet |
+| Engagement | BadgeCheck | Vert |
+
+#### Section 7 — Ils nous soutiennent / font confiance / témoignent
+
+3 cartes :
+
+| Carte | Icône | Bouton |
+|-------|-------|--------|
+| **Ils nous soutiennent** | HandHeart (vert) | Voir notre réseau associatif → `/partenaires` |
+| **Ils nous font confiance** | GraduationCap (bleu) | Voir nos CFA partenaires → `/partenaires` |
+| **Ils témoignent** | Quote (orange) | Voir les témoignages → `/temoignages` |
+
+---
+
+### 2.3 Pied de page (Footer)
+
+4 colonnes :
+
+| Colonne | Liens |
+|---------|-------|
+| Logo + description | Logo cliquable → `/` |
+| **Navigation** | Je suis apprenti(e) · Devenir mentor · FAQ |
+| **Ressources** | Notre réseau associatif · Nos implantations · Contact |
+| **Légal** | Mentions légales · Politique de confidentialité · CGU |
+
+En bas : *© 2026 ORA - Joashams / Pour Talents Seniors Bénévoles*
+Lien discret **Design System** → `/charte` (usage interne équipe)
+
+---
+
+### 2.4 Pages d'information
 
 | Page | URL | Contenu |
 |------|-----|---------|
-| À propos d'ORA | `/ora` | Présentation, histoire, missions de l'association |
-| Je suis apprenti(e) | `/apprentis` | Comment fonctionne l'accompagnement, FAQ courte |
+| ORA c'est quoi ? | `/ora` | Histoire, missions, fonctionnement du dispositif |
+| Tu es apprenti(e) | `/apprentis` | Accompagnement disponible, engagements du jeune |
 | Devenir mentor | `/mentors` | Rôle du mentor, engagement, avantages |
 | FAQ | `/faq` | Questions fréquentes |
-| Témoignages | `/temoignages` | Témoignages de jeunes et de mentors |
-| Partenaires | `/partenaires` | Liste des partenaires institutionnels |
-| Implantations | `/implantations` | Carte des pôles en France |
-| Actualités | `/actualites` | Articles et news |
+| Témoignages | `/temoignages` | Avis filtrables : Apprentis, Mentors, CFA |
+| Notre réseau associatif | `/partenaires` | Partenaires et associations nationales |
+| Nos implantations | `/implantations` | Carte des pôles actifs en France |
 | Contact | `/contact` | Formulaire de contact |
+| Mentions légales | `/mentions-legales` | Informations légales |
+| Politique de confidentialité | `/politique-confidentialite` | RGPD |
+| CGU | `/cgv` | Conditions générales d'utilisation |
 
 ---
 
-### 2.4 Inscription jeune — Formulaire de demande de mentorat
+### 2.5 Bandeau cookies (RGPD)
 
-**URL :** `/apprentis/inscription`
+À la première visite, un bandeau apparaît après 800 ms :
 
-Accessible depuis les deux premières cartes de l'accueil ou directement.
+- Cookies **techniques uniquement** (aucun traçage publicitaire)
+- **"J'accepte"** → stocke le consentement (`localStorage`, clé `ora_cookie_consent`)
+- **"En savoir plus"** → `/politique-confidentialite`
+- Bouton **×** → ferme sans accepter
 
-#### Structure du formulaire
-
-Le formulaire est divisé en 5 sections :
+> Pour réinitialiser (développement) : supprimer la clé `ora_cookie_consent` dans le localStorage du navigateur.
 
 ---
 
-**Section 1 — Identité**
+## 3. Guide du Jeune
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
+> Le jeune n'a pas de compte sur la plateforme. Toutes ses interactions passent par des formulaires publics et des emails.
+
+### 3.1 Demander un mentor
+
+**URL :** `/apprentis/inscription` — accessible depuis `/apprentis` ou la page d'accueil
+
+Le formulaire comprend **6 sections** à remplir dans l'ordre.
+
+---
+
+#### Section 1 — Identité
+
+| Champ | Requis | Notes |
+|-------|--------|-------|
 | Prénom | ✅ | |
 | Nom | ✅ | |
-| Email | ✅ | Utilisé pour les communications |
-| Téléphone | Non | |
-| Date de naissance | Non | |
-| Genre | Non | Garçon / Fille / Autre / Non précisé |
+| Email | ✅ | Adresse pour toutes les communications ORA |
+| Téléphone | | |
+| Date de naissance | | |
+| Genre | | Garçon / Fille / Autre / Non précisé |
 
 ---
 
-**Section 2 — Localisation**
+#### Section 2 — Localisation
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| **Code postal** | ✅ | 5 chiffres. Dès la saisie complète, le pôle ORA correspondant est **automatiquement détecté** |
-| **Commune** | ✅ | Nom de la ville, utilisé pour le matching géographique avec les mentors |
+| Champ | Requis | Notes |
+|-------|--------|-------|
+| Code postal | ✅ | **Dès 5 chiffres saisis**, le pôle ORA est détecté automatiquement |
+| Commune | ✅ | Nom de ta ville — utilisé pour le matching géographique avec les mentors |
 
-> **Détection automatique du pôle :** dès que le code postal est complet (5 chiffres), le système identifie le pôle ORA couvrant ce département et affiche un **bandeau vert** confirmant le pôle détecté. La demande sera automatiquement transmise à ce pôle. Le jeune n'a pas à choisir manuellement son pôle.
+> **Bandeau vert** : pôle détecté — ta demande lui est transmise automatiquement.
 >
-> Si aucun pôle ne couvre le département, un **bandeau orange** s'affiche avec l'invitation à contacter ORA par email ou via le formulaire de contact. Le formulaire ne peut pas être soumis dans ce cas.
+> **Bandeau orange** : aucun pôle dans ta zone — contacter `ora-france@outlook.com` ou `/contact`. Le formulaire ne peut pas être soumis dans ce cas.
 
 ---
 
-**Section 3 — Scolarité**
+#### Section 3 — Scolarité
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| **Diplôme préparé** | Non | Menu déroulant groupé par niveau : |
-| | | Niveau 3 : CAP, BEP |
-| | | Niveau 4 : Bac Professionnel, Bac (autre), Brevet Professionnel |
-| | | Niveau 5 : BTS, DUT |
-| | | Niveau 6 : Licence Professionnelle, BUT |
-| | | Niveau 7 : Master, DEA, DES, Ingénieur |
-| **Situation actuelle** | ✅ | Deux boutons radio : **Déjà en apprentissage** / **En recherche d'apprentissage** |
-| **Nom de l'école / CFA** | Non | Champ texte libre — affiché **uniquement** si la situation est "Déjà en apprentissage" |
+| Champ | Requis | Notes |
+|-------|--------|-------|
+| Diplôme préparé | | Niv. 3 : CAP, BEP / Niv. 4 : Bac Pro, Bac autre, BP / Niv. 5 : BTS, DUT / Niv. 6 : Licence Pro, BUT / Niv. 7 : Master, DEA, DES, Ingénieur |
+| Situation actuelle | ✅ | **Déjà en apprentissage** ou **En recherche d'apprentissage** |
+| Nom de l'école / CFA | | Visible **uniquement** si "Déjà en apprentissage" est sélectionné |
 
 ---
 
-**Section 4 — Ta demande**
+#### Section 4 — Ta demande
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| **Exprime ta demande** | ✅ | Zone de texte libre (5 lignes). Le jeune décrit ce sur quoi il souhaite être accompagné (difficultés avec l'employeur, dossier professionnel, orientation…) |
+| Champ | Requis | Notes |
+|-------|--------|-------|
+| Exprime ta demande | ✅ | Zone de texte libre — décris sur quoi tu souhaites être accompagné(e) : difficultés avec l'employeur, organisation, orientation, recherche d'entreprise… |
 
 ---
 
-**Section 5 — Confidentialité**
+#### Section 5 — Engagement
 
-Case à cocher obligatoire : *"J'accepte que mes données personnelles soient utilisées pour me mettre en relation avec un mentor. Mes données resteront confidentielles et ne seront pas partagées avec des tiers."*
+Case à cocher obligatoire :
+> *"Je m'engage dans le mentorat et en accepte les règles."*
 
-Bouton **"Envoyer ma demande"** (désactivé tant que la case n'est pas cochée ou qu'aucun pôle n'est détecté).
+Un lien renvoie vers la page **"Tu es apprenti(e)"**, section *"À quoi je m'engage en demandant un mentor ?"*.
+
+---
+
+#### Section 6 — Confidentialité
+
+Case à cocher obligatoire :
+> *"J'accepte que mes données personnelles soient utilisées pour me mettre en relation avec un mentor. Mes données resteront confidentielles et ne seront pas partagées avec des tiers."*
+
+Puis cliquer sur **"Envoyer ma demande"**.
+
+---
 
 #### Après l'envoi
-Un écran de confirmation s'affiche : *"Inscription envoyée ! Nous allons étudier ta demande et te recontacter très prochainement."* La demande apparaît dans le tableau de bord ACP du pôle détecté avec le statut **NOUVEAU**.
+
+Écran de confirmation :
+> *"Inscription envoyée ! Nous allons étudier ta demande et te recontacter très prochainement."*
+
+Ta demande arrive dans le tableau de bord de l'ACP du pôle avec le statut **NEW**. Un mentor te sera affecté dans les meilleurs délais.
 
 ---
 
-### 2.5 Candidature mentor
+### 3.2 Évaluer son mentor
 
-**URL :** `/mentors/inscription`
+Après confirmation de clôture du mentorat par l'AP ou l'ACP, tu reçois un **email** contenant un lien unique vers `/evaluer-mentor/:token`.
 
-Accessible depuis la troisième carte de l'accueil ou via la page "Devenir mentor".
+Étapes :
 
-> **Important :** Ce formulaire est une **candidature**, pas une création de compte. L'animateur ORA du pôle examinera la candidature et contactera le candidat pour finaliser l'inscription. Aucun compte n'est créé à cette étape.
+1. Cliquer sur le lien dans l'email *(aucune connexion requise)*
+2. Choisir une note de **1 à 5 étoiles** (obligatoire)
+3. Rédiger un commentaire libre (facultatif)
+4. Cliquer **Envoyer**
 
-#### Structure du formulaire — 4 étapes
-
-**Étape 1 — Votre localisation**
-
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| Code postal | ✅ | Détection automatique du pôle (même mécanisme que l'inscription jeune) |
-| Commune | Non | Nom de la ville |
+> ⚠️ Le lien est **à usage unique** : une fois l'évaluation soumise, il ne fonctionne plus.
 
 ---
 
-**Étape 2 — Votre association**
-
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| Association | ✅ | Choix parmi les 4 associations nationales : AGIR, ECTI, EGEE, OTECI |
-
----
-
-**Étape 3 — Vos informations**
-
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| Prénom | ✅ | |
-| Nom | ✅ | |
-| Email | ✅ | |
-| Téléphone | Non | |
-
----
-
-**Étape 4 — Votre profil mentor**
-
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
-| Expérience professionnelle | ✅ | Zone de texte libre — décrire son parcours |
-| Domaines d'expertise | ✅ | Cases à cocher (au moins 1 requis) : Commerce/Vente, Industrie, Artisanat, Services, Santé/Social, Informatique/Numérique, Hôtellerie/Restauration, BTP, Transport/Logistique, Agriculture, Autre |
-| Disponibilité | Non | 1 fois/semaine, 2 fois/mois, 1 fois/mois, Flexible |
-| Motivation | Non | Zone de texte libre |
-
-#### Après l'envoi
-Écran de confirmation : *"Candidature envoyée ! L'animateur de votre association vous contactera prochainement."*
-
----
-
-### 2.6 Formulaire de contact
+### 3.3 Formulaire de contact
 
 **URL :** `/contact`
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
+Pour toute question avant ou après l'inscription :
+
+| Champ | Requis | Notes |
+|-------|--------|-------|
 | Nom complet | ✅ | |
 | Email | ✅ | |
-| Téléphone | Non | |
+| Téléphone | ✅ | |
 | Sujet | ✅ | Je suis apprenti(e) / Je veux devenir mentor / Partenariat / Presse-Média / Autre |
-| Message | ✅ | Zone de texte libre |
+| Message | ✅ | |
 
-Les messages reçus sont consultables par la CN dans l'espace membre (page **CN Messages**) et dans l'administration Django.
-
----
-
-### 2.7 Bandeau de consentement cookies (RGPD)
-
-Un bandeau de consentement s'affiche automatiquement sur **toutes les pages publiques** lors de la première visite (après un délai de 800 ms).
-
-**Contenu :**
-- Explication que le site utilise uniquement des cookies **techniques essentiels** (authentification, session) — aucun cookie publicitaire ou de traçage tiers
-- Badge de conformité RGPD : "Conforme RGPD · Aucun traçage tiers"
-- Bouton **"J'accepte"** — enregistre le consentement dans le navigateur (`localStorage`)
-- Lien **"En savoir plus"** → `/politique-confidentialite`
-- Bouton de fermeture (×) — ferme le bandeau sans action
-
-> **Persistance :** une fois accepté ou fermé, le bandeau ne réapparaît plus (consentement stocké sous la clé `ora_cookie_consent`). Pour réinitialiser en développement : supprimer cette clé dans le `localStorage` du navigateur.
+Coordonnées affichées : `ora-france@outlook.com` · Lien vers la carte des implantations → `/implantations`
 
 ---
 
-### 2.8 Page d'évaluation (lien reçu par email)
+## 4. Guide du Mentor
 
-**URL :** `/evaluer-mentor/:token`
-
-Page publique accessible sans connexion, via le lien unique reçu par email après la clôture d'un mentorat. Voir [section 9](#9-système-dévaluation).
-
----
-
----
-
-## 3. Connexion et navigation membre
-
-### 3.1 Connexion
+### 4.1 Connexion
 
 **URL :** `/login`
 
-- Saisir **email** et **mot de passe**
-- Lors de la première connexion, utiliser le **mot de passe temporaire** communiqué par l'administrateur
+1. Saisir l'**email** et le **mot de passe** communiqués par l'animateur de pôle lors de la création du compte
+2. Cliquer **Se connecter**
+3. Redirection automatique vers `/member/mentor/dashboard`
 
-### 3.2 Redirection selon le rôle
-
-Après connexion, chaque utilisateur est redirigé automatiquement vers son espace :
-
-| Rôle | Page d'atterrissage |
-|------|---------------------|
-| MENTOR | `/member/mentor/dashboard` |
-| AP | `/member/ap/dashboard` |
-| ACP | `/member/acp/dashboard` |
-| CN | `/member/cn/dashboard` |
-
-> **Utilisateurs multi-rôles (ACP+AP, ACP+AP+Mentor) :** un ACP hérite automatiquement des droits AP. Dans la barre latérale, un **sélecteur de rôle** permet de basculer entre les vues disponibles (ex : "ACP", "AP", "Mentor"). L'ACP peut accéder à la **Vue Animateur** (tableau de bord AP) via le menu latéral sans changer de compte.
-
-### 3.3 Mot de passe oublié
-
-Il n'existe pas de page de réinitialisation en libre-service. Un administrateur (CN ou ACP) doit réinitialiser le mot de passe manuellement via l'administration Django. Voir [section 11.1](#111-comptes-utilisateurs).
-
-### 3.4 Déconnexion
-
-Bouton **Déconnexion** dans la barre de navigation de l'espace membre.
+> **Mot de passe oublié :** contacter son AP ou ACP, qui réinitialisera le mot de passe depuis l'administration.
 
 ---
 
-## 4. Rôle Mentor
+### 4.2 Navigation — Barre latérale (Sidebar)
 
-### Navigation disponible
-- **Mes mentorats** — tableau de bord avec tous les mentorats
+La sidebar foncée (dégradé bleu nuit) s'affiche à gauche sur toutes les pages membres. Elle contient :
 
----
+- **Logo ORA** en haut
+- **Profil** : initiales + nom + badge rôle vert "Mentor"
+  - Icône **clé** (🔑) : ouvre le modal de changement de mot de passe
+- **Menu :**
+  - Mes mentorats → `/member/mentor/dashboard` (scroll vers la section mentorats)
+- **Déconnexion** en bas
 
-### 4.1 Tableau de bord Mentor — Statistiques
+#### Changer son mot de passe
 
-En haut de la page, 4 indicateurs :
-
-| Indicateur | Description |
-|-----------|-------------|
-| **Mentorats actifs** | Nombre de jeunes actuellement suivis |
-| **Places disponibles** | Capacité restante (`disponibilite_reelle`) |
-| **Mentorats terminés** | Nombre de mentorats clôturés normalement |
-| **Note moyenne** | Moyenne des évaluations reçues (si au moins une évaluation) |
-
----
-
-### 4.2 Liste des mentorats actifs
-
-Chaque mentorat actif est présenté sous forme de carte avec :
-- Prénom et nom du jeune, établissement, diplôme préparé, situation
-- AP responsable du suivi
-- Date de début
-- Indicateur de dernière activité (vert / orange / rouge selon le délai d'inactivité)
-
-**Actions disponibles sur chaque carte :**
-
-| Bouton | Description |
-|--------|-------------|
-| **Modifier infos jeune** | Mettre à jour l'établissement du jeune (liste du pôle ou saisie libre) |
-| **Enregistrer une rencontre** | Ajouter une entrée de suivi (date, durée, type, objectifs, notes) |
-| **Clôturer / Arrêter** | Soumettre une demande de clôture (nécessite validation AP/ACP) |
+1. Cliquer sur l'icône clé (🔑) dans le bloc profil de la sidebar
+2. Saisir le **mot de passe actuel**
+3. Saisir le **nouveau mot de passe** (min. 8 caractères)
+4. Confirmer le nouveau mot de passe
+5. Cliquer **Modifier**
 
 ---
 
-### 4.3 Modifier les informations du jeune
+### 4.3 Tableau de bord — "Mon Espace Mentor"
 
-| Champ | Description |
-|-------|-------------|
-| Établissement | Sélection dans la liste du pôle ou option "Autre" |
-| Nom libre | Si "Autre" sélectionné : saisie libre du nom de l'établissement |
+Le tableau de bord comprend **4 blocs** :
+
+| Bloc | Contenu |
+|------|---------|
+| **Mon profil** | Identité, email, téléphone, ville, code postal, pôle, association, statut "Formé" |
+| **Mes disponibilités** | Capacité max fixée par l'ACP · Places disponibles · Places utilisées |
+| **Mes mentorats actifs** | Liste des mentorats en cours |
+| **Bilan** | Historique des mentorats clôturés + évaluations reçues |
 
 ---
 
-### 4.4 Enregistrer une rencontre
+### 4.4 Mettre à jour les informations du jeune
 
-| Champ | Obligatoire | Description |
-|-------|-------------|-------------|
+Depuis la carte d'un mentorat actif, cliquer sur le bouton de modification.
+
+| Champ | Notes |
+|-------|-------|
+| **Situation** | "En apprentissage" ou "En recherche" |
+| **Établissement / CFA** | Visible **uniquement si "En apprentissage"** — liste du pôle ou option "Autre" |
+| Nom libre | Si "Autre" sélectionné |
+
+Cliquer **Sauvegarder**.
+
+---
+
+### 4.5 Enregistrer une rencontre
+
+Depuis la carte d'un mentorat actif, cliquer sur **"Enregistrer une rencontre"**.
+
+| Champ | Requis | Notes |
+|-------|--------|-------|
 | Date de rencontre | ✅ | Date effective du contact |
-| Durée | Non | En minutes |
-| Type de rencontre | Non | Présentiel / Téléphone / Visio / Autre |
-| Objectifs atteints | Non | Oui / Non / Partiellement |
-| Notes | Non | Compte-rendu libre |
+| Durée | | En minutes |
+| Type | | Présentiel / Téléphone / Visio / Autre |
+| Objectifs atteints | | Oui / Non / Partiellement |
+| Notes | | Compte-rendu libre, visible par l'AP et l'ACP |
 
-> Enregistrer une rencontre met à jour la date de **dernier contact**, ce qui réinitialise le compteur d'inactivité visible par l'AP et l'ACP.
+> ✅ Enregistrer une rencontre **réinitialise le compteur d'inactivité**. La carte repassera au vert dans les tableaux de bord AP/ACP.
 
----
+**Indicateur d'activité sur la carte :**
 
-### 4.5 Demander la clôture d'un mentorat
-
-1. Cliquer **Clôturer** (fin normale) ou **Arrêter** (interruption)
-2. Saisir une **raison obligatoire**
-3. Confirmer
-
-> La demande ne prend pas effet immédiatement. Le mentorat reste **ACTIVE** mais passe en état "en attente de confirmation". Un badge "En attente de validation" apparaît sur la carte. L'AP ou l'ACP doit valider.
+- 🟢 **Vert** : contact récent (< 15 jours)
+- 🟡 **Jaune** : inactivité 15–30 jours
+- 🔴 **Rouge** : inactivité > 30 jours
 
 ---
 
-### 4.6 Historique et évaluations reçues (Bilan)
+### 4.6 Demander la clôture d'un mentorat
 
-Section **Bilan** en bas du tableau de bord :
-- Liste de tous les mentorats clôturés avec date et raison de clôture
-- Pour chaque mentorat évalué : note en étoiles (1 à 5) et commentaire du jeune
-- Note moyenne globale sur tous les mentorats évalués
+1. Depuis la carte du mentorat actif, cliquer sur **"Clôturer"** (fin normale) ou **"Arrêter"** (interruption)
+2. Choisir l'**action** : Clôturer / Arrêter
+3. Saisir une **raison** (obligatoire)
+4. Confirmer
 
----
-
-## 5. Rôle AP — Animateur de Pôle
-
-### Navigation disponible
-- **Tableau de bord** — vue de son association dans son pôle
-- **Gestion mentors** — liste détaillée des mentors
-
-> **Périmètre :** l'AP voit uniquement les mentors de **son association dans son pôle**. Il ne voit pas les mentors des autres associations du même pôle, ni les mentors de son association dans d'autres pôles.
+> ⚠️ La demande **ne prend pas effet immédiatement**. Le mentorat reste `ACTIVE` avec un badge "En attente de validation". L'AP ou l'ACP doit confirmer ou rejeter la demande.
 
 ---
 
-### 5.1 Statistiques du tableau de bord AP
+### 4.7 Bilan et évaluations reçues
+
+Section **Bilan** en bas du tableau de bord.
+
+Pour chaque mentorat clôturé :
+- Nom du jeune, date de fin, raison de clôture
+- Statistiques de suivi : nb rencontres, heures totales
+- Si évaluation reçue : note en étoiles ★ + commentaire du jeune + date de soumission
+
+La **note moyenne globale** est affichée au sommet de la section.
+
+---
+
+## 5. Guide de l'AP — Animateur de Pôle
+
+> L'AP encadre uniquement les mentors de **son association** au sein de son pôle. Il ne voit pas les mentors des autres associations.
+
+### 5.1 Connexion
+
+**URL :** `/login` → redirection vers `/member/ap/dashboard`
+
+---
+
+### 5.2 Navigation — Sidebar
+
+| Élément | Page |
+|---------|------|
+| Tableau de bord AP | `/member/ap/dashboard` |
+| Gestion mentors | `/member/acp/mentors` |
+| Déconnexion | — |
+| Icône clé (🔑) | Modal changement de mot de passe |
+
+---
+
+### 5.3 Tableau de bord AP
+
+#### Indicateurs (barre de stats)
 
 | Indicateur | Description |
 |-----------|-------------|
-| **Mentors (asso.)** | Total de mentors actifs dans l'association au sein de ce pôle |
-| **Mes mentorats** | Mentorats actifs dont cet AP est l'AP responsable |
-| **Actifs (asso.)** | Total des mentorats actifs dans l'association |
-| **Alertes rouges** | Mentorats avec le flag d'alerte rouge activé |
-| **Inactivité +30j** | Mentors sans aucun contact enregistré depuis plus de 30 jours |
-| **Dispo.** | Nombre de places disponibles dans l'association |
+| **Mentors (asso.)** | Total mentors actifs dans l'association |
+| **Mes mentorats** | Mentorats dont cet AP est l'animateur responsable |
+| **Actifs (asso.)** | Tous les mentorats actifs de l'association |
+| **Alertes rouges** | Mentorats avec flag critique activé |
+| **Inactivité +30j** | Mentors sans contact depuis plus de 30 jours |
+| **Dispo.** | Places disponibles dans l'association |
 
-> **Compteur inactivité :** un mentor est compté comme inactif si ni une rencontre SuiviMentorat ni un champ `dernier_contact` sur un mentorat actif ne date de moins de 30 jours. Enregistrer une rencontre ou mettre à jour le dernier contact fait immédiatement disparaître ce mentor du compteur.
+#### Section "Mes mentorats"
 
----
+Chaque carte affiche :
 
-### 5.2 Liste des mentors
+- Nom du mentor (avatar initiales), statut du mentorat, badge "Formé" si applicable
+- Association et ville du mentor
+- Nom du jeune, ville, diplôme, situation, établissement *(si en apprentissage)*
+- Statistiques : nb rencontres, heures de suivi, jours sans contact
 
-La liste des mentors de l'association est triée automatiquement : alertes d'abord, avertissements ensuite, actifs en dernier.
+**Cliquer sur une carte** ouvre le modal de suivi complet.
 
-**Indicateurs de dernière activité :**
-- 🔴 **Alerte** — inactif depuis plus de 30 jours
-- 🟡 **Avertissement** — inactif depuis 15 à 30 jours
-- 🟢 **OK** — activité récente (moins de 15 jours)
+#### Section "Demandes en attente"
 
-**Cliquer sur un mentor** ouvre un panneau détaillé :
-- Informations personnelles (email, téléphone, ville)
-- Mentorats actifs et état de chaque suivi
-- Historique des rencontres enregistrées
-- Possibilité d'envoyer un message de relance
-- Boutons d'action pour chaque mentorat actif (voir ci-dessous)
+Liste des demandes de jeunes non encore affectées du pôle. Un AP peut créer une demande manuellement via le bouton **"Nouvelle"**.
 
----
+#### Section "Clôtures en attente"
 
-### 5.3 Actions sur les mentorats actifs
-
-Pour chaque mentorat actif, trois boutons sont disponibles depuis le tableau de bord :
-
-| Bouton | Icône | Description |
-|--------|-------|-------------|
-| **Modifier le suivi** | Presse-papiers | Formulaire complet : problématiques, alertes, infos jeune, dates, notes |
-| **Rencontres** | Calendrier | Consulter et ajouter des rencontres SuiviMentorat |
-| **Clôturer / Arrêter** | Cadenas | Déclencher directement une clôture (sans passer par le mentor) |
+Apparaît automatiquement dès qu'un mentor soumet une demande de clôture. Voir [section 5.6](#56-valider-ou-rejeter-une-demande-de-clôture).
 
 ---
 
-### 5.4 Formulaire "Modifier le suivi" — détail complet
+### 5.4 Créer une nouvelle demande manuellement
 
-**Problématiques identifiées** (cases à cocher, sélection multiple) :
+Bouton **"Nouvelle"** dans la section "Demandes en attente".
+
+| Section | Champs clés |
+|---------|-------------|
+| **Identité** | Prénom ✅, Nom ✅, Email, Téléphone, Date naissance, Genre |
+| **Localisation** | Code postal ✅, Commune ✅ |
+| **Scolarité** | Diplôme préparé, Situation ✅ (boutons radio), CFA *(visible si "Déjà en apprentissage" uniquement)* |
+| **Demande** | Texte libre ✅ décrivant l'accompagnement souhaité |
+| **Urgence** | Niveau 1 (très faible) à 5 (très urgent) |
+
+---
+
+### 5.5 Modal de suivi d'un mentorat
+
+Cliquer sur une carte de mentorat ouvre le modal avec les onglets :
+
+| Onglet / Bouton | Ce que ça fait |
+|----------------|---------------|
+| **Modifier le suivi** | Formulaire de suivi complet (problématiques, alertes, infos jeune, notes) |
+| **Rencontres** | Consulter et ajouter des rencontres |
+| **Clôturer / Arrêter** | Déclencher directement une clôture (sans attendre la demande du mentor) |
+
+#### Formulaire de suivi complet
+
+**Problématiques identifiées** (cases à cocher) :
 
 | Code | Libellé |
 |------|---------|
@@ -468,9 +517,9 @@ Pour chaque mentorat actif, trois boutons sont disponibles depuis le tableau de 
 | logement | Logement |
 | orientation | Orientation |
 | prob_administratif | Problème administratif |
-| prob_financier | Problème financier — Gérer Budget |
+| prob_financier | Problème financier / Gérer Budget |
 | fragilite_mentale | Fragilité mentale |
-| prep_dossier | Prép dossier professionnel |
+| prep_dossier | Préparation dossier professionnel |
 | relation_employeur | Relation avec l'employeur |
 | recherche_contrat | Recherche contrat apprentissage |
 | salaire | Salaire / Respect de convention |
@@ -478,204 +527,317 @@ Pour chaque mentorat actif, trois boutons sont disponibles depuis le tableau de 
 | soutien_scolaire | Soutien scolaire |
 | autre | Autre |
 
-**Dates & Alertes :**
+**Alertes & Dates :**
 
 | Champ | Description |
 |-------|-------------|
-| Alerte rouge | Cocher pour marquer le mentorat comme urgent (apparaît en rouge dans toutes les vues) |
-| Dernier contact | Date du dernier contact saisie manuellement |
-| Date de fin prévue | Date prévisionnelle de fin de mentorat |
+| Alerte rouge | Marque le mentorat comme critique — visible en rouge dans toutes les vues AP/ACP |
+| Dernier contact | Date de dernier contact (saisie manuelle) |
+| Date de fin prévue | Date prévisionnelle de fin |
 
 **Informations du jeune :**
 
 | Champ | Description |
 |-------|-------------|
-| Établissement | Sélection dans la liste du pôle ou "Autre" |
-| Diplôme préparé | Mise à jour (13 options groupées par niveau) |
-| Date de naissance | Correction si nécessaire |
-| Genre | Garçon / Fille / Autre |
-| Niveau d'urgence | 1 (Faible) / 2 (Moyen) / 3 (Urgent) |
+| Situation | "Déjà en apprentissage" / "En recherche d'apprentissage" |
+| Établissement / CFA | Visible **uniquement si "Déjà en apprentissage"** — liste du pôle + option "Autre" + bouton "Ajouter" |
+| Diplôme préparé | Mise à jour parmi les 13 options |
+| Niveau d'urgence | 1 à 5 |
 
-**Notes de suivi :** champ texte libre, visible par AP et ACP.
+**Notes de suivi :** texte libre, visible par l'AP et l'ACP.
 
 ---
 
-### 5.5 Section "Clôtures en attente" ⚠️
+### 5.6 Valider ou rejeter une demande de clôture
 
-Cette section apparaît automatiquement dès qu'un mentor soumet une demande de clôture pour un mentorat dont cet AP est responsable.
+La section **"Clôtures en attente"** s'affiche automatiquement dès qu'un mentor soumet une demande.
 
 Pour chaque demande :
+
+- Badge : "Demande de clôture" (vert) ou "Demande d'arrêt" (rouge)
 - Nom du mentor et du jeune
-- Action demandée (Clôturer / Arrêter) et raison fournie
+- Raison fournie par le mentor
+- **Message au jeune** : pré-rempli, modifiable par l'AP avant confirmation
 
-| Bouton | Effet |
-|--------|-------|
-| **Confirmer** | Clôture effective. Statut → CLOSED ou ABORTED. Disponibilité mentor incrémentée. Email envoyé au jeune avec lien d'évaluation unique. |
-| **Rejeter** | Demande annulée. Le mentorat redevient pleinement actif. Le mentor peut soumettre une nouvelle demande. |
-
----
-
-## 6. Rôle ACP — Animateur Coordinateur de Pôle
-
-### Navigation disponible
-- **Dashboard** — vue globale du pôle
-- **Affectation** — affecter les mentors aux demandes (anciennement "Matching")
-- **KPIs** — indicateurs de performance
-- **Suivi mentorats** — gestion de tous les mentorats du pôle
-- **Gestion** — animateurs et établissements
-- **Vue Animateur** *(lien vers `/member/ap/dashboard`)* — accéder à la vue AP sans changer de rôle
-
-> **Périmètre :** l'ACP voit **tous** les mentors et mentorats de son pôle, toutes associations confondues.
->
-> **Multi-rôle :** un ACP hérite des droits AP. Il peut valider des clôtures, suivre les mentors de son association, et être désigné comme AP responsable d'un mentorat.
+| Bouton | Effet immédiat |
+|--------|---------------|
+| **Confirmer** | Mentorat → `CLOSED` ou `ABORTED`. Disponibilité mentor +1. Email + lien d'évaluation unique envoyé au jeune. |
+| **Rejeter** | Demande annulée. Mentorat redevient pleinement actif. Le mentor peut soumettre une nouvelle demande. |
 
 ---
 
-### 6.1 Statistiques du dashboard ACP
+### 5.7 Page "Gestion mentors"
+
+**URL :** `/member/acp/mentors` (accessible AP et ACP)
+
+Liste de tous les mentors de l'association (AP) ou du pôle (ACP).
+
+Actions disponibles sur chaque mentor :
+
+- Voir le profil détaillé
+- Consulter l'historique des mentorats
+
+---
+
+## 6. Guide de l'ACP — Animateur Coordinateur de Pôle
+
+> L'ACP pilote l'ensemble du pôle. Il hérite de tous les droits AP et peut basculer vers la vue AP depuis la sidebar.
+
+### 6.1 Connexion
+
+**URL :** `/login` → redirection vers `/member/acp/dashboard`
+
+---
+
+### 6.2 Navigation — Sidebar
+
+| Élément du menu | Page |
+| ---------------- | ---- |
+| Tableau de bord | `/member/acp/dashboard` |
+| Vue Animateur | `/member/ap/dashboard` |
+| Affectation | `/member/matching` |
+| KPIs Pôle | `/member/pole/kpi` |
+| Annuaire Pôle | `/member/acp/annuaire` |
+| Gestion mentors | `/member/acp/mentors` |
+| Gestion APs | `/member/acp/animateurs` |
+| Suivi mentorats | `/member/acp/mentorats` |
+| Icône clé (🔑) | Modal changement de mot de passe |
+
+---
+
+### 6.3 Dashboard ACP — Indicateurs
+
+**Titre de la page :** "Espace Coordinateur" — affiche le nom de l'ACP et le nom du pôle.
 
 | Indicateur | Description |
 |-----------|-------------|
-| **Associations** | Nombre d'associations dans le pôle + nombre d'AP actifs |
+| **Associations** | Nombre d'associations dans le pôle + nombre d'AP |
 | **Mentors** | Total mentors actifs + nombre disponibles |
 | **Mentorats actifs** | Total des mentorats en cours |
-| **Alertes rouges** | Mentorats avec alerte activée |
-| **Inactivité +30j** | Mentors sans contact depuis plus de 30 jours (tout le pôle) |
-| **Dispo.** | Nombre total de places disponibles dans le pôle |
-| **Demandes** | Demandes en attente de matching |
+| **Alertes rouges** | Mentorats en situation critique |
+| **Inactivité +30j** | Mentors sans contact depuis plus de 30 jours |
+| **Dispo.** | Total des places disponibles dans le pôle |
+| **Demandes** | Demandes en attente d'affectation |
 | **Animateurs** | Nombre d'AP/ACP actifs dans le pôle |
 
-Le dashboard affiche aussi un **tableau par association** : nb mentors, mentorats actifs, alertes rouges, inactifs, disponibilités pour chaque association du pôle.
+Le dashboard affiche aussi un **tableau par association** : nb mentors, mentorats actifs, alertes, inactifs, disponibilités.
+
+La section **"Demandes en attente"** affiche les demandes non affectées avec le bouton **"Nouvelle"** pour en créer manuellement.
 
 ---
 
-### 6.2 Affectation
+### 6.4 Affectation d'un mentor à une demande
 
-Fonctionnalité centrale pour affecter un mentor à une demande de jeune (accessible via le menu **Affectation**).
+**Menu :** "Affectation" → `/member/matching`
 
-#### Étape 1 — Sélectionner une demande
-Liste des demandes en statut **NOUVEAU** ou **EN ATTENTE** dans le pôle, avec : nom du jeune, diplôme, situation, commune/CP, date, urgence.
+C'est la fonctionnalité centrale de l'ACP : faire correspondre une demande de jeune avec le mentor le plus approprié.
 
-#### Étape 2 — Suggestions de mentors
-Algorithme de score automatique pour chaque mentor disponible du pôle :
+#### Étape 1 — Choisir une demande
+
+Liste des demandes `NEW` ou `PENDING` avec : nom du jeune, diplôme, situation, commune et code postal, date, niveau d'urgence.
+
+Cliquer sur une demande pour lancer la recherche de mentors.
+
+#### Étape 2 — Analyser les suggestions
+
+L'algorithme calcule un **score** pour chaque mentor disponible du pôle :
 
 | Critère | Points |
 |---------|--------|
-| Places disponibles | `disponibilite_reelle × 25` (max 75) |
-| Distance ≤ 10 km | +80 |
-| Distance ≤ 30 km | +60 |
-| Distance ≤ 60 km | +40 |
-| Distance > 60 km | +10 |
-| Mentor formé | +15 |
-| Expérience (mentorats terminés) | `nb × 3` (max 30) |
+| Places disponibles | `disponibilité × 25` (max 75 pts) |
+| Distance ≤ 10 km | +80 pts |
+| Distance ≤ 30 km | +60 pts |
+| Distance ≤ 60 km | +40 pts |
+| Distance > 60 km | +10 pts |
+| Mentor formé | +15 pts |
+| Expérience (mentorats terminés) | `nb × 3` (max 30 pts) |
 
-Chaque suggestion affiche un badge de **distance en km** coloré selon la proximité. Les 10 meilleurs mentors sont listés, triés par score décroissant.
-
-**Codes couleur du score :**
+**Couleur du badge de score :**
 - 🟣 ≥ 120 pts — Excellent
 - 🟢 ≥ 80 pts — Bon
 - ⚫ < 80 pts — Acceptable
 
+Chaque suggestion affiche un **badge de distance** en km (ex : "32 km").
+
 #### Étape 3 — Confirmer l'affectation
+
 1. Cliquer sur le mentor choisi
-2. Optionnel : sélectionner l'**animateur responsable** dans le sélecteur "Animateur accompagnateur" — la liste inclut les AP **et** les ACP du pôle, chacun identifié par un badge coloré (violet = ACP, bleu ciel = AP)
-3. Optionnel : justification si le choix diffère de la suggestion n°1
+2. Sélectionner optionnellement l'**animateur responsable** (badge violet = ACP, bleu = AP)
+3. Ajouter une justification si le choix diffère de la suggestion n°1
 4. Cliquer **Confirmer l'affectation**
 
-Résultat : mentorat créé (statut ACTIVE), demande → ASSIGNED, animateur responsable désigné (AP ou ACP selon disponibilité).
+Résultat : mentorat créé (`ACTIVE`), demande → `ASSIGNED`, disponibilité mentor décrémentée de 1.
 
-#### Rerouter une demande
-Si la demande ne peut être traitée dans ce pôle :
-1. Ouvrir la demande → **Rerouter**
-2. Sélectionner le pôle de destination → Confirmer
+#### Rerouter une demande vers un autre pôle
 
-La demande disparaît de ce pôle et apparaît dans le pôle destinataire.
+Si la demande ne peut pas être traitée dans ce pôle :
+1. Ouvrir la demande → bouton **Rerouter**
+2. Sélectionner le pôle de destination
+3. Confirmer
 
----
-
-### 6.3 Suivi des mentorats
-
-Vue de tous les mentorats du pôle, filtrables par statut (ACTIF, CLÔTURÉ, ARRÊTÉ, EN ATTENTE).
-
-#### Boutons d'action sur les mentorats ACTIFS
-
-| Bouton | Icône | Description |
-|--------|-------|-------------|
-| **Modifier** | Crayon | Modal de gestion administrative : statut, mentor, pôle, AP responsable, notes |
-| **Modifier le suivi** | Presse-papiers | Formulaire complet de suivi (problématiques, alertes, infos jeune, dates, financements) |
-| **Rencontres** | Calendrier | Consulter et ajouter des rencontres SuiviMentorat |
-| **Clôturer / Arrêter** | Cadenas | Déclencher directement une clôture |
-
-#### Modal "Modifier" — champs disponibles
-
-| Champ | Description |
-|-------|-------------|
-| Statut | PENDING / ACTIVE / CLOSED / ABORTED |
-| Mentor assigné | Changer le mentor (liste des mentors du pôle) |
-| Pôle responsable | Transférer à un autre pôle |
-| AP responsable | Changer l'AP en charge |
-| Notes de suivi | Notes internes |
-
-#### Confirmer/Rejeter une clôture
-Mêmes effets que pour l'AP (section 5.5), mais l'ACP peut agir sur **tous les mentorats de son pôle**, pas seulement ceux de son association.
+La demande disparaît de ce pôle et apparaît chez le pôle destinataire.
 
 ---
 
-### 6.4 Gestion des animateurs
+### 6.5 Créer une nouvelle demande manuellement
+
+Bouton **"Nouvelle"** dans la section "Demandes en attente" du dashboard ou de la Vue Animateur.
+
+Structure identique à la [section 5.4](#54-créer-une-nouvelle-demande-manuellement) :
+
+- Situation avant Établissement/CFA
+- CFA visible uniquement si "Déjà en apprentissage"
+- Champ libre **Demande**
+
+---
+
+### 6.6 Suivi des mentorats
+
+**Menu :** "Suivi mentorats" → `/member/acp/mentorats`
+
+Vue de **tous les mentorats du pôle**, toutes associations confondues.
+
+Filtres par statut : Actifs / Clôturés / Arrêtés / En attente.
+
+#### Actions sur un mentorat actif
+
+| Bouton | Ce que ça fait |
+|--------|---------------|
+| **Modifier** | Modal d'administration : statut, mentor, pôle, AP responsable, notes |
+| **Modifier le suivi** | Formulaire complet (voir [section 5.5](#55-modal-de-suivi-dun-mentorat)) |
+| **Rencontres** | Consulter et ajouter des rencontres |
+| **Clôturer / Arrêter** | Déclencher directement une clôture |
+
+---
+
+### 6.7 Valider ou rejeter une clôture
+
+Mêmes actions que pour l'AP ([section 5.6](#56-valider-ou-rejeter-une-demande-de-clôture)), mais l'ACP peut agir sur **tous les mentorats de son pôle**, pas seulement ceux de son association.
+
+---
+
+### 6.8 Gestion des APs (animateurs)
+
+**Menu :** "Gestion APs" → `/member/acp/animateurs`
 
 #### Créer un animateur
-1. **Nouvel animateur**
-2. Prénom, nom, email, téléphone, ville
-3. Association (AGIR / ECTI / EGEE / OTECI)
-4. Rôle (AP ou ACP)
-5. Valider → mot de passe temporaire affiché **une seule fois** — à transmettre immédiatement
 
-#### Désactiver / Réactiver
+1. Cliquer **"Nouvel animateur"**
+2. Remplir : Prénom ✅, Nom ✅, Email ✅, Téléphone, Ville
+3. Choisir l'association : **AGIR** / **ECTI** / **EGEE** / **OTECI**
+4. Choisir le rôle : **AP** ou **ACP**
+5. Valider
+
+> ⚠️ Un **mot de passe temporaire** s'affiche **une seule fois** à la validation — à transmettre immédiatement à l'animateur. Il ne peut pas être récupéré après fermeture de la fenêtre.
+
+#### Désactiver / Réactiver un animateur
+
 | Action | Effet |
 |--------|-------|
-| Désactiver (icône ×) | Compte bloqué, données conservées |
-| Réactiver (icône utilisateur+) | Accès rétabli immédiatement |
+| **Désactiver** (icône ×) | Compte bloqué, données conservées |
+| **Réactiver** (icône utilisateur+) | Accès rétabli immédiatement |
 
 ---
 
-### 6.5 Gestion des établissements
+### 6.9 Gestion des établissements
 
-Liste des établissements (écoles, CFA) référencés dans le pôle.
+Via la page Gestion APs, onglet **Établissements**.
 
-- **Ajouter** : nom + code postal → apparaît dans toutes les listes déroulantes des fiches jeunes
+- **Ajouter** : Nom + Code postal → l'établissement apparaît dans toutes les listes déroulantes des fiches jeunes du pôle
 - **Désactiver** : l'établissement disparaît des listes mais les données historiques sont conservées
 
 ---
 
-### 6.6 KPIs du pôle
+### 6.10 Annuaire Pôle
 
-Choix de période : 6 mois / 12 mois / tout.
+**Menu :** "Annuaire Pôle" → `/member/acp/annuaire`
 
-Données : demandes reçues, taux d'assignation, durée moyenne de mentorat, taux de clôture positive, répartition par diplôme / genre / situation.
-
-**Export PDF** : sélection des sections à inclure.
+Répertoire de tous les membres (AP, ACP, mentors) du pôle. Filtres par rôle et recherche textuelle.
 
 ---
 
-## 7. Rôle CN — Coordination Nationale
+### 6.11 KPIs du pôle
 
-### Niveaux d'accès
+**Menu :** "KPIs Pôle" → `/member/pole/kpi`
+
+Sélectionner la période : **6 mois / 12 mois / tout**.
+
+Données disponibles :
+- Demandes reçues et taux d'assignation
+- Durée moyenne des mentorats
+- Taux de clôture positive
+- Répartition par diplôme, genre, situation
+
+**Export PDF :** sélectionner les sections à inclure, puis générer.
+
+---
+
+## 7. Guide du CN — Coordination Nationale
+
+### 7.1 Niveaux d'accès
 
 | Accès | Pages disponibles |
-|-------|-------------------|
-| **Limité** | Dashboard CN, Annuaire ORA, Implantations, KPIs nationaux |
-| **Complet** | Tout + Mentors, Pôles, Animateurs, Messages, Configuration CN |
+| ----- | ----------------- |
+| **Limité** (défaut) | Dashboard CN, Annuaire ORA, Implantations, KPIs nationaux |
+| **Complet** | Tout + Gestion Mentors, Pôles, Animateurs, Configuration, Messages, Rétribution |
 
-> Le passage en accès complet se fait via **Configuration → Membres CN → toggle "Accès complet"**, par un membre CN déjà avec accès complet.
-
----
-
-### 7.1 Dashboard CN
-
-Vue nationale synthétique : total pôles, mentors, mentorats actifs, jeunes en attente. Répartition par association. Tableau récapitulatif par pôle.
+Le passage en accès complet se fait via **Configuration → Membres CN → toggle "Accès complet"**, par un membre CN déjà en accès complet.
 
 ---
 
-### 7.2 Annuaire ORA *(accès limité et complet)*
+### 7.2 Navigation CN
+
+La navigation CN se répartit entre la **sidebar** (gauche) et le **header horizontal** (haut).
+
+#### Sidebar — tous les membres CN
+
+| Élément | Page |
+|---------|------|
+| Vue nationale | `/member/cn/dashboard` |
+| Annuaire ORA | `/member/cn/annuaire` |
+| Implantations | `/member/cn/implantations` |
+| KPIs Nationaux | `/member/cn/kpis` |
+| Icône clé (🔑) | Modal changement de mot de passe |
+
+#### Sidebar — accès complet uniquement
+
+| Élément | Page |
+| ------- | ---- |
+| Gestion mentors | `/member/cn/mentors` |
+| Gestion pôles | `/member/cn/poles` |
+| Gestion animateurs | `/member/cn/animateurs` |
+| Configuration | `/member/cn/configuration` |
+
+#### Header CN — navigation desktop (accès complet uniquement)
+
+Le header CN en mode desktop offre un menu **"Administration"** avec les liens :
+
+| Lien | Page |
+|------|------|
+| Rétribution | `/member/cn/retribution` |
+| Mentors | `/member/cn/mentors` |
+| Messages | `/member/cn/messages` *(badge non-lus)* |
+| Pôles | `/member/cn/poles` |
+| Animateurs | `/member/cn/animateurs` |
+| Configuration | `/member/cn/configuration` |
+
+---
+
+### 7.3 Dashboard CN
+
+**URL :** `/member/cn/dashboard`
+
+Vue nationale synthétique :
+
+- Total pôles actifs, mentors, mentorats actifs, jeunes en attente
+- Répartition par association (AGIR / ECTI / EGEE / OTECI)
+- Tableau récapitulatif par pôle : mentors, mentorats actifs, taux d'occupation
+
+---
+
+### 7.4 Annuaire ORA
+
+**URL :** `/member/cn/annuaire`
 
 Répertoire de tous les membres CN et animateurs (AP/ACP) de France.
 
@@ -683,9 +845,11 @@ Filtres : rôle, pôle, association, recherche texte (nom, email).
 
 ---
 
-### 7.3 Implantations des pôles *(accès limité et complet)*
+### 7.5 Implantations des pôles
 
-Carte interactive de France colorisée par état d'activité :
+**URL :** `/member/cn/implantations`
+
+Carte interactive de France, colorisée par état d'activité :
 
 | Couleur | État |
 |---------|------|
@@ -696,104 +860,126 @@ Carte interactive de France colorisée par état d'activité :
 | Rouge | Arrêté |
 | Gris | Non couvert |
 
-**Interactions :** survol → tooltip, clic → panneau détail du pôle, filtres par état, export PDF.
+Survol → tooltip avec infos du pôle · Clic → panneau détail · Filtres par état · Export PDF.
 
 ---
 
-### 7.4 KPIs nationaux *(accès limité et complet)*
+### 7.6 KPIs nationaux
 
-Vue nationale globale ou par pôle (sélecteur). Données : volume de demandes, taux de traitement, durées moyennes, répartitions, tableau comparatif des pôles. Export PDF.
+**URL :** `/member/cn/kpis`
 
----
-
-### 7.5 Gestion nationale des mentors *(accès complet)*
-
-Liste de tous les mentors de France. Filtres : pôle, association, statut.
-
-Actions : voir profil complet, activer/désactiver.
+Vue nationale ou filtrée par pôle. Mêmes indicateurs que les KPIs de pôle, à l'échelle nationale. Export PDF.
 
 ---
 
-### 7.6 Gestion des pôles *(accès complet)*
+### 7.7 Gestion nationale des mentors *(accès complet)*
 
-Liste de tous les pôles avec indicateurs. Actions : créer, modifier (nom, code, état, départements, contact), activer/désactiver.
+**URL :** `/member/cn/mentors`
+
+Liste de tous les mentors de France.
+
+Filtres : pôle, association, statut.
+Actions : voir profil complet, activer / désactiver.
 
 ---
 
-### 7.7 Gestion nationale des animateurs *(accès complet)*
+### 7.8 Gestion des pôles *(accès complet)*
 
-Même fonctionnement que la gestion ACP, à l'échelle nationale.
+**URL :** `/member/cn/poles`
 
-Créer un animateur :
-1. Nouvel animateur
-2. Prénom, nom, email, téléphone, ville
-3. Pôle → association → rôle (AP ou ACP)
+Liste de tous les pôles avec indicateurs.
+Actions : créer, modifier (nom, code, état, départements couverts, contact), activer / désactiver.
+
+---
+
+### 7.9 Gestion nationale des animateurs *(accès complet)*
+
+**URL :** `/member/cn/animateurs`
+
+Créer un animateur à l'échelle nationale :
+
+1. Cliquer **"Nouvel animateur"**
+2. Saisir : Prénom, Nom, Email, Téléphone, Ville
+3. Choisir : Pôle → Association → Rôle (AP ou ACP)
+4. Valider
+
+> ⚠️ Le mot de passe temporaire s'affiche **une seule fois** — à transmettre immédiatement.
+
+---
+
+### 7.10 Messages de contact *(accès complet)*
+
+**URL :** `/member/cn/messages`
+
+Messages reçus via le formulaire `/contact`. Non-lus affichés en premier, avec badge rouge dans le menu Administration. Possibilité de les marquer comme lus.
+
+---
+
+### 7.11 Rétribution *(accès complet)*
+
+**URL :** `/member/cn/retribution`
+
+Gestion des rétributions associées aux mentorats. Accessible depuis le menu **Administration** dans le header CN.
+
+---
+
+### 7.12 Configuration CN *(accès complet)*
+
+**URL :** `/member/cn/configuration`
+
+**Onglet "Membres CN" :**
+- Tableau de tous les membres CN
+- Toggles par membre : **Accès complet** · **Actif**
+
+**Créer un membre CN :**
+1. Prénom, Nom, Email, Téléphone, Ville
+2. Fonction, Association, Pôle (optionnels)
+3. Option **Super administrateur** → accès à `/admin/` Django
 4. Valider → mot de passe temporaire affiché **une seule fois**
 
----
+> Un membre CN ne peut pas se désactiver lui-même, ni modifier son propre accès complet.
 
-### 7.8 Messages de contact *(accès complet)*
-
-Tous les messages reçus via le formulaire de contact public `/contact`, triés avec les non-lus en premier. Possibilité de les marquer comme lus.
+**Onglet "Mon profil" :** modifier ses propres informations personnelles.
 
 ---
 
-### 7.9 Configuration CN *(accès complet)*
-
-**Onglet "Membres CN"**
-
-Tableau de tous les membres CN avec toggles :
-- **Accès complet** — donne accès aux pages de gestion CN
-- **Actif** — active/désactive le compte
-
-**Ajouter un membre CN :**
-1. Prénom, nom, email, téléphone, ville
-2. Fonction, association, pôle de rattachement (optionnels)
-3. Option **Super administrateur** — donne accès à l'interface `/admin/` Django
-4. Valider → mot de passe temporaire affiché **une seule fois**
-
-> Un membre CN ne peut pas se désactiver lui-même ni modifier son propre accès complet.
-
-**Onglet "Mon profil"** — chaque membre CN peut modifier ses propres informations (prénom, nom, téléphone, ville, fonction, association, pôle).
-
----
-
-## 8. Cycle de vie complet d'un mentorat
+## 8. Cycle de vie d'un mentorat
 
 ```
-[JEUNE]   Remplit le formulaire /apprentis/inscription
-               ↓
-          Demande créée → statut : NOUVEAU
-          (pôle détecté automatiquement par code postal)
-               ↓
-[ACP]     Consulte les demandes dans Affectation
-          Lance l'algorithme de suggestions (score + distance)
-          Choisit un mentor → Confirmer l'affectation
-               ↓
-          Mentorat créé → statut : ACTIVE
-          Demande → statut : ASSIGNED
-          Disponibilité mentor décrémentée de 1
-          AP responsable auto-assigné
-               ↓
-[MENTOR]  Suit le jeune (rencontres, infos)
-          Peut demander la clôture à tout moment
-               ↓
-          Demande de clôture :
-          Mentorat reste ACTIVE mais "en attente"
-               ↓
-[AP/ACP]  Valide ou rejette la demande
-               ↓
-          Si confirmé :
-          → Mentorat → CLOSED (normal) ou ABORTED (arrêt)
-          → Disponibilité mentor incrémentée de 1
-          → Email envoyé au jeune avec lien d'évaluation unique
-          → Token d'évaluation créé (usage unique)
-               ↓
-[JEUNE]   Clique sur le lien email
-          Page /evaluer-mentor/:token (sans connexion requise)
-          Note 1 à 5 étoiles + commentaire optionnel
-               ↓
-[MENTOR]  Voit l'évaluation dans son Bilan
+[JEUNE]    Remplit /apprentis/inscription
+                ↓
+           Demande → statut NEW
+           (pôle détecté automatiquement via code postal)
+                ↓
+[ACP]      Consulte la demande dans "Affectation"
+           Algorithme de suggestions (score + distance km)
+           Choisit un mentor + AP responsable → Confirmer
+                ↓
+           Mentorat créé → statut ACTIVE
+           Demande → statut ASSIGNED
+           Disponibilité mentor : -1
+                ↓
+[MENTOR]   Suit le jeune
+           Enregistre ses rencontres
+           Peut demander la clôture à tout moment
+                ↓
+           Demande de clôture soumise :
+           Mentorat reste ACTIVE avec badge "En attente"
+                ↓
+[AP/ACP]   Reçoit la demande dans "Clôtures en attente"
+           Peut modifier le message au jeune
+           Confirme ou Rejette
+                ↓
+           Si confirmé :
+           → Mentorat → CLOSED (normal) ou ABORTED (arrêt)
+           → Disponibilité mentor : +1
+           → Email envoyé au jeune avec lien d'évaluation unique
+                ↓
+[JEUNE]    Reçoit l'email → clique sur le lien unique
+           Page /evaluer-mentor/:token (sans connexion)
+           Note 1 à 5 étoiles + commentaire optionnel
+                ↓
+[MENTOR]   Voit l'évaluation dans son Bilan (étoiles + commentaire)
 ```
 
 ---
@@ -801,35 +987,47 @@ Tableau de tous les membres CN avec toggles :
 ## 9. Système d'évaluation
 
 ### Pour le jeune
-Après confirmation de clôture, le jeune reçoit un email avec un **lien unique** vers `/evaluer-mentor/:token` (sans connexion).
 
-- Note de **1 à 5 étoiles**
-- Commentaire libre (optionnel)
+Après confirmation de clôture par l'AP/ACP, le jeune reçoit automatiquement un email avec un lien unique `/evaluer-mentor/:token`.
 
-> Le token est à usage unique. Une fois soumis, le lien ne fonctionne plus.
+- Page accessible **sans connexion**
+- **Note de 1 à 5 étoiles** (obligatoire)
+- Commentaire libre (facultatif)
+- Token **à usage unique** : désactivé après soumission
 
 ### Pour le mentor
-Section **Bilan** du tableau de bord : note reçue (étoiles ★), commentaire du jeune, date de soumission, note moyenne globale.
+
+Section **Bilan** du tableau de bord :
+- Étoile(s) reçues pour chaque mentorat évalué
+- Commentaire du jeune
+- Date de soumission
+- **Note moyenne globale** sur l'ensemble des évaluations reçues
 
 ---
 
 ## 10. Gestion des financements
 
-### Création
-Uniquement par les membres **CN avec accès complet**, via l'administration Django (`/admin/`).
+### Création (CN complet uniquement)
 
-Deux types : **Local** (spécifique à un pôle) / **National** (tous pôles).
+Via l'administration Django (`/admin/`) → `Core > Financements`.
 
-### Utilisation
-L'**ACP** attache les financements aux mentorats dans **Suivi mentorats → Modifier le suivi → section Financements**.
+Deux types :
+- **National** : visible dans tous les pôles
+- **Local** : spécifique à un pôle
 
-| Action | Description |
-|--------|-------------|
-| Voir | Liste des financements attachés avec leur code |
-| Ajouter | Sélectionner parmi la liste nationale |
-| Supprimer | Retirer un financement |
+Champs : Nom, Code unique (ex : `CFA_ALTERNANCE`), Type.
 
-> Un même financement ne peut être ajouté qu'une seule fois par mentorat.
+### Utilisation (ACP)
+
+Dans **Suivi mentorats → Modifier le suivi → section Financements** :
+
+| Action | Comment |
+|--------|---------|
+| Voir | Liste des financements déjà attachés au mentorat |
+| Ajouter | Sélectionner dans la liste nationale / locale |
+| Supprimer | Retirer un financement du mentorat |
+
+> Un même financement ne peut être attaché qu'**une seule fois** par mentorat.
 
 ---
 
@@ -837,27 +1035,21 @@ L'**ACP** attache les financements aux mentorats dans **Suivi mentorats → Modi
 
 **URL :** `/admin/`
 
-Accessible uniquement aux comptes avec **Super administrateur** (`is_superuser=True`), accordé via Configuration CN.
+Accessible uniquement aux comptes **Super administrateur** (`is_superuser = True`), accordé via **Configuration CN → Membres CN → Super administrateur**.
 
-> Réservé à la maintenance technique. Pour les opérations courantes, utiliser les interfaces membres dédiées.
+> Réservé à la maintenance technique. Pour les opérations courantes, utiliser les interfaces membres.
 
 ---
 
-### 11.1 Comptes utilisateurs
+### 11.1 Gestion des comptes utilisateurs
 
 **Section :** `Authentification et autorisation > Utilisateurs`
 
-| Colonne | Description |
-|---------|-------------|
-| Email | Identifiant de connexion (unique) |
-| Nom complet | Prénom + Nom |
-| Staff | Accès à l'interface admin Django |
-| Superuser | Accès complet à l'admin |
-| Actif | Si décoché : compte bloqué |
+#### Réinitialiser un mot de passe
 
-**Réinitialiser un mot de passe :**
-- Via l'admin : ouvrir le compte → "Changer le mot de passe" → saisir deux fois le nouveau mot de passe → Enregistrer
-- Via le shell Django (méthode rapide) :
+Via l'interface admin : ouvrir le compte → "Changer le mot de passe" → saisir deux fois → Enregistrer.
+
+Via le shell (méthode rapide) :
 
 ```bash
 # Depuis ora_backend/
@@ -871,215 +1063,118 @@ print('Réinitialisé.')
 "
 ```
 
-**Créer un compte pour un mentor sans compte** (`user=None`) :
+#### Créer un compte pour un mentor sans compte
 
 ```bash
 python manage.py shell -c "
 from core.models import Mentor, User
 m = Mentor.objects.get(email='email@exemple.com')
-u = User.objects.create_user(email=m.email, password='MotDePasseTemp!', first_name=m.first_name, last_name=m.last_name)
+u = User.objects.create_user(
+    email=m.email, password='MotDePasseTemp!',
+    first_name=m.first_name, last_name=m.last_name
+)
 m.user = u
 m.save(update_fields=['user'])
 print('Compte créé.')
 "
 ```
 
-**Vérifier les mentors sans compte :**
+#### Vérifier les mentors sans compte
 
 ```bash
 python manage.py shell -c "
 from core.models import Mentor
-sans_compte = Mentor.objects.filter(user__isnull=True)
-for m in sans_compte:
+for m in Mentor.objects.filter(user__isnull=True):
     print(m.first_name, m.last_name, m.email, 'actif=' + str(m.is_active))
 "
 ```
 
 ---
 
-### 11.2 Mentors
+### 11.2 Sections de l'administration
 
-**Section :** `Core > Mentors`
-
-Liste avec : nom, pôle, association, disponibilité, capacité, formation, statut.
-
-Filtres : pôle, association, actif/inactif, formé/non formé.
-
-**Fiche mentor :**
-
-| Section | Champs |
-|---------|--------|
-| Informations | Compte lié (`user`), prénom, nom, email, téléphone |
-| Localisation | Ville, code postal, département |
-| Organisation | Pôle, association |
-| Capacité | Capacité maximale, disponibilité réelle |
-| Formation | Est formé, date de formation |
-| Statut | Actif / Inactif |
-| Observations | Notes internes libres |
+| Section | Contenu |
+|---------|---------|
+| `Core > Mentors` | Identité, localisation, pôle, association, capacité, formation, statut |
+| `Core > Animateurs` | AP et ACP : identité, pôle, association, rôle (`is_coordinator`), statut |
+| `Core > CN members` | Membres CN : identité, rôle, statut, accès complet, super admin |
+| `Core > Poles` | Pôles : code, nom, statut, état, départements couverts, contact |
+| `Core > Young requests` | Demandes jeunes : identité, localisation, formation, demande, statut |
+| `Core > Mentorats` | Mentorats : relations, dates, statut, suivi, problématiques |
+| `Core > Suivi mentorats` | Rencontres : date, durée, type, objectifs, notes |
+| `Core > Etablissements` | CFA/écoles : nom, code postal, pôle, statut |
+| `Core > Financements` | Financements : code, nom, type (national/local) |
+| `Core > Contact messages` | Messages reçus via `/contact` |
+| `Core > Matching decisions` | Audit des affectations : score, overridden |
 
 ---
 
-### 11.3 Animateurs (AP / ACP)
+### 11.3 États d'activité des pôles
 
-**Section :** `Core > Animateurs`
-
-Filtres : rôle (is_coordinator), actif/inactif, pôle, association.
-
-**Fiche :**
-
-| Section | Champs |
-|---------|--------|
-| Identité | Prénom, nom, email, téléphone, ville |
-| Organisation | Pôle, association, est coordinateur (ACP si coché, AP si décoché) |
-| Statut | Actif / Inactif |
-| Compte | Lien vers le User |
+| Code | Libellé affiché |
+|------|----------------|
+| `a_letude` | À l'étude |
+| `demarre` | Démarré |
+| `fragile` | Fragile |
+| `experimente` | Expérimenté |
+| `arrete` | Arrêté |
 
 ---
 
-### 11.4 Membres CN
+## 12. Design System
 
-**Section :** `Core > CN members`
+**URL :** `/charte`
 
-Filtres : actif, super admin, accès complet, fonction, association, pôle.
+Accessible via le lien **"Design System"** en bas du pied de page.
 
-**Fiche :**
+La charte graphique est une **page vivante** construite avec les composants ORA eux-mêmes. Elle sert de référentiel pour tout développement futur.
 
-| Section | Champs |
-|---------|--------|
-| Identité | Prénom, nom, email, téléphone, ville |
-| Rôle | Fonction, association, pôle |
-| Statut | Actif, Super administrateur, Accès complet |
-| Compte lié | Lien vers le User |
+### Sections couvertes
 
----
+| Section | Contenu |
+|---------|---------|
+| **Couleurs** | 6 couleurs de marque ORA + palette Slate + sémantique. Cliquer sur un swatch copie le hex. |
+| **Typographie** | Police Open Sans, échelle de 10px à 64px, tokens tracking/leading |
+| **Boutons** | Primaire, secondaire, ghost, désactivé, chargement, danger |
+| **Badges & Pills** | Statuts mentorat, niveaux d'urgence (1–5), rôles, étoiles |
+| **Cartes** | Standard, accent orange, statistique, témoignage |
+| **Formulaires** | Input, select, textarea, radio cards, checkbox |
+| **Icônes** | 7 tailles (10px–48px), 16 icônes clés du projet |
+| **Alertes** | Succès, erreur, attention, information |
+| **Layout** | Containers, espacements, grilles responsives, border-radius |
 
-### 11.5 Pôles
+### Exporter la charte en PDF
 
-**Section :** `Core > Poles`
+1. Aller sur `/charte`
+2. Cliquer **"Exporter en PDF"** (bouton en haut à droite du héro)
+3. Dans la boîte d'impression : choisir **"Enregistrer en PDF"** — Format A4
 
-Filtres : statut (ACTIVE/INACTIVE), état d'activité.
-
-**Fiche :**
-
-| Section | Champs |
-|---------|--------|
-| Identité | Code (ex: ORA69), nom, statut, état d'activité |
-| Localisation | Villes (max 5, séparées par virgule), départements couverts (sélection multiple) |
-| Contact | Email, téléphone |
-
-**États d'activité :** `a_letude`, `demarre`, `fragile`, `experimente`, `arrete`.
+> Lors de l'impression : sidebar et header/footer masqués, chaque section commence sur une nouvelle page, les couleurs de fond sont préservées.
 
 ---
 
-### 11.6 Demandes jeunes
-
-**Section :** `Core > Young requests`
-
-Filtres : statut, genre, pôle, diplôme, situation, urgence.
-
-**Statuts :** NEW, PENDING, MATCHED, CLOSED.
-
-**Fiche :**
-
-| Section | Champs |
-|---------|--------|
-| Jeune | Prénom, nom, email, téléphone, date naissance, genre |
-| Localisation | Commune, département, pôle |
-| Établissement & Formation | Nom établissement libre, établissement FK, diplôme préparé, situation |
-| Demande | Description des besoins, niveau d'urgence, statut |
-
----
-
-### 11.7 Mentorats
-
-**Section :** `Core > Mentorats`
-
-Filtres : statut, alerte rouge, pôle.
-
-**Fiche :**
-
-| Section | Champs |
-|---------|--------|
-| Relations | Mentor, demande jeune, pôle, AP responsable |
-| Dates | Affectation, fin prévue, clôture |
-| Statut | PENDING / ACTIVE / CLOSED / ABORTED, raison de clôture |
-| Suivi | Alerte rouge, dernier contact, notes, problématiques |
-
----
-
-### 11.8 Suivi mentorat (rencontres)
-
-**Section :** `Core > Suivi mentorats`
-
-Toutes les rencontres enregistrées. Navigation par date (année/mois).
-
-**Fiche :**
-
-| Section | Champs |
-|---------|--------|
-| Mentorat | Lien vers le mentorat (autocomplete) |
-| Rencontre | Date, durée en minutes, type (présentiel/téléphone/visio/autre) |
-| Évaluation | Objectifs atteints (oui/non/partiel), notes libres |
-
----
-
-### 11.9 Établissements
-
-**Section :** `Core > Etablissements`
-
-Filtres : actif/inactif, pôle. Champs : nom, code postal, pôle, statut.
-
----
-
-### 11.10 Financements
-
-**Section :** `Core > Financements`
-
-| Colonne | Description |
-|---------|-------------|
-| Code | Identifiant unique (ex: `CFA_ALTERNANCE`) |
-| Nom | Libellé affiché |
-| Type | National (bleu) ou Local (violet) |
-
----
-
-### 11.11 Messages de contact
-
-**Section :** `Core > Contact messages`
-
-Messages reçus via `/contact`. Non-lus affichés en premier. Marquer comme lu : ouvrir → cocher "Is read" → Enregistrer.
-
-**Sujets :** apprenti(e), mentor, partenariat, presse/média, autre.
-
----
-
-### 11.12 Décisions d'affectation
-
-**Section :** `Core > Matching decisions`
-
-Audit des affectations : décideur, score calculé, si le choix a différé de la suggestion n°1 (`overridden`).
-
----
-
-## Annexe — Statuts des objets
+## Annexe — Référence des statuts
 
 ### Demande jeune (`YoungRequest`)
+
 | Statut | Description |
 |--------|-------------|
-| `NEW` | Demande reçue, non traitée |
+| `NEW` | Demande reçue, non encore traitée |
 | `PENDING` | En cours d'étude par l'ACP |
 | `ASSIGNED` | Mentor affecté, mentorat créé |
 | `CLOSED` | Demande archivée |
 
 ### Mentorat
+
 | Statut | Description |
 |--------|-------------|
 | `PENDING` | Créé mais pas encore démarré |
-| `ACTIVE` | En cours (inclut les "en attente de clôture") |
+| `ACTIVE` | En cours (inclut les demandes de clôture "en attente") |
 | `CLOSED` | Terminé normalement |
-| `ABORTED` | Interrompu |
+| `ABORTED` | Interrompu avant la fin |
 
 ### Pôle
+
 | Statut | Description |
 |--------|-------------|
 | `ACTIVE` | Pôle opérationnel |
@@ -1087,4 +1182,5 @@ Audit des affectations : décideur, score calculé, si le choix a différé de l
 
 ---
 
-*Manuel mis à jour le 2026-04-20 — Plateforme ORA*
+*Manuel mis à jour le 2026-05-14 — Plateforme ORA*
+*Vérifié sur la base du code source (App.tsx, Sidebar.tsx, HeaderCN.tsx, Home.tsx, Footer.tsx, Header.tsx, APDashboard.tsx, MentorDashboard.tsx, ACPDashboard.tsx)*

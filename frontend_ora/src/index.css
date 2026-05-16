@@ -10,3 +10,69 @@
 
   --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ── Styles d'impression pour la charte graphique ─────────────────────────── */
+@media print {
+  /* Masquer tout ce qui n'est pas la charte */
+  header, footer, nav,
+  #charte-print-btn,
+  #charte-sidebar {
+    display: none !important;
+  }
+
+  /* Reset page */
+  @page {
+    size: A4;
+    margin: 15mm 12mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+    background: white !important;
+    font-size: 11pt;
+  }
+
+  /* Conteneur principal occupe toute la largeur */
+  #charte-content {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #charte-main {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Héro de la charte */
+  #charte-hero {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 20mm 15mm 12mm !important;
+    margin-bottom: 8mm;
+  }
+
+  /* Sauts de page entre sections */
+  #charte-section-typographie,
+  #charte-section-boutons,
+  #charte-section-badges,
+  #charte-section-cartes,
+  #charte-section-formulaires,
+  #charte-section-icones,
+  #charte-section-alertes,
+  #charte-section-layout {
+    page-break-before: always;
+  }
+
+  /* Éviter les coupures dans les blocs */
+  .charte-block {
+    page-break-inside: avoid;
+  }
+
+  /* Forcer l'affichage des couleurs de fond */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
