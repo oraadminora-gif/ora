@@ -2,10 +2,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../services/api';
 import {
-  Users, MapPin, Flame, Building2, CheckCircle,
+  Users, MapPin, Building2, CheckCircle,
   Loader2, AlertCircle, Clock, ArrowRight, X, Star,
-  GraduationCap, Trophy, LayoutList, Shuffle, Search,
-  UserPlus, Scale,
+  GraduationCap, Trophy, Shuffle, Search,
+  UserPlus, Scale, Mail, Phone,
 } from 'lucide-react';
 
 // Constante module-level pour éviter Date.now() dans le render (impure)
@@ -17,9 +17,17 @@ const NOW_MS = new Date().getTime();
 interface Demande {
   id: number;
   jeune: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  birth_date: string;
   age: number | null;
+  gender: string;
+  gender_label: string;
+  commune: string;
+  code_postal: string;
   ville: string;
-  urgence: number;
   date_demande: string;
   besoins: string;
   nom_etablissement: string;
@@ -80,11 +88,14 @@ interface MentorTableau {
   association: string;
   association_id: number;
   is_trained: boolean;
+  training_date: string | null;
   disponibilite: number;
   capacite_max: number;
   est_sature: boolean;
   nb_actifs: number;
   nb_termines: number;
+  code_postal: string;
+  observations: string;
 }
 
 interface Animateur {
@@ -92,34 +103,16 @@ interface Animateur {
   name: string;
   association: string;
   association_id: number;
-  is_coordinator: boolean;
-  role_label: 'AP' | 'ACP';
+  is_acp: boolean;
+  is_ap: boolean;
+  role_label: 'AP' | 'ACP' | 'ACP/AP';
 }
 
 interface ApiError { response?: { data?: { error?: string; message?: string; code?: string } } }
 
 // ─────────────────────────────────────────────────────────────
-// CONFIG URGENCE
-// ─────────────────────────────────────────────────────────────
-const URGENCE: Record<number, { label: string; color: string; bg: string; border: string }> = {
-  5: { label: 'Très urgent', color: 'text-red-700',    bg: 'bg-red-100',    border: 'border-red-200'    },
-  4: { label: 'Urgent',      color: 'text-orange-700', bg: 'bg-orange-100', border: 'border-orange-200' },
-  3: { label: 'Modéré',      color: 'text-amber-700',  bg: 'bg-amber-100',  border: 'border-amber-200'  },
-  2: { label: 'Faible',      color: 'text-slate-600',  bg: 'bg-slate-100',  border: 'border-slate-200'  },
-  1: { label: 'Très faible', color: 'text-slate-500',  bg: 'bg-slate-50',   border: 'border-slate-100'  },
-};
-
-// ─────────────────────────────────────────────────────────────
 // PETITS COMPOSANTS RÉUTILISABLES
 // ─────────────────────────────────────────────────────────────
-function UrgenceBadge({ level }: { level: number }) {
-  const cfg = URGENCE[level] ?? URGENCE[1];
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-      <Flame className="w-2.5 h-2.5" />{cfg.label}
-    </span>
-  );
-}
 
 function ScoreBadge({ score }: { score: number }) {
   // Nouveau max : 370 pts
@@ -227,49 +220,84 @@ function DemandeCard({ demande, selected, onClick }: {
       className={`w-full text-left p-4 rounded-xl border transition-all duration-150 ${
         selected
           ? 'border-ora-blue bg-ora-blue/5 shadow-sm ring-1 ring-ora-blue/20'
-          : `${demande.urgence >= 4 ? 'border-red-200 bg-red-50/30' : 'border-slate-200 bg-white'} hover:border-slate-300 hover:shadow-sm`
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
       }`}
     >
+      {/* Nom + sélection */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-900 truncate">{demande.jeune}</p>
-          {demande.age && <p className="text-[11px] text-slate-400">{demande.age} ans</p>}
-        </div>
+        <p className="text-base font-bold text-slate-900 truncate">{demande.jeune}</p>
         {selected && (
           <span className="shrink-0 w-4 h-4 rounded-full bg-ora-blue flex items-center justify-center">
             <span className="w-1.5 h-1.5 bg-white rounded-full" />
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2 flex-wrap mb-2">
-        <UrgenceBadge level={demande.urgence} />
-        <span className="flex items-center gap-1 text-[11px] text-slate-400">
-          <MapPin className="w-3 h-3" />{demande.ville}
-        </span>
+
+      {/* Contact */}
+      <div className="space-y-0.5 mb-2">
+        {demande.email && (
+          <p className="text-sm text-slate-500 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+            <span className="truncate">{demande.email}</span>
+          </p>
+        )}
+        {demande.phone && (
+          <p className="text-sm text-slate-500 flex items-center gap-1.5">
+            <Phone className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+            {demande.phone}
+          </p>
+        )}
+        {(demande.birth_date || demande.gender_label) && (
+          <p className="text-xs text-slate-400">
+            {demande.birth_date && new Date(demande.birth_date).toLocaleDateString('fr-FR')}
+            {demande.birth_date && demande.gender_label && ' · '}
+            {demande.gender_label}
+            {demande.age && ` (${demande.age} ans)`}
+          </p>
+        )}
       </div>
+
+      {/* Localisation */}
+      {(demande.commune || demande.ville) && (
+        <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-2">
+          <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+          {demande.code_postal && `${demande.code_postal} `}
+          {demande.commune}
+          {demande.ville && demande.ville !== demande.commune && (
+            <span className="text-slate-400"> · {demande.ville}</span>
+          )}
+        </p>
+      )}
+
+      {/* Diplôme + Situation */}
       {(demande.diplome_label || demande.situation_label) && (
-        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
           {demande.diplome_label && (
-            <span className="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-full font-medium truncate max-w-[120px]">
+            <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">
               {demande.diplome_label}
             </span>
           )}
           {demande.situation_label && (
-            <span className="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-full truncate max-w-[100px]">
+            <span className="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
               {demande.situation_label}
             </span>
           )}
         </div>
       )}
+
+      {/* Établissement */}
       {demande.nom_etablissement && (
-        <div className="flex items-center gap-1 mb-1.5 text-[11px] text-slate-400">
-          <Building2 className="w-3 h-3 shrink-0" />
+        <p className="text-sm text-slate-400 flex items-center gap-1.5 mb-2">
+          <Building2 className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">{demande.nom_etablissement}</span>
-        </div>
+        </p>
       )}
-      <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{demande.besoins}</p>
-      <p className="text-[10px] text-slate-300 mt-2">
-        {new Date(demande.date_demande).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+
+      {/* Description */}
+      <p className="text-sm text-slate-500 leading-relaxed">{demande.besoins}</p>
+
+      <p className="text-xs text-slate-400 mt-2">
+        {new Date(demande.date_demande).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
       </p>
     </button>
   );
@@ -348,15 +376,13 @@ function ManualMentorCard({ mentor, selected, onClick }: {
   mentor: MentorTableau; selected: boolean; onClick: () => void;
 }) {
   const initials = mentor.name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-  const pct = mentor.capacite_max > 0
-    ? (mentor.nb_actifs / mentor.capacite_max) * 100
-    : 0;
+  const pct = mentor.capacite_max > 0 ? (mentor.nb_actifs / mentor.capacite_max) * 100 : 0;
 
   return (
     <button
       onClick={onClick}
       disabled={mentor.est_sature}
-      className={`w-full text-left p-3 rounded-xl border-2 transition-all duration-150 ${
+      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-150 ${
         mentor.est_sature
           ? 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
           : selected
@@ -364,32 +390,85 @@ function ManualMentorCard({ mentor, selected, onClick }: {
             : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0 ${
+      {/* ── En-tête ── */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${
           mentor.est_sature ? 'bg-slate-300' : 'bg-violet-500'
         }`}>
           {initials}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="text-sm font-semibold text-slate-900">{mentor.name}</p>
+            <p className="text-sm font-bold text-slate-900">{mentor.name}</p>
             {mentor.is_trained && (
               <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                <GraduationCap className="w-2 h-2" />Formé
+                <GraduationCap className="w-2.5 h-2.5" />
+                Formé{mentor.training_date && ` (${new Date(mentor.training_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })})`}
               </span>
             )}
-            {selected && <CheckCircle className="w-4 h-4 text-ora-blue" />}
+            {mentor.est_sature && (
+              <span className="text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full">Saturé</span>
+            )}
+            {selected && <CheckCircle className="w-4 h-4 text-ora-blue shrink-0" />}
           </div>
-          <p className="text-[11px] text-slate-400">{mentor.association}{mentor.city ? ` · ${mentor.city}` : ''}</p>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">{mentor.association}</p>
         </div>
-        <div className="shrink-0 text-right">
-          <p className={`text-sm font-black ${mentor.disponibilite > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-            {mentor.disponibilite}<span className="text-[10px] font-normal text-slate-400">/{mentor.capacite_max}</span>
+      </div>
+
+      {/* ── Coordonnées ── */}
+      <div className="space-y-1 mb-3">
+        {mentor.email && (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Mail className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+            <span className="truncate">{mentor.email}</span>
+          </div>
+        )}
+        {mentor.phone && (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Phone className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+            <span>{mentor.phone}</span>
+          </div>
+        )}
+        {(mentor.city || mentor.code_postal || mentor.department) && (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-300" />
+            <span>
+              {mentor.code_postal && `${mentor.code_postal} `}
+              {mentor.city}
+              {(mentor.city || mentor.code_postal) && mentor.department && ' · '}
+              {mentor.department}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Particularité pour l'affectation ── */}
+      {mentor.observations && (
+        <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
+          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-0.5">
+            Particularité pour l'affectation
           </p>
-          <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden mt-1">
+          <p className="text-xs text-amber-800 leading-relaxed">{mentor.observations}</p>
+        </div>
+      )}
+
+      {/* ── Capacité + stats ── */}
+      <div className="flex items-center gap-4 pt-2 border-t border-slate-100">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-slate-400">Capacité</span>
+            <span className={`text-xs font-bold ${mentor.disponibilite > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {mentor.disponibilite}/{mentor.capacite_max} dispo
+            </span>
+          </div>
+          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div className={`h-full rounded-full ${mentor.est_sature ? 'bg-red-400' : 'bg-emerald-400'}`}
               style={{ width: `${pct}%` }} />
           </div>
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-slate-400 shrink-0">
+          <span><strong className="text-slate-600">{mentor.nb_actifs}</strong> actifs</span>
+          <span><strong className="text-slate-600">{mentor.nb_termines}</strong> terminés</span>
         </div>
       </div>
     </button>
@@ -445,7 +524,7 @@ function APSelector({ animateurs, selectedApId, onSelect, required }: {
               <span className="text-slate-400 ml-1">· {ap.association}</span>
             </span>
             <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-              ap.is_coordinator
+              ap.is_acp
                 ? 'bg-violet-100 text-violet-700'
                 : 'bg-sky-100 text-sky-700'
             }`}>
@@ -454,6 +533,119 @@ function APSelector({ animateurs, selectedApId, onSelect, required }: {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// FINANCEUR SELECTOR
+// ─────────────────────────────────────────────────────────────
+interface Financement { id: number; nom: string; code: string; type: string; type_label: string; }
+
+function FinanceurSelector({ value, onChange }: {
+  value: number | null;
+  onChange: (id: number | null) => void;
+}) {
+  const [financements, setFinancements] = useState<Financement[]>([]);
+  const [loading, setLoading]           = useState(false);
+  const [showCreate, setShowCreate]     = useState(false);
+  const [createNom, setCreateNom]       = useState('');
+  const [createCode, setCreateCode]     = useState('');
+  const [createType, setCreateType]     = useState<'local' | 'national'>('local');
+  const [creating, setCreating]         = useState(false);
+  const [createError, setCreateError]   = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    api.get('/financements/').then(r => {
+      setFinancements(r.data.financements ?? []);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  const handleCreate = async () => {
+    if (!createNom.trim() || !createCode.trim()) {
+      setCreateError('Nom et code requis'); return;
+    }
+    setCreating(true); setCreateError('');
+    try {
+      const res = await api.post('/financements/', {
+        nom:  createNom.trim(),
+        code: createCode.trim().toUpperCase(),
+        type: createType,
+      });
+      const newF: Financement = res.data;
+      setFinancements(prev => [...prev, newF]);
+      onChange(newF.id);
+      setShowCreate(false);
+      setCreateNom(''); setCreateCode('');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setCreateError(err.response?.data?.error ?? 'Erreur de création');
+    } finally { setCreating(false); }
+  };
+
+  const inputCls = 'w-full px-2.5 py-1.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue';
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-slate-600">Financeur (optionnel)</p>
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <Loader2 className="w-3 h-3 animate-spin" />Chargement…
+        </div>
+      ) : (
+        <select
+          value={value ?? ''}
+          onChange={e => {
+            const v = e.target.value;
+            if (v === '__create__') { setShowCreate(true); onChange(null); }
+            else { setShowCreate(false); onChange(v ? Number(v) : null); }
+          }}
+          className={inputCls}
+        >
+          <option value="">— Aucun financeur —</option>
+          {financements.map(f => (
+            <option key={f.id} value={f.id}>
+              {f.nom} ({f.code}) — {f.type_label}
+            </option>
+          ))}
+          <option value="__create__">+ Créer un nouveau financeur…</option>
+        </select>
+      )}
+
+      {showCreate && (
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nouveau financeur</p>
+          {createError && <p className="text-xs text-red-600">{createError}</p>}
+          <input type="text" placeholder="Nom *" value={createNom}
+            onChange={e => setCreateNom(e.target.value)} className={inputCls} />
+          <input type="text" placeholder="Code unique *" value={createCode}
+            onChange={e => setCreateCode(e.target.value.toUpperCase())} className={inputCls} />
+          <div className="flex gap-2">
+            {(['local', 'national'] as const).map(t => (
+              <button key={t} type="button" onClick={() => setCreateType(t)}
+                className={`flex-1 py-1 text-xs font-semibold rounded-lg border transition-all ${
+                  createType === t
+                    ? 'bg-ora-blue text-white border-ora-blue'
+                    : 'bg-white text-slate-500 border-slate-200'
+                }`}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => { setShowCreate(false); setCreateError(''); }}
+              className="flex-1 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-white">
+              Annuler
+            </button>
+            <button type="button" onClick={handleCreate} disabled={creating}
+              className="flex-1 py-1.5 text-xs font-semibold text-white bg-ora-blue rounded-lg hover:bg-ora-blue/90 disabled:opacity-50">
+              {creating ? 'Création…' : 'Créer'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -644,12 +836,11 @@ function MentorsTableau({ mentors, loading, error, demandes, onAssignClick }: {
 // ─────────────────────────────────────────────────────────────
 // PAGE PRINCIPALE
 // ─────────────────────────────────────────────────────────────
-type Tab = 'matching' | 'mentors';
 type SuggestionMode = 'ai' | 'manual';
 
 export function MatchingBoard() {
-  const [activeTab, setActiveTab] = useState<Tab>('matching');
-
+  const [poleInfo, setPoleInfo] = useState<{ name: string; code: string; villes: string[] } | null>(null);
+  const [moi, setMoi]           = useState<{ first_name: string; last_name: string } | null>(null);
   // ── Matching state ──────────────────────────────────────────
   const [demandes, setDemandes]                 = useState<Demande[]>([]);
   const [loadingDemandes, setLoadingDemandes]   = useState(true);
@@ -669,17 +860,7 @@ export function MatchingBoard() {
   const [needApSelection, setNeedApSelection]   = useState(false);
   const [animateurs, setAnimateurs]             = useState<Animateur[]>([]);
   const [selectedApId, setSelectedApId]         = useState<number | null>(null);
-
-  // ── Mentors tableau state ───────────────────────────────────
-  const [mentors, setMentors]                   = useState<MentorTableau[]>([]);
-  const [loadingMentors, setLoadingMentors]     = useState(false);
-  const [errorMentors, setErrorMentors]         = useState<string | null>(null);
-
-  // Façon 2 : assignation depuis le tableau
-  const [tableauMentor, setTableauMentor]       = useState<MentorTableau | null>(null);
-  const [tableauDemandeId, setTableauDemandeId] = useState<number | null>(null);
-  const [assigningTableau, setAssigningTableau] = useState(false);
-  const [tableauError, setTableauError]         = useState<string | null>(null);
+  const [selectedFinanceurId, setSelectedFinanceurId] = useState<number | null>(null);
 
   // ── Fetch demandes ──────────────────────────────────────────
   const fetchDemandes = useCallback(async () => {
@@ -695,20 +876,23 @@ export function MatchingBoard() {
     }
   }, []);
 
-  // ── Fetch mentors ───────────────────────────────────────────
+  // ── Mentors (pour la recherche manuelle dans le panel IA) ───
+  const [mentors, setMentors]           = useState<MentorTableau[]>([]);
+  const [loadingMentors, setLoadingMentors] = useState(false);
+
   const fetchMentors = useCallback(async () => {
     if (mentors.length > 0) return;
     try {
       setLoadingMentors(true);
-      setErrorMentors(null);
       const res = await api.get('/pole/mentors/');
       setMentors(res.data.mentors ?? []);
-    } catch (err) {
-      setErrorMentors((err as ApiError).response?.data?.error ?? 'Erreur de chargement');
-    } finally {
-      setLoadingMentors(false);
-    }
+    } catch { /* silencieux */ }
+    finally { setLoadingMentors(false); }
   }, [mentors.length]);
+
+  useEffect(() => {
+    if (suggestionMode === 'manual') fetchMentors();
+  }, [suggestionMode, fetchMentors]);
 
   // ── Fetch animateurs (APs) pour sélection manuelle ─────────
   const fetchAnimateurs = useCallback(async () => {
@@ -723,10 +907,13 @@ export function MatchingBoard() {
 
   useEffect(() => { fetchDemandes(); }, [fetchDemandes]);
 
-  // Charge mentors si on bascule sur l'onglet ou en mode recherche manuelle
   useEffect(() => {
-    if (activeTab === 'mentors' || suggestionMode === 'manual') fetchMentors();
-  }, [activeTab, suggestionMode, fetchMentors]);
+    api.get('/pole/annuaire/').then(r => {
+      setPoleInfo(r.data.pole ?? null);
+      setMoi(r.data.moi ?? null);
+    }).catch(() => {});
+  }, []);
+
 
   // ── Sélectionner une demande → suggestions IA ──────────────
   const handleSelectDemande = async (demande: Demande) => {
@@ -784,15 +971,26 @@ export function MatchingBoard() {
       if (selectedApId) payload.ap_id = selectedApId;
 
       const res = await api.post('/pole/matching/assign/', payload);
+      const mentoratId = res.data?.mentorat_id;
+
+      // Ajout du financeur si sélectionné
+      if (mentoratId && selectedFinanceurId) {
+        try {
+          await api.post(`/ap/mentorats/${mentoratId}/financements/`, {
+            financement_id: selectedFinanceurId,
+          });
+        } catch { /* non bloquant */ }
+      }
+
       setAssignSuccess(res.data?.message ?? 'Mentorat créé avec succès.');
       setDemandes(prev => prev.filter(d => d.id !== selectedDemande.id));
-      // Invalide le cache mentors pour forcer un rechargement
       setMentors([]);
       setSelectedDemande(null);
       setSuggestions(null);
       setSelectedMentorId(null);
       setJustification('');
       setSelectedApId(null);
+      setSelectedFinanceurId(null);
     } catch (err) {
       const e = err as ApiError;
       const errData = e.response?.data;
@@ -808,28 +1006,6 @@ export function MatchingBoard() {
     }
   };
 
-  // ── Confirmer le matching (Façon 2 — depuis tableau) ────────
-  const handleAssignFromTableau = async () => {
-    if (!tableauMentor || !tableauDemandeId) return;
-    setAssigningTableau(true);
-    setTableauError(null);
-    try {
-      const res = await api.post('/pole/matching/assign/', {
-        request_id: tableauDemandeId,
-        mentor_id:  tableauMentor.id,
-      });
-      setAssignSuccess(res.data?.message ?? 'Mentorat créé avec succès.');
-      setDemandes(prev => prev.filter(d => d.id !== tableauDemandeId));
-      setMentors([]);
-      setTableauMentor(null);
-      setTableauDemandeId(null);
-    } catch (err) {
-      const e = err as ApiError;
-      setTableauError(e.response?.data?.error ?? "Erreur lors de l'assignation");
-    } finally {
-      setAssigningTableau(false);
-    }
-  };
 
   const clearSuggestions = () => {
     setSelectedDemande(null);
@@ -848,44 +1024,29 @@ export function MatchingBoard() {
       {/* ── En-tête ────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Affectation & Mentors</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Associez les jeunes avec les mentors disponibles de votre pôle
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {poleInfo ? (
+              <>
+                Pôle {poleInfo.name ?? poleInfo.code}
+                {poleInfo.villes?.length > 0 && (
+                  <span className="text-slate-400 font-normal"> · {poleInfo.villes[0]}</span>
+                )}
+              </>
+            ) : 'Affectation'}
+          </h1>
+          {moi && (
+            <p className="text-sm text-slate-500 mt-0.5">
+              {moi.first_name} {moi.last_name}
+            </p>
+          )}
         </div>
-        {demandes.length > 0 && activeTab === 'matching' && (
+        {demandes.length > 0 && (
           <span className="shrink-0 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-bold">
             {demandes.length} demande{demandes.length > 1 ? 's' : ''} en attente
           </span>
         )}
       </div>
 
-      {/* ── Onglets ────────────────────────────────────────── */}
-      <div className="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit">
-        <button
-          onClick={() => setActiveTab('matching')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'matching' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Shuffle className="w-4 h-4" />
-          Affectation
-          {demandes.length > 0 && (
-            <span className="text-[10px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-full">
-              {demandes.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('mentors')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'mentors' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <LayoutList className="w-4 h-4" />
-          Tableau des mentors
-        </button>
-      </div>
 
       {/* ── Succès global ───────────────────────────────────── */}
       {assignSuccess && (
@@ -898,17 +1059,19 @@ export function MatchingBoard() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════
-          ONGLET MATCHING
-          ══════════════════════════════════════════════════════ */}
-      {activeTab === 'matching' && (
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+      {/* ── Contenu principal ──────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
 
           {/* ── Colonne gauche : Demandes ── */}
           <div className="xl:col-span-2 space-y-3">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
-              Demandes en attente
-            </h2>
+            <div className="px-1">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Demandes en attente
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Cliquez sur une demande pour voir les mentors disponibles et faire l'affectation.
+              </p>
+            </div>
 
             {loadingDemandes ? (
               <div className="flex items-center justify-center py-16">
@@ -1132,6 +1295,11 @@ export function MatchingBoard() {
                       required={needApSelection}
                     />
 
+                    <FinanceurSelector
+                      value={selectedFinanceurId}
+                      onChange={setSelectedFinanceurId}
+                    />
+
                     <textarea
                       value={justification}
                       onChange={e => setJustification(e.target.value)}
@@ -1148,7 +1316,7 @@ export function MatchingBoard() {
 
                     <div className="flex items-center justify-between gap-3">
                       <button
-                        onClick={() => { setSelectedMentorId(null); setAssignError(null); setNeedApSelection(false); setSelectedApId(null); }}
+                        onClick={() => { setSelectedMentorId(null); setAssignError(null); setNeedApSelection(false); setSelectedApId(null); setSelectedFinanceurId(null); }}
                         className="text-sm text-slate-500 hover:text-slate-700 px-3 py-2"
                       >
                         Annuler
@@ -1185,126 +1353,8 @@ export function MatchingBoard() {
               </div>
             )}
           </div>
-        </div>
-      )}
+      </div>
 
-      {/* ══════════════════════════════════════════════════════
-          ONGLET TABLEAU MENTORS
-          ══════════════════════════════════════════════════════ */}
-      {activeTab === 'mentors' && (
-        <div className="space-y-4">
-          <MentorsTableau
-            mentors={mentors}
-            loading={loadingMentors}
-            error={errorMentors}
-            demandes={demandes}
-            onAssignClick={(mentor) => {
-              setTableauMentor(mentor);
-              setTableauDemandeId(null);
-              setTableauError(null);
-            }}
-          />
-
-          {/* ── Façon 2 : panel d'assignation depuis tableau ── */}
-          {tableauMentor && (
-            <div className="bg-white rounded-2xl border-2 border-violet-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center text-white font-bold text-sm">
-                    {tableauMentor.name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-violet-900">Assigner {tableauMentor.name}</p>
-                    <p className="text-[11px] text-violet-600">
-                      {tableauMentor.association} · {tableauMentor.disponibilite} place{tableauMentor.disponibilite > 1 ? 's' : ''} disponible{tableauMentor.disponibilite > 1 ? 's' : ''}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { setTableauMentor(null); setTableauDemandeId(null); setTableauError(null); }}
-                  className="p-1.5 hover:bg-violet-100 rounded-lg text-violet-400"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <p className="text-sm font-semibold text-slate-700">
-                  À quelle demande souhaitez-vous l'assigner ?
-                </p>
-
-                {loadingDemandes ? (
-                  <div className="flex items-center justify-center py-6">
-                    <Loader2 className="w-6 h-6 animate-spin text-slate-300" />
-                  </div>
-                ) : demandes.length === 0 ? (
-                  <div className="text-center py-6 text-sm text-slate-400">
-                    Aucune demande en attente
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {demandes.map(d => (
-                      <button
-                        key={d.id}
-                        onClick={() => setTableauDemandeId(d.id)}
-                        className={`text-left p-3 rounded-xl border-2 transition-all ${
-                          tableauDemandeId === d.id
-                            ? 'border-violet-500 bg-violet-50'
-                            : 'border-slate-200 hover:border-violet-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{d.jeune}</p>
-                          {tableauDemandeId === d.id && <CheckCircle className="w-3.5 h-3.5 text-violet-600 shrink-0" />}
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <UrgenceBadge level={d.urgence} />
-                          <span className="flex items-center gap-0.5 text-[10px] text-slate-400">
-                            <MapPin className="w-2.5 h-2.5" />{d.ville}
-                          </span>
-                        </div>
-                        {d.diplome_label && (
-                          <p className="text-[10px] text-indigo-500 mt-1 truncate">{d.diplome_label}</p>
-                        )}
-                        {d.nom_etablissement && (
-                          <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-0.5 truncate">
-                            <Building2 className="w-2.5 h-2.5 shrink-0" />{d.nom_etablissement}
-                          </p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {tableauError && (
-                  <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />{tableauError}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <button
-                    onClick={() => { setTableauMentor(null); setTableauDemandeId(null); setTableauError(null); }}
-                    className="text-sm text-slate-500 hover:text-slate-700 px-3 py-2"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleAssignFromTableau}
-                    disabled={!tableauDemandeId || assigningTableau}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                  >
-                    {assigningTableau
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <UserPlus className="w-4 h-4" />}
-                    Confirmer l'assignation
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

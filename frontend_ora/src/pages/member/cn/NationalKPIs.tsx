@@ -812,7 +812,6 @@ function PoleDetailView({ data, poleName }: { data: PoleKPI; poleName: string })
             {data.urgences_details.map((u, i) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">{u.first_name} {u.last_name} · {u.city}</span>
-                <span className="font-bold text-red-700">Niv. {u.urgency_level}</span>
               </div>
             ))}
           </div>

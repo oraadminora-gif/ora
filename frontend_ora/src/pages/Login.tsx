@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import { useState, type FormEvent, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogIn, AlertCircle } from 'lucide-react';
 import { redirectByRole } from '../utils/redirectByRole';
@@ -81,7 +81,13 @@ export function Login() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-red-800 text-sm">{error}</p>
+              <div className="text-red-800 text-sm">
+                <p>{error}</p>
+                <p className="mt-1">
+                  Si vous avez oublié votre mot de passe, contactez l'administrateur à cette adresse :{' '}
+                  <span className="font-medium">ora-france@outlook.com</span>
+                </p>
+              </div>
             </div>
           )}
 
@@ -135,13 +141,8 @@ export function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-slate-600">
-            <p>
-              Pas encore de compte ?{' '}
-              <Link to="/mentors/inscription" className="text-ora-blue hover:text-ora-dark font-medium">
-                Devenir mentor
-              </Link>
-            </p>
+          <div className="mt-6 text-center text-sm text-slate-500">
+            <p>L'accès au mentor pour l'instant n'est pas autorisé.</p>
           </div>
         </div>
       </div>

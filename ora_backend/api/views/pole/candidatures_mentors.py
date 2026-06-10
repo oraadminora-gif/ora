@@ -55,7 +55,7 @@ class PoleCandidaturesMentorsView(APIView):
         ).select_related('pole', 'association', 'validated_by').order_by('-created_at')
 
         # AP : uniquement les candidatures de son association
-        if not anim.is_coordinator:
+        if not anim.is_acp:
             qs = qs.filter(association_id=anim.association_id)
 
         statut = request.query_params.get('statut')
@@ -79,7 +79,7 @@ class PoleCandidatureMentorActionView(APIView):
         )
 
         # AP : ne peut agir que sur son association
-        if not anim.is_coordinator and candidature.association_id != anim.association_id:
+        if not anim.is_acp and candidature.association_id != anim.association_id:
             return Response(
                 {'detail': 'Vous ne pouvez agir que sur les candidatures de votre association.'},
                 status=status.HTTP_403_FORBIDDEN,

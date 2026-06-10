@@ -151,8 +151,8 @@ interface MenuItem {
 const ROLE_CONFIG: Record<string, { label: string; accent: string; color: string }> = {
   MENTOR: { label: 'Mentor',            accent: 'text-emerald-400', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
   AP:     { label: 'Animateur de Pôle', accent: 'text-sky-400',     color: 'bg-sky-500/20 text-sky-300 border-sky-500/30'            },
-  ACP:    { label: 'Coordinateur',      accent: 'text-violet-400',  color: 'bg-violet-500/20 text-violet-300 border-violet-500/30'   },
-  CN:     { label: 'Coordination Nat.', accent: 'text-amber-400',   color: 'bg-amber-500/20 text-amber-300 border-amber-500/30'     },
+  ACP:    { label: 'Coordonnateur de Pôle',      accent: 'text-violet-400',  color: 'bg-violet-500/20 text-violet-300 border-violet-500/30'   },
+  CN:     { label: 'Comité National',    accent: 'text-amber-400',   color: 'bg-amber-500/20 text-amber-300 border-amber-500/30'     },
 };
 
 const ROLE_HOME: Record<UserRole, string> = {
@@ -166,19 +166,22 @@ const menuItems: MenuItem[] = [
   { label: 'Accueil',        path: '/member',                  roles: ['MENTOR'], icon: <Home size={18} /> },
   // MENTOR
   { label: 'Mes mentorats',  path: '/member/mentor/dashboard', roles: ['MENTOR'],                 icon: <HandHeart size={18} />, scrollTo: 'mentorats-en-cours' },
-  // AP — vue association uniquement
-  // AP — vue association
-  { label: 'Tableau de bord AP', path: '/member/ap/dashboard',   roles: ['AP'],        icon: <LayoutDashboard size={18} /> },
-  { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['AP'],        icon: <Users size={18} /> },
+  // AP
+  { label: 'Tableau de bord',  path: '/member/ap/dashboard',  roles: ['AP'], icon: <LayoutDashboard size={18} /> },
+  { label: 'Mes mentorats',    path: '/member/ap/mentorats',  roles: ['AP'], icon: <BookOpen size={18} /> },
+  { label: 'Annuaire',         path: '/member/acp/annuaire',  roles: ['AP'], icon: <MapPin size={18} /> },
+  { label: 'Implantations',    path: '/member/cn/implantations', roles: ['AP'], icon: <Globe size={18} /> },
+  { label: 'KPIs Nationaux',   path: '/member/cn/kpis',          roles: ['AP'], icon: <BarChart2 size={18} /> },
   // ACP — vue pôle complète (inclut accès aux vues AP)
   { label: 'Tableau de bord',    path: '/member/acp/dashboard',  roles: ['ACP'],       icon: <LayoutDashboard size={18} /> },
-  { label: 'Vue Animateur',      path: '/member/ap/dashboard',   roles: ['ACP'],       icon: <HandHeart size={18} /> },
   { label: 'Affectation',        path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
   { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },
   { label: 'Annuaire Pôle',      path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
   { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },
   { label: 'Gestion APs',        path: '/member/acp/animateurs', roles: ['ACP'],       icon: <Shield size={18} /> },
   { label: 'Suivi mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
+  { label: 'Implantations',      path: '/member/cn/implantations', roles: ['ACP'],     icon: <Globe size={18} /> },
+  { label: 'KPIs Nationaux',     path: '/member/cn/kpis',          roles: ['ACP'],     icon: <BarChart2 size={18} /> },
   // CN
   { label: 'Vue nationale',       path: '/member/cn/dashboard',    roles: ['CN'], icon: <Globe size={18} /> },
   { label: 'Gestion mentors',     path: '/member/cn/mentors',      roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },

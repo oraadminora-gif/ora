@@ -1,5 +1,5 @@
 // src/layouts/HeaderAP.tsx
-import { LogOut, Bell, LayoutDashboard, Users } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BookOpen, MapPin, Globe, BarChart2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -39,10 +39,28 @@ export function HeaderAP() {
             active={location.pathname === '/member/ap/dashboard'}
           />
           <NavLink
-            to="/member/acp/mentors"
-            icon={<Users className="w-4 h-4" />}
-            label="Gestion mentors"
-            active={location.pathname.startsWith('/member/acp/mentors')}
+            to="/member/ap/mentorats"
+            icon={<BookOpen className="w-4 h-4" />}
+            label="Mes mentorats"
+            active={location.pathname === '/member/ap/mentorats'}
+          />
+          <NavLink
+            to="/member/acp/annuaire"
+            icon={<MapPin className="w-4 h-4" />}
+            label="Annuaire"
+            active={location.pathname === '/member/acp/annuaire'}
+          />
+          <NavLink
+            to="/member/cn/implantations"
+            icon={<Globe className="w-4 h-4" />}
+            label="Implantations"
+            active={location.pathname === '/member/cn/implantations'}
+          />
+          <NavLink
+            to="/member/cn/kpis"
+            icon={<BarChart2 className="w-4 h-4" />}
+            label="KPIs Nationaux"
+            active={location.pathname === '/member/cn/kpis'}
           />
         </nav>
 

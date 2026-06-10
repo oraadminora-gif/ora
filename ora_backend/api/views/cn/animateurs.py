@@ -34,7 +34,8 @@ def _serialize_animateur(a):
         "pole_code":        a.pole.code,
         "association_id":   a.association_id,
         "association_name": a.association.name,
-        "is_coordinator":   a.is_coordinator,
+        "is_acp":           a.is_acp,
+        "is_ap":            a.is_ap,
         "is_active":        a.is_active,
         "has_account":      a.user_id is not None,
     }
@@ -69,8 +70,8 @@ class CNAnimateursView(APIView):
 
         total_counts = {
             'all':          base_qs.count(),
-            'acps':         base_qs.filter(is_coordinator=True).count(),
-            'aps':          base_qs.filter(is_coordinator=False).count(),
+            'acps':         base_qs.filter(is_acp=True).count(),
+            'aps':          base_qs.filter(is_ap=True).count(),
             'with_account': base_qs.filter(user__isnull=False).count(),
             'actifs':       base_qs.filter(is_active=True).count(),
             'inactifs':     base_qs.filter(is_active=False).count(),
@@ -80,9 +81,9 @@ class CNAnimateursView(APIView):
         qs = base_qs.select_related('pole', 'association').order_by('pole__name', 'last_name')
 
         if role == 'ACP':
-            qs = qs.filter(is_coordinator=True)
+            qs = qs.filter(is_acp=True)
         elif role == 'AP':
-            qs = qs.filter(is_coordinator=False)
+            qs = qs.filter(is_ap=True)
 
         if is_active == 'true':
             qs = qs.filter(is_active=True)
@@ -141,7 +142,8 @@ class CNAnimateursView(APIView):
 
         first_name     = data['first_name'].strip()
         last_name      = data['last_name'].strip()
-        is_coordinator = bool(data.get('is_coordinator', False))
+        is_acp = bool(data.get('is_acp', False))
+        is_ap  = bool(data.get('is_ap', False))
 
         temp_password = _generate_temp_password()
         user = User.objects.create_user(
@@ -160,7 +162,8 @@ class CNAnimateursView(APIView):
             email=email,
             phone=data.get('phone', '').strip(),
             city=data.get('city', '').strip(),
-            is_coordinator=is_coordinator,
+            is_acp=is_acp,
+            is_ap=is_ap,
             is_active=True,
         )
 
@@ -209,8 +212,10 @@ class CNAnimateurDetailView(APIView):
             if field in data:
                 setattr(animateur, field, str(data[field]).strip())
 
-        if 'is_coordinator' in data:
-            animateur.is_coordinator = bool(data['is_coordinator'])
+        if 'is_acp' in data:
+            animateur.is_acp = bool(data['is_acp'])
+        if 'is_ap' in data:
+            animateur.is_ap = bool(data['is_ap'])
 
         if 'is_active' in data:
             animateur.is_active = bool(data['is_active'])

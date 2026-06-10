@@ -66,9 +66,9 @@ class CNAnnuaireView(APIView):
             )
 
             if role == 'ACP':
-                anim_qs = anim_qs.filter(is_coordinator=True)
+                anim_qs = anim_qs.filter(is_acp=True)
             elif role == 'AP':
-                anim_qs = anim_qs.filter(is_coordinator=False)
+                anim_qs = anim_qs.filter(is_ap=True)
 
             if pole_id:
                 anim_qs = anim_qs.filter(pole_id=pole_id)
@@ -96,7 +96,8 @@ class CNAnnuaireView(APIView):
                     "pole_code":        a.pole.code,
                     "association_id":   a.association_id,
                     "association_name": a.association.name,
-                    "is_coordinator":   a.is_coordinator,
+                    "is_acp":           a.is_acp,
+                    "is_ap":            a.is_ap,
                     "is_active":        a.is_active,
                 }
                 for a in anim_qs

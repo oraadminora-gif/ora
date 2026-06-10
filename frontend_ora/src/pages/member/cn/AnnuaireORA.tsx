@@ -24,7 +24,7 @@ interface Animateur {
   email: string; phone: string; city: string;
   pole_id: number; pole_name: string; pole_code: string;
   association_id: number; association_name: string;
-  is_coordinator: boolean; is_active: boolean;
+  is_acp: boolean; is_ap: boolean; is_active: boolean;
 }
 interface Pole        { id: number; name: string; code: string; }
 interface Association { id: number; name: string; code: string; }
@@ -40,7 +40,7 @@ function initials(fn: string, ln: string) {
 
 function roleLabel(role: 'cn' | 'acp' | 'ap') {
   if (role === 'cn')  return 'CN';
-  if (role === 'acp') return 'ACP';
+  if (role === 'acp') return 'APC';
   return 'AP';
 }
 
@@ -216,12 +216,12 @@ export function AnnuaireORA() {
 
     if (tab === 'all' || tab === 'acp' || tab === 'ap') {
       animateurs.forEach(a => {
-        if (tab === 'acp' && !a.is_coordinator) return;
-        if (tab === 'ap'  &&  a.is_coordinator) return;
+        if (tab === 'acp' && !a.is_acp) return;
+        if (tab === 'ap'  && !a.is_ap)  return;
         if (filterPole  && String(a.pole_id)        !== filterPole)  return;
         if (filterAssoc && String(a.association_id) !== filterAssoc) return;
         if (q && !`${a.first_name} ${a.last_name} ${a.email} ${a.pole_name} ${a.association_name}`.toLowerCase().includes(q)) return;
-        cards.push({ type: a.is_coordinator ? 'acp' : 'ap', key: `anim-${a.id}`, data: a });
+        cards.push({ type: a.is_acp ? 'acp' : 'ap', key: `anim-${a.id}`, data: a });
       });
     }
 
@@ -235,8 +235,8 @@ export function AnnuaireORA() {
   const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: 'all', label: 'Tous',       count: cnMembers.length + animateurs.length },
     { key: 'cn',  label: 'Membres CN', count: cnMembers.length },
-    { key: 'acp', label: 'ACPs',       count: animateurs.filter(a => a.is_coordinator).length },
-    { key: 'ap',  label: 'APs',        count: animateurs.filter(a => !a.is_coordinator).length },
+    { key: 'acp', label: 'ACPs',       count: animateurs.filter(a => a.is_acp).length },
+    { key: 'ap',  label: 'APs',        count: animateurs.filter(a => a.is_ap).length },
   ];
 
   return (

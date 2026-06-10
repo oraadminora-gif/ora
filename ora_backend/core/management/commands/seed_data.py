@@ -88,7 +88,8 @@ class Command(BaseCommand):
                 first_name='Marie',
                 last_name='Coordinator',
                 email='acp.idf@ora.fr',
-                is_coordinator=True
+                is_acp=True,
+                is_ap=False
             )
             self.stdout.write(self.style.SUCCESS(f"ACP IDF créé: acp.idf@ora.fr / ora2026"))
         
@@ -107,7 +108,8 @@ class Command(BaseCommand):
                 first_name='Jean',
                 last_name='Animateur',
                 email='ap.idf@ora.fr',
-                is_coordinator=False
+                is_acp=False,
+                is_ap=True
             )
             self.stdout.write(self.style.SUCCESS(f"AP IDF créé: ap.idf@ora.fr / ora2026"))
         

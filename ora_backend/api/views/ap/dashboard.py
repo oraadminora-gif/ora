@@ -135,7 +135,6 @@ def serialize_mentorat_for_ap(m: Mentorat, precomputed_stats: dict | None = None
             'phone':             young.phone,
             'city':              young.city,
             'needs_description': young.needs_description,
-            'urgency_level':     young.urgency_level,
         } if young else None,
         'suivi_stats': stats,
     }
@@ -163,6 +162,7 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
         },
         'jeune': {
             'name':              f"{young.first_name} {young.last_name}",
+            'phone':             young.phone or '',
             'city':              young.city,
             'diplome_label':     young.get_diplome_prepare_display() if young.diplome_prepare else '',
             'situation':         young.situation or '',
@@ -171,7 +171,9 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
             'nom_etablissement': (
                 young.etablissement.nom if young.etablissement_id else young.nom_etablissement
             ) or '',
+            'needs_description': young.needs_description or '',
         } if young else None,
+        'objectif_mentor': m.objectif_mentor or '',
         'suivi_stats': stats,
         # Demande de clôture en attente
         'cloture_en_attente':         m.cloture_en_attente,
@@ -240,7 +242,7 @@ def serialize_mentor_for_ap(mentor: Mentor):
 class APDashboardView(APIView):
     """
     Dashboard de l'AP : vue de son association.
-    Accessible aussi par ACP (is_coordinator=True) et CN.
+    Accessible aussi par ACP (is_acp=True) et CN.
     """
     permission_classes = [IsAuthenticated]
 
@@ -341,7 +343,7 @@ class APDashboardView(APIView):
         clotures_en_attente_count   = 0
         clotures_en_attente_data    = []
 
-        if animateur and not animateur.is_coordinator:
+        if animateur and not animateur.is_acp:
             base_qs = Mentorat.objects.filter(ap_responsable=animateur)
             mes_mentorats_actifs_count  = base_qs.filter(status='ACTIVE').count()
             mes_mentorats_clotures      = base_qs.filter(status='CLOSED').count()
@@ -368,16 +370,18 @@ class APDashboardView(APIView):
                 'id':             animateur.id if animateur else None,
                 'first_name':     animateur.first_name if animateur else user.first_name,
                 'last_name':      animateur.last_name if animateur else user.last_name,
-                'role':           'ACP' if (animateur and animateur.is_coordinator) else 'AP',
+                'role':           ('ACP/AP' if (animateur and animateur.is_acp and animateur.is_ap)
+                                   else ('ACP' if (animateur and animateur.is_acp) else 'AP')),
                 'association': {
                     'id':   association.id,
                     'name': association.name,
                     'code': association.code,
                 },
                 'pole': {
-                    'id':   animateur.pole.id if animateur else None,
-                    'name': animateur.pole.name if animateur else None,
-                    'code': animateur.pole.code if animateur else None,
+                    'id':    animateur.pole.id   if animateur else None,
+                    'name':  animateur.pole.name  if animateur else None,
+                    'code':  animateur.pole.code  if animateur else None,
+                    'villes': (animateur.pole.villes if (animateur and isinstance(animateur.pole.villes, list)) else []),
                 },
             },
             'stats': {
@@ -467,6 +471,90 @@ class APMesMentorats(APIView):
 
 
 # ─────────────────────────────────────────────────────────────
+# VUE 1b : Export complet de tous les mentorats de l'AP
+# ─────────────────────────────────────────────────────────────
+class APMesMentoratExportView(APIView):
+    """GET /ap/mes-mentorats/export/ — tous les mentorats avec tous les attributs."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        animateur = _get_animateur(request.user)
+        if not animateur:
+            return Response({'error': 'Accès refusé'}, status=403)
+
+        date_debut = request.query_params.get('date_debut', '').strip()
+        date_fin   = request.query_params.get('date_fin', '').strip()
+
+        qs = (
+            Mentorat.objects
+            .filter(ap_responsable=animateur)
+            .select_related(
+                'mentor', 'mentor__association',
+                'young_request', 'young_request__etablissement',
+                'pole',
+            )
+            .prefetch_related('financements__financement')
+            .order_by('-assigned_at')
+        )
+
+        if date_debut:
+            qs = qs.filter(assigned_at__gte=date_debut)
+        if date_fin:
+            qs = qs.filter(assigned_at__lte=date_fin)
+
+        suivi_map = bulk_suivi_stats([m.id for m in qs])
+
+        rows = []
+        for m in qs:
+            mentor = m.mentor
+            jr     = m.young_request
+            stats  = suivi_map.get(m.id, {})
+            financements = ', '.join(
+                f"{mf.financement.nom} ({mf.financement.code})"
+                for mf in m.financements.all()
+            )
+            problematiques_labels = ', '.join(m.problematiques) if m.problematiques else ''
+
+            rows.append({
+                # Mentorat
+                'Statut':                m.get_status_display(),
+                "Date d'affectation":    str(m.assigned_at) if m.assigned_at else '',
+                'Date prévisionnelle fin': str(m.expected_end_date) if m.expected_end_date else '',
+                'Date clôture':          str(m.closed_at) if m.closed_at else '',
+                'Raison clôture':        m.get_closure_reason_code_display() if m.closure_reason_code else m.closure_reason,
+                'Nb rencontres':         m.nb_rencontres,
+                "Nb heures":             float(m.nb_heures),
+                'Objectif mentor':       m.objectif_mentor,
+                'Bilan suivi':           m.notes_suivi,
+                'Problématiques':        problematiques_labels,
+                'Financeur(s)':          financements,
+                'Alerte rouge':          'Oui' if m.alerte_rouge else 'Non',
+                # Mentor
+                'Mentor Prénom':         mentor.first_name if mentor else '',
+                'Mentor Nom':            mentor.last_name if mentor else '',
+                'Mentor Email':          mentor.email if mentor else '',
+                'Mentor Téléphone':      mentor.phone if mentor else '',
+                'Mentor Ville':          mentor.city if mentor else '',
+                'Mentor Association':    mentor.association.name if mentor else '',
+                'Mentor Formé':          'Oui' if (mentor and mentor.is_trained) else 'Non',
+                # Jeune
+                'Jeune Prénom':          jr.first_name if jr else '',
+                'Jeune Nom':             jr.last_name if jr else '',
+                'Jeune Email':           jr.email if jr else '',
+                'Jeune Téléphone':       jr.phone if jr else '',
+                'Jeune Commune':         (jr.commune if hasattr(jr, 'commune') else jr.city) if jr else '',
+                'Jeune Diplôme':         jr.get_diplome_prepare_display() if (jr and jr.diplome_prepare) else '',
+                'Jeune Situation':       jr.get_situation_display() if (jr and jr.situation) else '',
+                'Jeune Établissement':   (jr.etablissement.nom if jr.etablissement_id else jr.nom_etablissement) if jr else '',
+                'Jeune Demande':         jr.needs_description if jr else '',
+                # Stats suivi
+                'Dernière rencontre':    str(stats.get('last_rencontre', '')) if stats.get('last_rencontre') else '',
+            })
+
+        return Response({'mentorats': rows, 'count': len(rows)})
+
+
+# ─────────────────────────────────────────────────────────────
 # VUE 2 : Détail d'un mentor (pour l'AP)
 # ─────────────────────────────────────────────────────────────
 class APMentorDetailView(APIView):
@@ -484,7 +572,7 @@ class APMentorDetailView(APIView):
         if not animateur:
             return False
         # ACP : son pôle
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             return mentor.pole_id == animateur.pole_id
         # AP : son association OU AP responsable d'au moins un mentorat de ce mentor
         if mentor.association_id == animateur.association_id:
@@ -506,7 +594,7 @@ class APMentorDetailView(APIView):
         animateur = _get_animateur(request.user)
         same_assoc = (
             animateur is None  # CN
-            or animateur.is_coordinator  # ACP voit tout
+            or animateur.is_acp  # ACP voit tout
             or mentor.association_id == animateur.association_id
         )
 
@@ -570,7 +658,7 @@ class APMentoratAlerteView(APIView):
         animateur = _get_animateur(user)
         if not animateur:
             return False
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             return mentorat.pole_id == animateur.pole_id
         # AP : son association OU AP responsable de ce mentorat
         return (mentorat.mentor.association_id == animateur.association_id or
@@ -625,7 +713,7 @@ class APMentoratNotesView(APIView):
         animateur = _get_animateur(user)
         if not animateur:
             return False
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             return mentorat.pole_id == animateur.pole_id
         # AP : son association OU AP responsable de ce mentorat
         return (mentorat.mentor.association_id == animateur.association_id or
@@ -670,7 +758,7 @@ class APConfirmerClotureView(APIView):
         if not animateur:
             return False
         # ACP : son pôle entier
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             return mentorat.pole_id == animateur.pole_id
         # AP : responsable de ce mentorat OU même association
         return (
@@ -904,7 +992,7 @@ def _serialize_suivi(s):
 
 def _check_ap_mentorat_access(animateur, mentorat):
     """True si l'animateur (AP ou ACP) peut accéder à ce mentorat."""
-    if animateur.is_coordinator:
+    if animateur.is_acp:
         return mentorat.pole_id == animateur.pole_id
     return (
         mentorat.mentor.association_id == animateur.association_id or
@@ -1057,7 +1145,7 @@ class APUpdateJeuneView(APIView):
         animateur = _get_animateur(user)
         if not animateur:
             return False
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             return mentorat.pole_id == animateur.pole_id
         return (
             mentorat.ap_responsable_id == animateur.id or
@@ -1076,41 +1164,67 @@ class APUpdateJeuneView(APIView):
             return Response({'error': 'Accès non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
 
         req = mentorat.young_request
-        updated = []
+        data = request.data
 
-        if 'situation' in request.data:
-            val = request.data['situation']
+        # Champs texte simples
+        for field in ('first_name', 'last_name', 'email', 'phone', 'needs_description'):
+            if field in data:
+                setattr(req, field, str(data[field]).strip())
+
+        # Localisation
+        for field in ('commune', 'code_postal', 'city'):
+            if field in data:
+                setattr(req, field, str(data[field]).strip())
+
+        # Identité
+        if 'birth_date' in data:
+            req.birth_date = data['birth_date'] or None
+        if 'gender' in data:
+            req.gender = str(data['gender']).strip()
+
+        # Formation
+        if 'diplome_prepare' in data:
+            req.diplome_prepare = str(data['diplome_prepare']).strip()
+
+        if 'situation' in data:
+            val = data['situation']
             if val not in ('apprentissage', 'recherche', ''):
                 return Response({'error': 'Situation invalide.'}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
-            updated.append('situation')
 
-        if 'etablissement_id' in request.data:
-            etab_id = request.data['etablissement_id']
+        if 'etablissement_id' in data:
+            etab_id = data['etablissement_id']
             if etab_id:
                 if not Etablissement.objects.filter(id=etab_id, is_active=True).exists():
                     return Response({'error': 'Établissement introuvable.'}, status=status.HTTP_400_BAD_REQUEST)
                 req.etablissement_id = etab_id
                 req.nom_etablissement = ''
-                updated.extend(['etablissement_id', 'nom_etablissement'])
             else:
                 req.etablissement_id = None
-                updated.append('etablissement_id')
-        elif 'nom_etablissement' in request.data:
-            req.nom_etablissement = str(request.data['nom_etablissement']).strip()
+        elif 'nom_etablissement' in data:
+            req.nom_etablissement = str(data['nom_etablissement']).strip()
             req.etablissement_id = None
-            updated.extend(['nom_etablissement', 'etablissement_id'])
 
-        if updated:
-            req.save(update_fields=list(set(updated)))
+        req.save()
 
         return Response({
-            'situation':        req.situation or '',
-            'situation_label':  req.get_situation_display() if req.situation else '',
-            'etablissement_id': req.etablissement_id,
-            'nom_etablissement': (
-                req.etablissement.nom if req.etablissement_id else req.nom_etablissement
-            ) or '',
+            'first_name':        req.first_name,
+            'last_name':         req.last_name,
+            'email':             req.email,
+            'phone':             req.phone,
+            'birth_date':        str(req.birth_date) if req.birth_date else '',
+            'gender':            req.gender,
+            'gender_label':      {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}.get(req.gender, ''),
+            'commune':           req.commune if hasattr(req, 'commune') else req.city,
+            'code_postal':       req.code_postal if hasattr(req, 'code_postal') else '',
+            'city':              req.city,
+            'diplome_prepare':   req.diplome_prepare,
+            'diplome_label':     req.get_diplome_prepare_display() if req.diplome_prepare else '',
+            'situation':         req.situation or '',
+            'situation_label':   req.get_situation_display() if req.situation else '',
+            'etablissement_id':  req.etablissement_id,
+            'nom_etablissement': (req.etablissement.nom if req.etablissement_id else req.nom_etablissement) or '',
+            'needs_description': req.needs_description,
         })
 
 
@@ -1153,7 +1267,6 @@ class APMentoratSuiviView(APIView):
             'jeune_diplome_label':     req.get_diplome_prepare_display() if req.diplome_prepare else '',
             'jeune_situation':         req.situation or '',
             'jeune_situation_label':   req.get_situation_display() if req.situation else '',
-            'jeune_urgency_level':     req.urgency_level,
             'jeune_etablissement_id':  req.etablissement_id,
             'jeune_nom_etablissement': (
                 req.etablissement.nom if req.etablissement_id else req.nom_etablissement
@@ -1224,14 +1337,6 @@ class APMentoratSuiviView(APIView):
                 return Response({"error": "Situation invalide."}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
             req_updated.append('situation')
-
-        if 'urgency_level' in data:
-            try:
-                val = max(1, min(5, int(data['urgency_level'])))
-            except (ValueError, TypeError):
-                return Response({"error": "urgency_level doit être entre 1 et 5."}, status=status.HTTP_400_BAD_REQUEST)
-            req.urgency_level = val
-            req_updated.append('urgency_level')
 
         if 'etablissement_id' in data:
             etab_id = data['etablissement_id']
@@ -1384,3 +1489,185 @@ class APEtablissementsView(APIView):
             {'id': etab.id, 'nom': etab.nom, 'code_postal': etab.code_postal},
             status=status.HTTP_201_CREATED,
         )
+
+
+# ─────────────────────────────────────────────────────────────
+# VUE 12 : Détail complet + suivi d'un mentorat (AP)
+# ─────────────────────────────────────────────────────────────
+class APMentoratSuiviDetailView(APIView):
+    """
+    GET   /ap/mentorats/{id}/suivi-detail/  – fiche complète (mentor, jeune, suivi)
+    PATCH /ap/mentorats/{id}/suivi-detail/  – mettre à jour les champs de suivi
+    POST  /ap/mentorats/{id}/suivi-detail/?action=cloturer – clôturer directement
+    """
+    permission_classes = [IsAuthenticated]
+
+    def _get_mentorat(self, request, mentorat_id):
+        animateur = _get_animateur(request.user)
+        if not animateur:
+            return None, None, Response({'error': 'Accès non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            m = Mentorat.objects.select_related(
+                'mentor', 'mentor__association', 'mentor__department',
+                'young_request', 'young_request__etablissement',
+                'ap_responsable', 'ap_responsable__association',
+                'pole',
+            ).get(id=mentorat_id)
+        except Mentorat.DoesNotExist:
+            return None, None, Response({'error': 'Mentorat introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        if not _check_ap_mentorat_access(animateur, m):
+            return None, None, Response({'error': 'Accès non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
+        return m, animateur, None
+
+    def _serialize(self, m):
+        from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES
+        jr = m.young_request
+        mentor = m.mentor
+        ap = m.ap_responsable
+
+        return {
+            'id':           m.id,
+            'status':       m.status,
+            'status_label': m.get_status_display(),
+            'assigned_at':  m.assigned_at,
+            'expected_end_date': m.expected_end_date,
+            'closed_at':    m.closed_at,
+            'request_date': jr.request_date if jr else None,
+            'alerte_rouge': m.alerte_rouge,
+
+            # Raison de clôture
+            'closure_reason_code':  m.closure_reason_code,
+            'closure_reason_label': m.get_closure_reason_code_display() if m.closure_reason_code else '',
+            'closure_reason':       m.closure_reason,
+
+            # Suivi
+            'nb_rencontres':   m.nb_rencontres,
+            'nb_heures':       float(m.nb_heures),
+            'objectif_mentor': m.objectif_mentor,
+            'bilan_suivi':     m.notes_suivi,
+            'problematiques':  m.problematiques,
+
+            # Choix disponibles
+            'closure_reason_choices': [
+                {'value': v, 'label': l} for v, l in CLOSURE_REASON_CHOICES
+            ],
+            'problematiques_choices': [
+                {'value': v, 'label': l} for v, l in PROBLEMATIQUES_CHOICES
+            ],
+
+            # Mentor
+            'mentor': {
+                'id':          mentor.id,
+                'first_name':  mentor.first_name,
+                'last_name':   mentor.last_name,
+                'email':       mentor.email,
+                'phone':       mentor.phone,
+                'city':        mentor.city,
+                'code_postal': mentor.code_postal,
+                'department':  mentor.department.label if mentor.department_id else '',
+                'association': mentor.association.name,
+                'is_trained':  mentor.is_trained,
+                'training_date': str(mentor.training_date) if mentor.training_date else '',
+                'observations': mentor.observations,
+            } if mentor else None,
+
+            # Jeune
+            'jeune': {
+                'first_name':       jr.first_name,
+                'last_name':        jr.last_name,
+                'email':            jr.email,
+                'phone':            jr.phone,
+                'birth_date':       str(jr.birth_date) if jr.birth_date else '',
+                'gender':           jr.gender,
+                'gender_label':     {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}.get(jr.gender, ''),
+                'commune':          jr.commune if hasattr(jr, 'commune') else jr.city,
+                'code_postal':      jr.code_postal if hasattr(jr, 'code_postal') else '',
+                'city':             jr.city,
+                'diplome_prepare':  jr.diplome_prepare,
+                'diplome_label':    jr.get_diplome_prepare_display() if jr.diplome_prepare else '',
+                'situation':        jr.situation,
+                'situation_label':  jr.get_situation_display() if jr.situation else '',
+                'nom_etablissement': jr.etablissement.nom if jr.etablissement_id else jr.nom_etablissement,
+                'needs_description': jr.needs_description,
+                'request_date':     str(jr.request_date) if jr.request_date else '',
+            } if jr else None,
+
+            # AP responsable
+            'ap_responsable': {
+                'first_name': ap.first_name,
+                'last_name':  ap.last_name,
+                'email':      ap.email,
+            } if ap else None,
+        }
+
+    def get(self, request, mentorat_id):
+        try:
+            m, _, err = self._get_mentorat(request, mentorat_id)
+            if err:
+                return err
+            return Response(self._serialize(m))
+        except Exception as exc:
+            import traceback
+            return Response(
+                {'error': str(exc), 'detail': traceback.format_exc()},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def patch(self, request, mentorat_id):
+        try:
+            m, _, err = self._get_mentorat(request, mentorat_id)
+            if err:
+                return err
+            data = request.data
+
+            if 'objectif_mentor' in data:
+                m.objectif_mentor = data['objectif_mentor'] or ''
+            if 'bilan_suivi' in data:
+                m.notes_suivi = data['bilan_suivi'] or ''
+            if 'expected_end_date' in data:
+                val = data['expected_end_date']
+                m.expected_end_date = val if val else None
+            if 'nb_rencontres' in data:
+                try:
+                    m.nb_rencontres = max(0, int(data['nb_rencontres']))
+                except (ValueError, TypeError):
+                    pass
+            if 'nb_heures' in data:
+                try:
+                    m.nb_heures = max(0, float(str(data['nb_heures']).replace(',', '.')))
+                except (ValueError, TypeError):
+                    pass
+            if 'problematiques' in data:
+                codes = data['problematiques']
+                if isinstance(codes, list):
+                    m.problematiques = codes
+
+            # Clôture directe
+            if data.get('cloturer'):
+                from core.models.mentorat import CLOSURE_REASON_CHOICES
+                code = (data.get('closure_reason_code') or '').strip()
+                closed_at_val = (data.get('closed_at') or '').strip()
+                if not code:
+                    return Response({'error': 'closure_reason_code requis.'}, status=400)
+                if not closed_at_val:
+                    return Response({'error': 'closed_at requis.'}, status=400)
+                valid_codes = [v for v, _ in CLOSURE_REASON_CHOICES]
+                if code not in valid_codes:
+                    return Response({'error': 'Code de raison invalide.'}, status=400)
+                m.closure_reason_code = code
+                m.save()
+                m.cloturer(reason=code, statut='CLOSED')
+                # Respecte la date choisie par l'AP
+                Mentorat.objects.filter(pk=m.pk).update(closed_at=closed_at_val)
+                m.refresh_from_db()
+                return Response(self._serialize(m))
+
+            m.save()
+            return Response(self._serialize(m))
+
+        except Exception as exc:
+            import traceback
+            return Response(
+                {'error': str(exc), 'detail': traceback.format_exc()},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

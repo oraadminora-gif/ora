@@ -60,7 +60,7 @@ export function HeaderCN() {
           </div>
           <div className="hidden sm:block">
             <h1 className="text-base font-bold text-white leading-tight">
-              Coordination Nationale
+              Comité National
             </h1>
             <p className="text-[11px] text-amber-300 font-semibold uppercase tracking-wider">
               {user.email}

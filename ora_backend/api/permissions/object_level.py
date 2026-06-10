@@ -15,7 +15,7 @@ class IsACPOfPole(BasePermission):
         if hasattr(user, 'cn_member'):
             return True
         
-        if not (hasattr(user, 'animateur') and user.animateur.is_coordinator):
+        if not (hasattr(user, 'animateur') and user.animateur.is_acp):
             return False
         
         pole_id = getattr(obj, 'pole_id', None) or getattr(obj, 'id', None)
@@ -41,7 +41,7 @@ class IsAPOfAssociation(BasePermission):
             return False
         
         # ACP : lecture de toutes les assos de son pôle
-        if animateur.is_coordinator and request.method in ['GET', 'HEAD', 'OPTIONS']:
+        if animateur.is_acp and request.method in ['GET', 'HEAD', 'OPTIONS']:
             obj_pole_id = getattr(obj, 'pole_id', None)
             if obj_pole_id:
                 return obj_pole_id == animateur.pole_id
@@ -96,7 +96,7 @@ class CanMatchRequest(BasePermission):
             return True
         return (
             hasattr(user, 'animateur') 
-            and user.animateur.is_coordinator
+            and user.animateur.is_acp
         )
     
     def has_object_permission(self, request, view, young_request):

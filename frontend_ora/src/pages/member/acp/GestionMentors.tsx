@@ -1,11 +1,13 @@
 // src/pages/member/acp/GestionMentors.tsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
 import api from '../../../services/api';
 import {
   Plus, Search, GraduationCap, Loader2, AlertCircle,
   Pencil, X, CheckCircle, UserX, UserCheck, Users, Key, Copy,
-  Link2, Link2Off, Inbox, UserPlus, Ban, ChevronDown, ChevronUp, Trash2,
+  Link2, Link2Off, UserPlus, Ban, ChevronDown, ChevronUp, Trash2,
+  Download,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -29,21 +31,6 @@ interface Department  { id: number; code: string; name: string; label: string; }
 
 type ModalMode = 'create' | 'edit' | null;
 
-interface Candidature {
-  id: number;
-  first_name: string; last_name: string;
-  email: string; phone: string;
-  code_postal: string; commune: string;
-  pole_name: string | null;
-  association_name: string | null;
-  motivation: string;
-  statut: 'PENDING' | 'VALIDATED' | 'REJECTED';
-  statut_label: string;
-  notes_rejet: string;
-  validated_by: string | null;
-  mentor_id: number | null;
-  created_at: string;
-}
 
 interface MentorForm {
   first_name: string; last_name: string; email: string; phone: string;
@@ -320,12 +307,12 @@ function MentorModal({
             </Field>
           )}
 
-          <Field label="Observations">
+          <Field label="Particularité pour l'affectation">
             <textarea
               value={form.observations}
               onChange={e => setForm(prev => ({ ...prev, observations: e.target.value }))}
               rows={3}
-              placeholder="Notes internes sur ce mentor (visibles ACP uniquement)…"
+              placeholder="Particularités utiles pour l'affectation (visibles APC uniquement)…"
               className={`${INPUT} resize-none`}
             />
           </Field>
@@ -354,7 +341,7 @@ function MentorModal({
                 <input type="email" value={form.link_user_email} onChange={set('link_user_email')}
                   className={INPUT} placeholder="email@existant.fr" />
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Entrez l'email d'un compte déjà créé (ex : un ACP qui est aussi mentor).
+                  Entrez l'email d'un compte déjà créé (ex : un APC qui est aussi mentor).
                 </p>
               </Field>
             ) : (
@@ -376,7 +363,7 @@ function MentorModal({
                     <input type="email" value={form.link_user_email} onChange={set('link_user_email')}
                       className={INPUT} placeholder="email@existant.fr (optionnel)" />
                     <p className="text-[11px] text-slate-400 mt-1">
-                      Permet à un utilisateur existant (ACP, AP…) d'être aussi mentor.
+                      Permet à un utilisateur existant (APC, AP…) d'être aussi mentor.
                     </p>
                   </Field>
                 )}
@@ -415,6 +402,8 @@ export function GestionMentors() {
   const { activeRole } = useAuth();
   const isAP = activeRole === 'AP';
 
+  const [pole, setPole]                 = useState<{ name: string; code: string; villes: string[] } | null>(null);
+  const [myAssociationId, setMyAssociationId] = useState<number | null>(null);
   const [mentors, setMentors]           = useState<Mentor[]>([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState<string | null>(null);
@@ -429,53 +418,6 @@ export function GestionMentors() {
     name: string; email: string; password: string;
   } | null>(null);
 
-  // ── Candidatures ─────────────────────────────────────────
-  const [tab, setTab]                     = useState<'mentors' | 'candidatures'>('mentors');
-  const [candidatures, setCandidatures]   = useState<Candidature[]>([]);
-  const [candLoading, setCandLoading]     = useState(false);
-  const [expandedCand, setExpandedCand]   = useState<number | null>(null);
-  const [rejectId, setRejectId]           = useState<number | null>(null);
-  const [rejectNote, setRejectNote]       = useState('');
-
-  const pendingCount = candidatures.filter(c => c.statut === 'PENDING').length;
-
-  const loadCandidatures = useCallback(async () => {
-    setCandLoading(true);
-    try {
-      const res = await api.get('/pole/candidatures-mentors/');
-      setCandidatures(res.data);
-    } catch { /* silencieux */ }
-    finally { setCandLoading(false); }
-  }, []);
-
-  useEffect(() => { loadCandidatures(); }, [loadCandidatures]);
-
-  const handleValider = async (id: number) => {
-    if (!confirm('Valider cette candidature et créer le mentor ?')) return;
-    try {
-      await api.post(`/pole/candidatures-mentors/${id}/valider/`);
-      setCandidatures(prev => prev.map(c =>
-        c.id === id ? { ...c, statut: 'VALIDATED', statut_label: 'Validée' } : c
-      ));
-      setSuccessMsg('Candidature validée — mentor créé.');
-      setTimeout(() => setSuccessMsg(null), 4000);
-      loadData(); // rafraîchit la liste des mentors
-    } catch { setError('Erreur lors de la validation.'); }
-  };
-
-  const handleRejeter = async (id: number) => {
-    try {
-      await api.post(`/pole/candidatures-mentors/${id}/rejeter/`, { notes_rejet: rejectNote });
-      setCandidatures(prev => prev.map(c =>
-        c.id === id ? { ...c, statut: 'REJECTED', statut_label: 'Rejetée' } : c
-      ));
-      setRejectId(null);
-      setRejectNote('');
-      setSuccessMsg('Candidature rejetée.');
-      setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError('Erreur lors du rejet.'); }
-  };
-
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -485,6 +427,8 @@ export function GestionMentors() {
         api.get('/pole/associations/'),
         api.get('/pole/departments/'),
       ]);
+      setPole(mRes.data.pole ?? null);
+      setMyAssociationId(mRes.data.my_association_id ?? null);
       setMentors(mRes.data.mentors ?? []);
       setAssociations(aRes.data.associations ?? []);
       setDepartments(dRes.data.departments ?? []);
@@ -551,188 +495,72 @@ export function GestionMentors() {
   const stats = useMemo(() => ({
     total:       mentors.length,
     actifs:      mentors.filter(m => m.is_active).length,
-    disponibles: mentors.filter(m => m.is_active && !m.est_sature).length,
+    disponibles: mentors.filter(m => m.is_active).reduce((sum, m) => sum + m.disponibilite, 0),
     formes:      mentors.filter(m => m.is_trained).length,
-    avecCompte:  mentors.filter(m => m.has_account).length,
   }), [mentors]);
+
+  const handleExport = () => {
+    const rows = filtered.map(m => ({
+      Prénom:         m.first_name,
+      Nom:            m.last_name,
+      Email:          m.email,
+      Téléphone:      m.phone || '',
+      Ville:          m.city || '',
+      'Code postal':  m.code_postal || '',
+      Département:    m.department || '',
+      Association:    m.association,
+      Formé:          m.is_trained ? 'Oui' : 'Non',
+      'Date formation': m.training_date || '',
+      Statut:         m.is_active ? 'Actif' : 'Inactif',
+      Disponibilité:  m.disponibilite,
+      'Capacité max': m.capacite_max,
+      'Mentorats actifs':   m.nb_actifs,
+      'Mentorats terminés': m.nb_termines,
+      'Particularité affectation': m.observations || '',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    const poleName = pole?.name ?? pole?.code ?? 'Pole';
+    XLSX.utils.book_append_sheet(wb, ws, 'Mentors');
+    XLSX.writeFile(wb, `Mentors_${poleName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Gestion des mentors</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {pole ? (
+              <>
+                Pôle {pole.name ?? pole.code}
+                {pole.villes?.length > 0 && (
+                  <span className="text-slate-400 font-normal"> · {pole.villes[0]}</span>
+                )}
+              </>
+            ) : 'Gestion des mentors'}
+          </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {stats.actifs} actifs · {stats.disponibles} disponibles · {stats.formes} formés · {stats.avecCompte} avec compte
+            {stats.actifs} actifs · {stats.disponibles} place{stats.disponibles !== 1 ? 's' : ''} disponibles · {stats.formes} formés
           </p>
         </div>
-        <button onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 bg-ora-blue text-white text-sm font-bold rounded-xl hover:bg-ora-blue/90 transition-all shadow-sm shadow-ora-blue/20">
-          <Plus className="w-4 h-4" />Nouveau mentor
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-        <button
-          onClick={() => setTab('mentors')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            tab === 'mentors' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Users className="w-4 h-4" /> Mentors ({stats.total})
-        </button>
-        {!isAP && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setTab('candidatures')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              tab === 'candidatures' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
-            }`}
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-40"
+            title="Exporter la liste en Excel"
           >
-            <Inbox className="w-4 h-4" /> Candidatures
-            {pendingCount > 0 && (
-              <span className="bg-ora-orange text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
-                {pendingCount}
-              </span>
-            )}
+            <Download className="w-4 h-4" />
+            Exporter
           </button>
-        )}
+          <button onClick={openCreate}
+            className="flex items-center gap-2 px-4 py-2.5 bg-ora-blue text-white text-sm font-bold rounded-xl hover:bg-ora-blue/90 transition-all shadow-sm shadow-ora-blue/20">
+            <Plus className="w-4 h-4" />Nouveau mentor
+          </button>
+        </div>
       </div>
 
-      {/* ── Panel Candidatures ────────────────────────────────── */}
-      {tab === 'candidatures' && (
-        <div className="space-y-3">
-          {candLoading && (
-            <div className="flex items-center gap-2 text-slate-500 text-sm p-4">
-              <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
-            </div>
-          )}
-          {!candLoading && candidatures.length === 0 && (
-            <div className="text-center py-12 text-slate-400">
-              <Inbox className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p>Aucune candidature pour le moment.</p>
-            </div>
-          )}
-          {!candLoading && candidatures.map(c => (
-            <div key={c.id}
-              className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-                c.statut === 'PENDING' ? 'border-slate-200' :
-                c.statut === 'VALIDATED' ? 'border-green-200 opacity-75' :
-                'border-red-200 opacity-75'
-              }`}
-            >
-              {/* Ligne principale */}
-              <div className="flex items-center gap-4 px-5 py-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-slate-900">
-                      {c.first_name} {c.last_name}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      c.statut === 'PENDING'    ? 'bg-amber-100 text-amber-700' :
-                      c.statut === 'VALIDATED'  ? 'bg-green-100 text-green-700' :
-                                                  'bg-red-100 text-red-700'
-                    }`}>{c.statut_label}</span>
-                    {c.association_name && (
-                      <span className="text-xs px-2 py-0.5 bg-ora-blue/10 text-ora-blue rounded-full font-medium">
-                        {c.association_name}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-slate-500 mt-0.5">
-                    {c.email}{c.phone ? ` · ${c.phone}` : ''} · {c.code_postal}{c.commune ? ` ${c.commune}` : ''}
-                    {c.pole_name ? ` · Pôle ${c.pole_name}` : ''}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {c.statut === 'PENDING' && (
-                    <>
-                      <button
-                        onClick={() => handleValider(c.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-semibold rounded-lg hover:bg-green-600 transition-colors"
-                      >
-                        <UserPlus className="w-3.5 h-3.5" /> Valider
-                      </button>
-                      <button
-                        onClick={() => { setRejectId(c.id); setRejectNote(''); }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
-                      >
-                        <Ban className="w-3.5 h-3.5" /> Rejeter
-                      </button>
-                    </>
-                  )}
-                  {c.statut === 'VALIDATED' && c.mentor_id && (
-                    <span className="text-xs text-green-600 font-medium flex items-center gap-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Mentor #{c.mentor_id}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setExpandedCand(expandedCand === c.id ? null : c.id)}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-                  >
-                    {expandedCand === c.id
-                      ? <ChevronUp className="w-4 h-4" />
-                      : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Détail dépliable */}
-              {expandedCand === c.id && (
-                <div className="border-t border-slate-100 px-5 py-4 bg-slate-50 space-y-3 text-sm">
-                  {c.motivation && (
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Motivation</p>
-                      <p className="text-slate-700 italic">{c.motivation}</p>
-                    </div>
-                  )}
-                  {c.notes_rejet && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-red-600 mb-1">Motif de rejet</p>
-                      <p className="text-red-700">{c.notes_rejet}</p>
-                    </div>
-                  )}
-                  <p className="text-xs text-slate-400">
-                    Reçue le {new Date(c.created_at).toLocaleDateString('fr-FR')}
-                    {c.validated_by ? ` · Traitée par ${c.validated_by}` : ''}
-                  </p>
-                </div>
-              )}
-
-              {/* Zone rejet inline */}
-              {rejectId === c.id && (
-                <div className="border-t border-red-100 bg-red-50 px-5 py-4 space-y-3">
-                  <p className="text-sm font-semibold text-red-700">Motif de rejet (optionnel)</p>
-                  <textarea
-                    rows={2}
-                    value={rejectNote}
-                    onChange={e => setRejectNote(e.target.value)}
-                    placeholder="Expliquez la raison du rejet pour l'archivage..."
-                    className="w-full px-3 py-2 border border-red-200 rounded-lg text-sm focus:ring-2 focus:ring-red-300 focus:outline-none resize-none bg-white"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleRejeter(c.id)}
-                      className="px-4 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600"
-                    >
-                      Confirmer le rejet
-                    </button>
-                    <button
-                      onClick={() => setRejectId(null)}
-                      className="px-4 py-1.5 bg-white border border-slate-200 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Panel Mentors (existant) ──────────────────────── */}
-      {tab === 'mentors' && (<>
 
       {/* Succès */}
       {successMsg && (
@@ -788,7 +616,8 @@ export function GestionMentors() {
                 <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mentor</th>
                   <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Association</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Localisation</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Ville</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Téléphone</th>
                   <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Capacité</th>
                   <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actifs</th>
                   <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</th>
@@ -827,7 +656,11 @@ export function GestionMentors() {
                     <td className="px-4 py-3 hidden md:table-cell text-sm text-slate-600">{m.association}</td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       <p className="text-sm text-slate-500">{m.city || '—'}</p>
+                      {m.code_postal && <p className="text-[11px] text-slate-400">{m.code_postal}</p>}
                       {m.department && <p className="text-[11px] text-slate-400">{m.department}</p>}
+                    </td>
+                    <td className="px-4 py-3 hidden xl:table-cell text-sm text-slate-500">
+                      {m.phone || '—'}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-base font-black ${m.disponibilite > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -841,7 +674,7 @@ export function GestionMentors() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
-                        {(!isAP || m.association_id === associations[0]?.id) && (
+                        {(!isAP || m.association_id === myAssociationId) && (
                           <button onClick={() => openEdit(m)}
                             className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
                             title="Modifier">
@@ -849,7 +682,7 @@ export function GestionMentors() {
                           </button>
                         )}
                         {/* Désactiver / Réactiver */}
-                        {(!isAP || m.association_id === associations[0]?.id) && (
+                        {(!isAP || m.association_id === myAssociationId) && (
                           <button onClick={() => handleToggleActive(m)}
                             className={`p-1.5 rounded-lg transition-colors ${
                               m.is_active
@@ -880,8 +713,6 @@ export function GestionMentors() {
           </div>
         </div>
       )}
-
-      </>)}{/* fin tab === 'mentors' */}
 
       {/* Modal Mentor */}
       {modalMode && (

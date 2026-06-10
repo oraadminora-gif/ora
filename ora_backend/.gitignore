@@ -1,4 +1,4 @@
-# ── Python / Django ───────────────────────────────────
+# ── Python ───────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -9,16 +9,19 @@ dist/
 build/
 .eggs/
 
-# Base de données
+# ── Base de données ──────────────────────────────────
 *.sqlite3
 *.sqlite3.backup
 
-# Fichiers statiques collectés (prod)
+# ── Sauvegardes ──────────────────────────────────────
+backups/
+
+# ── Fichiers statiques collectés (prod) ─────────────
 staticfiles/
 static_root/
 media/
 
-# Logs
+# ── Logs ─────────────────────────────────────────────
 *.log
 logs/
 
@@ -29,23 +32,9 @@ env/
 ENV/
 
 # ── Variables d'environnement (secrets) ─────────────
-# Backend Django — fichier unique avec tous les secrets
 .env
 .env.local
-
-# Frontend Vite — .env.development et .env.production sont commités (pas de secrets)
-# Seuls les overrides locaux sont ignorés
 .env.*.local
-
-# ── Sauvegardes base de données ──────────────────────
-backups/
-
-# ── Frontend React / Vite ────────────────────────────
-node_modules/
-dist/
-build/
-.vite/
-*.local
 
 # ── Éditeurs / IDE ───────────────────────────────────
 .vscode/

@@ -19,9 +19,12 @@ class RoleResolver:
             roles.append(self.ROLE_CN)
 
         if self._is_animateur():
-            roles.append(
-                self.ROLE_ACP if self.user.animateur.is_coordinator else self.ROLE_AP
-            )
+            anim = self.user.animateur
+            if anim.is_acp:
+                roles.append(self.ROLE_ACP)
+            if anim.is_ap or anim.is_acp:
+                if self.ROLE_AP not in roles:
+                    roles.append(self.ROLE_AP)
 
         if self._is_mentor():
             roles.append(self.ROLE_MENTOR)

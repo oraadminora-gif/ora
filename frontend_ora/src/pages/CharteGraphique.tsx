@@ -92,7 +92,7 @@ const PALETTE_SEMANTIC = [
   { name: 'Erreur',     hex: '#ef4444', cls: 'bg-red-500'     },
   { name: 'Attention',  hex: '#f59e0b', cls: 'bg-amber-400'   },
   { name: 'Info',       hex: '#3b82f6', cls: 'bg-blue-500'    },
-  { name: 'ACP/Admin',  hex: '#7c3aed', cls: 'bg-violet-600'  },
+  { name: 'APC/Admin',  hex: '#7c3aed', cls: 'bg-violet-600'  },
   { name: 'Secondaire', hex: '#0ea5e9', cls: 'bg-sky-500'     },
 ];
 
@@ -295,7 +295,7 @@ export function CharteGraphique() {
                   <ArrowRight className="w-4 h-4" /> Primaire Orange
                 </button>
                 <button className="px-6 py-2.5 bg-violet-600 text-white rounded-full font-semibold text-sm hover:bg-violet-700 transition-colors flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Admin / ACP
+                  <Plus className="w-4 h-4" /> Admin / APC
                 </button>
               </div>
               <p className="text-xs text-slate-400 mt-2 px-1">Usage : actions principales de la page. Un seul CTA primaire visible par section.</p>
@@ -386,7 +386,7 @@ export function CharteGraphique() {
               <div className="flex flex-wrap gap-3 p-6 bg-slate-50 rounded-2xl border border-slate-100">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-ora-blue/10 text-ora-blue border border-ora-blue/20">Apprenti(e)</span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">Mentor</span>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200">ACP</span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200">APC</span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">AP</span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">Animateur</span>
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">CN</span>

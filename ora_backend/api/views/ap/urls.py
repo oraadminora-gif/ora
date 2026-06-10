@@ -3,6 +3,7 @@ from django.urls import path
 from .dashboard import (
     APDashboardView,
     APMesMentorats,
+    APMesMentoratExportView,
     APMentorDetailView,
     APMentoratAlerteView,
     APMentoratNotesView,
@@ -15,14 +16,15 @@ from .dashboard import (
     APMentoratFinancementDeleteView,
     APUpdateJeuneView,
     APEtablissementsView,
+    APMentoratSuiviDetailView,
 )
 
 urlpatterns = [
     # Dashboard principal de l'AP (liste ses mentors + stats)
     path('dashboard/', APDashboardView.as_view(), name='ap-dashboard'),
 
-    # Liste paginée des mentorats dont l'AP est responsable
-    path('mes-mentorats/', APMesMentorats.as_view(), name='ap-mes-mentorats'),
+    path('mes-mentorats/',         APMesMentorats.as_view(),           name='ap-mes-mentorats'),
+    path('mes-mentorats/export/',  APMesMentoratExportView.as_view(),  name='ap-mes-mentorats-export'),
 
     # Détail d'un mentor spécifique
     path('mentors/<int:mentor_id>/', APMentorDetailView.as_view(), name='ap-mentor-detail'),
@@ -55,4 +57,7 @@ urlpatterns = [
 
     # Liste des établissements du pôle (pour dropdown)
     path('etablissements/', APEtablissementsView.as_view(), name='ap-etablissements'),
+
+    # Fiche complète suivi d'un mentorat
+    path('mentorats/<int:mentorat_id>/suivi-detail/', APMentoratSuiviDetailView.as_view(), name='ap-mentorat-suivi-detail'),
 ]

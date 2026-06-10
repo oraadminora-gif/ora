@@ -256,21 +256,25 @@ class CNMemberAdmin(admin.ModelAdmin):
 @admin.register(Animateur)
 class AnimateurAdmin(admin.ModelAdmin):
     list_display  = ('full_name', 'role_badge', 'pole', 'association', 'email', 'statut_badge')
-    list_filter   = ('is_coordinator', 'is_active', 'pole', 'association')
+    list_filter   = ('is_acp', 'is_ap', 'is_active', 'pole', 'association')
     search_fields = ('first_name', 'last_name', 'email')
     ordering      = ('pole__code', 'last_name')
     list_per_page = 30
 
     fieldsets = (
         ('Identité',      {'fields': ('first_name', 'last_name', 'email', 'phone', 'city')}),
-        ('Organisation',  {'fields': ('pole', 'association', 'is_coordinator')}),
+        ('Organisation',  {'fields': ('pole', 'association', 'is_acp', 'is_ap')}),
         ('Statut',        {'fields': ('is_active',)}),
         ('Compte',        {'fields': ('user',), 'classes': ('collapse',)}),
     )
 
     def role_badge(self, obj):
-        label = 'ACP' if obj.is_coordinator else 'AP'
-        color = '#003DA5' if obj.is_coordinator else '#8b5cf6'
+        if obj.is_acp and obj.is_ap:
+            label, color = 'ACP/AP', '#0f766e'
+        elif obj.is_acp:
+            label, color = 'ACP', '#003DA5'
+        else:
+            label, color = 'AP', '#8b5cf6'
         return format_html(
             '<span style="background:{};color:#fff;padding:2px 8px;border-radius:12px;'
             'font-size:0.72rem;font-weight:700;">{}</span>',
@@ -310,7 +314,7 @@ class MentorAdmin(admin.ModelAdmin):
                            'description': 'La date de formation alimente le critère «&nbsp;formation récente&nbsp;» '
                                           'dans l\'algorithme de matching.'}),
         ('Statut',        {'fields': ('is_active',)}),
-        ('Observations',  {'fields': ('observations',)}),
+        ('Particularité pour l\'affectation', {'fields': ('observations',)}),
     )
 
     def statut_badge(self, obj):
@@ -329,8 +333,8 @@ class MentorAdmin(admin.ModelAdmin):
 @admin.register(YoungRequest)
 class YoungRequestAdmin(admin.ModelAdmin):
     list_display   = ('full_name', 'status_badge', 'pole', 'diplome_prepare',
-                      'situation_display', 'urgency_display', 'created_at')
-    list_filter    = ('status', 'gender', 'pole', 'diplome_prepare', 'situation', 'urgency_level')
+                      'situation_display', 'created_at')
+    list_filter    = ('status', 'gender', 'pole', 'diplome_prepare', 'situation')
     search_fields  = ('first_name', 'last_name', 'email', 'city', 'nom_etablissement')
     ordering       = ('-created_at',)
     date_hierarchy = 'created_at'
@@ -347,7 +351,7 @@ class YoungRequestAdmin(admin.ModelAdmin):
         ('Jeune',                    {'fields': ('first_name', 'last_name', 'email', 'phone', 'birth_date', 'gender')}),
         ('Localisation',             {'fields': ('city', 'department', 'pole')}),
         ('Établissement & Formation',{'fields': ('nom_etablissement', 'etablissement', 'diplome_prepare', 'situation')}),
-        ('Demande',                  {'fields': ('needs_description', 'urgency_level', 'status')}),
+        ('Demande',                  {'fields': ('needs_description', 'status')}),
     )
 
     def full_name(self, obj):
@@ -362,17 +366,6 @@ class YoungRequestAdmin(admin.ModelAdmin):
             color, label
         )
     status_badge.short_description = 'Statut'
-
-    URGENCY_COLORS = {1: '#22c55e', 2: '#f59e0b', 3: '#ef4444'}
-    URGENCY_LABELS = {1: 'Faible', 2: 'Moyen', 3: 'Urgent'}
-
-    def urgency_display(self, obj):
-        color = self.URGENCY_COLORS.get(obj.urgency_level, '#6b7280')
-        label = self.URGENCY_LABELS.get(obj.urgency_level, str(obj.urgency_level))
-        return format_html(
-            '<span style="color:{};font-weight:700;">● {}</span>', color, label
-        )
-    urgency_display.short_description = 'Urgence'
 
     def situation_display(self, obj):
         if obj.situation == 'apprentissage':

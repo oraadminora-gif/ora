@@ -41,7 +41,7 @@ export function CNDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Coordination Nationale</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Comité National</h1>
         <p className="text-slate-600">Vue d'ensemble de l'organisation</p>
       </div>
 

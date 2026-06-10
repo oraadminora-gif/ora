@@ -58,7 +58,7 @@ class TestCNViews(APITestCase):
         self.assertIn('stats_nationales', response.data)
 
     def test_cn_dashboard_forbidden_to_acp(self):
-        acp = AnimateurFactory(is_coordinator=True).user
+        acp = AnimateurFactory(is_acp=True, is_ap=False).user
         self.client.force_authenticate(user=acp)
         url = reverse('cn-dashboard')
         response = self.client.get(url)
@@ -70,7 +70,7 @@ class TestMentorViews(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.pole = PoleFactory()
-        self.acp = AnimateurFactory(is_coordinator=True, pole=self.pole).user
+        self.acp = AnimateurFactory(is_acp=True, is_ap=False, pole=self.pole).user
         self.mentor = MentorFactory(pole=self.pole)
 
     def test_list_mentors_as_acp(self):
@@ -97,14 +97,14 @@ class TestMatchingViews(APITestCase):
 
         # ACP (coordinateur)
         self.acp = AnimateurFactory(
-            is_coordinator=True,
+            is_acp=True, is_ap=False,
             pole=self.pole,
             association=self.association
         ).user
 
         # AP (animateur simple) pour le suivi – indispensable !
         self.ap_animateur = AnimateurFactory(
-            is_coordinator=False,
+            is_acp=False, is_ap=True,
             pole=self.pole,
             association=self.association
         )

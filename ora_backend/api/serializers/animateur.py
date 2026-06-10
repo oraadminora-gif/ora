@@ -23,12 +23,18 @@ class AnimateurSerializer(serializers.ModelSerializer):
             'id', 'user', 'first_name', 'last_name', 'full_name', 'email', 'phone', 'city',
             'pole', 'pole_name', 'pole_code',
             'association', 'association_name',
-            'is_coordinator', 'role', 'is_active', 'created_at'
+            'is_acp', 'is_ap', 'role', 'is_active', 'created_at'
         ]
         read_only_fields = ['created_at', 'full_name']
     
     def get_role(self, obj):
-        return "ACP" if obj.is_coordinator else "AP"
+        if obj.is_acp and obj.is_ap:
+            return "ACP/AP"
+        if obj.is_acp:
+            return "ACP"
+        if obj.is_ap:
+            return "AP"
+        return "N/A"
 
 
 class AnimateurCreateSerializer(serializers.ModelSerializer):
@@ -43,7 +49,7 @@ class AnimateurCreateSerializer(serializers.ModelSerializer):
         fields = [
             'email', 'first_name', 'last_name', 'password',
             'pole', 'association', 'phone', 'city',
-            'is_coordinator', 'is_active'
+            'is_acp', 'is_ap', 'is_active'
         ]
     
     def create(self, validated_data):

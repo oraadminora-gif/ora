@@ -33,8 +33,8 @@ class IsACP(BasePermission):
             return True
         # Vérifie si animateur coordinateur
         return (
-            hasattr(request.user, 'animateur') 
-            and request.user.animateur.is_coordinator
+            hasattr(request.user, 'animateur')
+            and request.user.animateur.is_acp
         )
 
 
@@ -78,9 +78,9 @@ class HasAnyRole(BasePermission):
         for role in self.roles:
             if role == 'CN' and hasattr(user, 'cn_member'):
                 return True
-            if role == 'ACP' and hasattr(user, 'animateur') and user.animateur.is_coordinator:
+            if role == 'ACP' and hasattr(user, 'animateur') and user.animateur.is_acp:
                 return True
-            if role == 'AP' and hasattr(user, 'animateur'):
+            if role == 'AP' and hasattr(user, 'animateur') and (user.animateur.is_ap or user.animateur.is_acp):
                 return True
             if role == 'MENTOR' and hasattr(user, 'mentor'):
                 return True

@@ -11,8 +11,8 @@ const ROLE_ROUTES: Record<UserRole, string> = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  CN:     'Coordination Nationale',
-  ACP:    'Coordinateur de Pôle',
+  CN:     'Comité National',
+  ACP:    'Coordonnateur de Pôle',
   AP:     'Animateur de Pôle',
   MENTOR: 'Mentor',
 };

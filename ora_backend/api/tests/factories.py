@@ -81,7 +81,8 @@ class AnimateurFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     email = factory.LazyAttribute(lambda obj: obj.user.email)
-    is_coordinator = False
+    is_acp = False
+    is_ap  = True
     is_active = True
 
 
@@ -110,7 +111,6 @@ class YoungRequestFactory(factory.django.DjangoModelFactory):
     email = factory.Faker('email')
     city = factory.Faker('city')
     needs_description = factory.Faker('text')
-    urgency_level = 2
     status = 'NEW'
 
 

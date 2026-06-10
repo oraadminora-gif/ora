@@ -5,18 +5,18 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from core.models import Financement
-from api.permissions import IsCN, IsACP
+from api.permissions import IsCN, IsACP, IsAnimateur
 
 
 class FinancementsListView(APIView):
     """
-    GET  /api/financements/   – liste tous les financements (ACP + CN)
-    POST /api/financements/   – créer un financement (CN seulement)
+    GET  /api/financements/   – liste tous les financements (tous authentifiés)
+    POST /api/financements/   – créer un financement (ACP ou CN)
     """
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsAuthenticated(), IsCN()]
+            return [IsAuthenticated(), IsACP()]
         return [IsAuthenticated()]
 
     def get(self, request):

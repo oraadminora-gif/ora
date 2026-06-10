@@ -132,7 +132,7 @@ class MentorViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'cn_member'):
             return self.queryset
-        if hasattr(user, 'animateur') and user.animateur.is_coordinator:
+        if hasattr(user, 'animateur') and user.animateur.is_acp:
             return self.queryset.filter(pole=user.animateur.pole)
         if hasattr(user, 'animateur'):
             return self.queryset.filter(association=user.animateur.association)
@@ -313,7 +313,7 @@ class YoungRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = YoungRequestFilter
     search_fields = ['first_name', 'last_name', 'email', 'city']
-    ordering_fields = ['created_at', 'urgency_level', 'status']
+    ordering_fields = ['created_at', 'status']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -333,7 +333,7 @@ class YoungRequestViewSet(viewsets.ModelViewSet):
             return self.queryset.none()
         if hasattr(user, 'cn_member'):
             return self.queryset
-        if hasattr(user, 'animateur') and user.animateur.is_coordinator:
+        if hasattr(user, 'animateur') and user.animateur.is_acp:
             return self.queryset.filter(pole=user.animateur.pole)
         if hasattr(user, 'animateur'):
             return self.queryset.filter(pole=user.animateur.pole)
@@ -344,7 +344,7 @@ class YoungRequestViewSet(viewsets.ModelViewSet):
         """Liste des demandes en attente de matching"""
         user = request.user
         if not hasattr(user, 'cn_member'):
-            if not hasattr(user, 'animateur') or not user.animateur.is_coordinator:
+            if not hasattr(user, 'animateur') or not user.animateur.is_acp:
                 return Response(
                     {'error': 'Seuls les coordinateurs de pôle peuvent accéder au matching'},
                     status=status.HTTP_403_FORBIDDEN
@@ -409,7 +409,7 @@ class MentoratViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'cn_member'):
             return self.queryset
-        if hasattr(user, 'animateur') and user.animateur.is_coordinator:
+        if hasattr(user, 'animateur') and user.animateur.is_acp:
             return self.queryset.filter(pole=user.animateur.pole)
         if hasattr(user, 'animateur'):
             return self.queryset.filter(
@@ -505,7 +505,7 @@ class MentoratViewSet(viewsets.ModelViewSet):
         
         # Vérifier permissions
         is_mentor = hasattr(user, 'mentor') and mentorat.mentor == user.mentor
-        is_acp = hasattr(user, 'animateur') and user.animateur.is_coordinator
+        is_acp = hasattr(user, 'animateur') and user.animateur.is_acp
         is_cn = hasattr(user, 'cn_member')
         
         if not (is_mentor or is_acp or is_cn):
@@ -565,7 +565,7 @@ class MentoratViewSet(viewsets.ModelViewSet):
         
         # Vérifier permissions
         is_mentor = hasattr(user, 'mentor') and mentorat.mentor == user.mentor
-        is_acp = hasattr(user, 'animateur') and user.animateur.is_coordinator
+        is_acp = hasattr(user, 'animateur') and user.animateur.is_acp
         is_cn = hasattr(user, 'cn_member')
         
         if not (is_mentor or is_acp or is_cn):
@@ -614,7 +614,7 @@ class MentoratViewSet(viewsets.ModelViewSet):
         user = request.user
         
         is_mentor = hasattr(user, 'mentor') and mentorat.mentor == user.mentor
-        is_acp = hasattr(user, 'animateur') and user.animateur.is_coordinator
+        is_acp = hasattr(user, 'animateur') and user.animateur.is_acp
         is_cn = hasattr(user, 'cn_member')
         
         if not (is_mentor or is_acp or is_cn):
@@ -740,6 +740,6 @@ class AnimateurViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'cn_member'):
             return self.queryset
-        if hasattr(user, 'animateur') and user.animateur.is_coordinator:
+        if hasattr(user, 'animateur') and user.animateur.is_acp:
             return self.queryset.filter(pole=user.animateur.pole)
         return self.queryset.none()

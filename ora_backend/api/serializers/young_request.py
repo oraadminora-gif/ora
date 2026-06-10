@@ -20,7 +20,7 @@ class YoungRequestListSerializer(serializers.ModelSerializer):
         model = YoungRequest
         fields = [
             'id', 'first_name', 'last_name', 'city',
-            'status', 'urgency_level', 'pole_name',
+            'status', 'pole_name',
             'nom_etablissement', 'etablissement_nom',
             'diplome_prepare', 'diplome_label',
             'situation', 'situation_label',
@@ -53,7 +53,7 @@ class YoungRequestSerializer(serializers.ModelSerializer):
             'nom_etablissement', 'etablissement', 'etablissement_nom',
             'diplome_prepare', 'diplome_label',
             'situation', 'situation_label',
-            'needs_description', 'urgency_level',
+            'needs_description',
             'status', 'pole', 'pole_name',
             'request_date', 'created_at', 'updated_at',
             'a_mentorat',
@@ -88,7 +88,7 @@ class YoungRequestCreateSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'email', 'phone',
             'birth_date', 'gender', 'city', 'department_code',
             'nom_etablissement', 'diplome_prepare', 'situation',
-            'needs_description', 'urgency_level',
+            'needs_description',
         ]
 
     def create(self, validated_data):

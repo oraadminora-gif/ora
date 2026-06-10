@@ -19,7 +19,10 @@ class UserSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'mentor'):
             roles.append('MENTOR')
         if hasattr(obj, 'animateur'):
-            roles.append('ACP' if obj.animateur.is_coordinator else 'AP')
+            if obj.animateur.is_acp:
+                roles.append('ACP')
+            if obj.animateur.is_ap:
+                roles.append('AP')
         if hasattr(obj, 'cn_member'):
             roles.append('CN')
         return roles

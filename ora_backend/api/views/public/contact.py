@@ -67,14 +67,13 @@ class PublicContactView(APIView):
 
         try:
             send_mail(
-                subject      = f"[ORA Contact] {sujet_label} — {msg.name}",
-                message      = body,
-                from_email   = settings.DEFAULT_FROM_EMAIL,
-                recipient_list = [settings.EMAIL_HOST_USER],
-                fail_silently = True,
+                subject        = f"[ORA Contact] {sujet_label} — {msg.name}",
+                message        = body,
+                from_email     = settings.DEFAULT_FROM_EMAIL,
+                recipient_list = ['ora-france@outlook.com'],
+                fail_silently  = False,
             )
         except Exception as e:
-            # Le message est sauvegardé même si l'email échoue
             logger.error("Échec envoi email contact #%d : %s", msg.id, e)
 
         # Email de confirmation à l'expéditeur

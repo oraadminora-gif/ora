@@ -88,7 +88,7 @@ class MentoratCreateSerializer(serializers.ModelSerializer):
             try:
                 ap = Animateur.objects.get(
                     id=data['ap_id'],
-                    is_coordinator=False,
+                    is_ap=True,
                     is_active=True
                 )
                 data['ap_responsable'] = ap

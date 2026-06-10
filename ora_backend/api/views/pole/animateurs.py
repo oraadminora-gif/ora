@@ -32,8 +32,9 @@ def _serialize_ap(ap):
         "association":      ap.association.name,
         "association_id":   ap.association_id,
         "is_active":        ap.is_active,
-        "is_coordinator":   ap.is_coordinator,
-        "role_label":       "ACP" if ap.is_coordinator else "AP",
+        "is_acp":           ap.is_acp,
+        "is_ap":            ap.is_ap,
+        "role_label":       ("ACP/AP" if (ap.is_acp and ap.is_ap) else ("ACP" if ap.is_acp else "AP")),
     }
 
 
@@ -56,7 +57,7 @@ class PoleAnimateursView(APIView):
             Animateur.objects
             .filter(pole_id=pole_id, is_active=True)
             .select_related('association')
-            .order_by('is_coordinator', 'association__name', 'last_name')
+            .order_by('is_acp', 'association__name', 'last_name')
         )
         return Response({"count": aps.count(), "animateurs": [_serialize_ap(ap) for ap in aps]})
 
@@ -114,7 +115,8 @@ class PoleAnimateursView(APIView):
             email=email,
             phone=data.get('phone', '').strip(),
             city=data.get('city', '').strip(),
-            is_coordinator=False,
+            is_ap=True,
+            is_acp=False,
             is_active=True,
         )
 
@@ -136,7 +138,7 @@ class PoleAnimateurDetailView(APIView):
             return None, None, Response({"error": "Pas de pôle"}, status=400)
         pole_id = request.user.animateur.pole_id
         ap = get_object_or_404(
-            Animateur, id=animateur_id, pole_id=pole_id, is_coordinator=False
+            Animateur, id=animateur_id, pole_id=pole_id, is_ap=True
         )
         return ap, pole_id, None
 

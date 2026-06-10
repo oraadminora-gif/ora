@@ -53,6 +53,7 @@ def bulk_stats_par_association(pole, seuil_date):
         .annotate(
             total=Count('id'),
             disponibles=Count('id', filter=Q(disponibilite_reelle__gt=0)),
+            capacite_dispo=Sum('disponibilite_reelle'),
         )
     )
     mentor_stats = {row['association_id']: row for row in mentors_qs}
@@ -118,6 +119,7 @@ def bulk_stats_par_association(pole, seuil_date):
         result[aid] = {
             'total_mentors':       ms.get('total', 0),
             'mentors_disponibles': ms.get('disponibles', 0),
+            'capacite_dispo':      ms.get('capacite_dispo', 0) or 0,
             'mentorats_actifs':    mt.get('actifs', 0),
             'alertes_rouges':      mt.get('alertes', 0),
             'mentors_inactifs':    inactifs_by_assoc.get(aid, 0),
@@ -144,7 +146,7 @@ def serialize_ap(animateur):
 class ACPDashboardView(APIView):
     """
     Dashboard de l'ACP : vue complète de son pôle.
-    Accessible uniquement aux ACP (is_coordinator=True) et CN.
+    Accessible uniquement aux ACP (is_acp=True) et CN.
     """
     permission_classes = [IsAuthenticated]
 
@@ -154,11 +156,11 @@ class ACPDashboardView(APIView):
 
         # ── Contrôle d'accès ──────────────────────────────────
         is_cn = hasattr(user, 'cn_member')
-        is_acp = animateur and animateur.is_coordinator and animateur.is_active
+        is_animateur = animateur and animateur.is_active
 
-        if not is_acp and not is_cn:
+        if not is_animateur and not is_cn:
             return Response(
-                {'error': 'Accès réservé aux ACP et CN.'},
+                {'error': 'Accès réservé aux animateurs et CN.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -188,9 +190,9 @@ class ACPDashboardView(APIView):
             is_active=True
         ).distinct().prefetch_related('animateurs')
 
-        # ── APs du pôle (is_coordinator=False) ───────────────
+        # ── APs du pôle ───────────────────────────────────────
         aps_qs = Animateur.objects.filter(
-            pole=pole, is_coordinator=False, is_active=True
+            pole=pole, is_ap=True, is_active=True
         ).select_related('association')
 
         # Index AP par association_id pour lookup rapide
@@ -200,6 +202,7 @@ class ACPDashboardView(APIView):
         all_mentors = Mentor.objects.filter(pole=pole, is_active=True)
         total_mentors       = all_mentors.count()
         mentors_disponibles = all_mentors.filter(disponibilite_reelle__gt=0).count()
+        capacite_dispo_total = all_mentors.aggregate(total=Sum('disponibilite_reelle'))['total'] or 0
 
         mentorats_actifs_total = Mentorat.objects.filter(
             pole=pole, status='ACTIVE'
@@ -245,7 +248,7 @@ class ACPDashboardView(APIView):
         for asso in associations_qs:
             ap = ap_by_asso.get(asso.id)
             asso_stats = stats_by_assoc.get(asso.id, {
-                'total_mentors': 0, 'mentors_disponibles': 0,
+                'total_mentors': 0, 'mentors_disponibles': 0, 'capacite_dispo': 0,
                 'mentorats_actifs': 0, 'alertes_rouges': 0, 'mentors_inactifs': 0,
             })
             associations_data.append({
@@ -264,15 +267,23 @@ class ACPDashboardView(APIView):
         # ── Demandes en attente de matching ───────────────────
         demandes_qs = YoungRequest.objects.filter(
             pole=pole, status__in=['NEW', 'PENDING']
-        ).select_related('etablissement').order_by('-urgency_level', '-created_at')[:20]
+        ).select_related('etablissement').order_by('-created_at')[:20]
 
         demandes_data = [
             {
                 'id':               d.id,
                 'nom':              f"{d.first_name} {d.last_name}",
+                'first_name':       d.first_name,
+                'last_name':        d.last_name,
+                'email':            d.email,
+                'phone':            d.phone,
+                'birth_date':       str(d.birth_date) if d.birth_date else '',
+                'gender':           d.gender,
+                'gender_label':     {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}.get(d.gender, ''),
+                'commune':          d.commune if hasattr(d, 'commune') else d.city,
+                'code_postal':      d.code_postal if hasattr(d, 'code_postal') else '',
                 'city':             d.city,
                 'needs_description': d.needs_description,
-                'urgency_level':    d.urgency_level,
                 'status':           d.status,
                 'request_date':     d.request_date,
                 'nom_etablissement': d.etablissement.nom if d.etablissement_id else d.nom_etablissement,
@@ -280,6 +291,7 @@ class ACPDashboardView(APIView):
                 'diplome_label':    d.get_diplome_prepare_display() if d.diplome_prepare else '',
                 'situation':        d.situation,
                 'situation_label':  d.get_situation_display() if d.situation else '',
+                'raison_transfert': d.raison_transfert if hasattr(d, 'raison_transfert') else '',
             }
             for d in demandes_qs
         ]
@@ -290,7 +302,7 @@ class ACPDashboardView(APIView):
                 'id':         animateur.id if animateur else None,
                 'first_name': animateur.first_name if animateur else user.first_name,
                 'last_name':  animateur.last_name if animateur else user.last_name,
-                'role':       'ACP',
+                'role':       'ACP' if (animateur and animateur.is_acp) else 'AP',
                 'pole': {
                     'id':   pole.id,
                     'name': pole.name,
@@ -302,7 +314,7 @@ class ACPDashboardView(APIView):
                 'total_associations':    associations_qs.count(),
                 'total_ap':              aps_qs.count(),
                 'total_mentors':         total_mentors,
-                'mentors_disponibles':   mentors_disponibles,
+                'mentors_disponibles':   capacite_dispo_total,
                 'mentorats_actifs':      mentorats_actifs_total,
                 'alertes_rouges':        alertes_rouges_total,
                 'mentors_inactifs':      mentors_inactifs_total,

@@ -37,7 +37,6 @@ interface SuiviData {
   jeune_birth_date: string | null;
   jeune_diplome_prepare: string;
   jeune_situation: string;
-  jeune_urgency_level: number;
   jeune_etablissement_id: number | null;
   jeune_nom_etablissement: string;
 }
@@ -347,7 +346,6 @@ export function APMentoratSuiviModal({
         birth_date:        data.jeune_birth_date || null,
         diplome_prepare:   data.jeune_diplome_prepare,
         situation:         data.jeune_situation,
-        urgency_level:     data.jeune_urgency_level,
         ...(data.jeune_etablissement_id
           ? { etablissement_id: data.jeune_etablissement_id }
           : { etablissement_id: null, nom_etablissement: data.jeune_nom_etablissement }),
@@ -526,25 +524,6 @@ export function APMentoratSuiviModal({
             </div>
 
             {/* Urgence */}
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Niveau d'urgence</label>
-              <div className="flex gap-1.5">
-                {[1, 2, 3, 4, 5].map(lvl => (
-                  <button key={lvl} type="button" onClick={() => setData({ ...data, jeune_urgency_level: lvl })}
-                    className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                      data.jeune_urgency_level === lvl
-                        ? lvl >= 4 ? 'bg-red-500 border-red-500 text-white' : lvl === 3 ? 'bg-amber-400 border-amber-400 text-white' : 'bg-green-500 border-green-500 text-white'
-                        : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
-                    }`}>
-                    {lvl}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1">
-                {data.jeune_urgency_level <= 2 ? 'Faible urgence' : data.jeune_urgency_level === 3 ? 'Urgence modérée' : data.jeune_urgency_level === 4 ? 'Urgence élevée' : 'Urgence critique'}
-              </p>
-            </div>
-
             {/* Établissement */}
             {data.jeune_situation === 'apprentissage' && <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Établissement / CFA</label>

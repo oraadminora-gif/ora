@@ -44,10 +44,8 @@ class YoungRequestFilter(django_filters.FilterSet):
         fields = ['status', 'gender', 'pole', 'diplome_prepare', 'situation']
     
     def filter_urgent(self, queryset, name, value):
-        if value:
-            return queryset.filter(urgency_level__gte=4)
         return queryset
-    
+
     def filter_search(self, queryset, name, value):
         return queryset.filter(
             models.Q(first_name__icontains=value) |
@@ -83,11 +81,11 @@ class AnimateurFilter(django_filters.FilterSet):
     
     class Meta:
         model = Animateur
-        fields = ['pole', 'association', 'is_coordinator', 'is_active']
-    
+        fields = ['pole', 'association', 'is_acp', 'is_ap', 'is_active']
+
     def filter_role(self, queryset, name, value):
         if value.upper() == 'ACP':
-            return queryset.filter(is_coordinator=True)
+            return queryset.filter(is_acp=True)
         elif value.upper() == 'AP':
-            return queryset.filter(is_coordinator=False)
+            return queryset.filter(is_ap=True)
         return queryset

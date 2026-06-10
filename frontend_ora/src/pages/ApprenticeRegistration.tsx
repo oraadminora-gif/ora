@@ -134,7 +134,6 @@ export function ApprenticeRegistration() {
         diplome_prepare:   formData.diplomePrepare || undefined,
         situation:         formData.situation || undefined,
         needs_description: formData.demande || 'Non précisé',
-        urgency_level:     1,
       });
       if (res.data && typeof res.data === 'object' && 'error' in res.data) {
         setError(res.data.error);

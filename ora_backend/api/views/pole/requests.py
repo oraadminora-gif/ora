@@ -21,8 +21,8 @@ def _geocode_and_save(young_request_id: int, commune: str, code_postal: str):
 
 
 class PendingRequestsView(APIView):
-    """Demandes en attente de mentor dans le pôle de l'ACP."""
-    permission_classes = [IsAuthenticated, IsACP]
+    """Demandes en attente de mentor dans le pôle."""
+    permission_classes = [IsAuthenticated, IsAnimateur]
 
     def get(self, request):
         user = request.user
@@ -32,7 +32,7 @@ class PendingRequestsView(APIView):
         pole_id = user.animateur.pole_id
         demandes = YoungRequest.objects.filter(
             pole_id=pole_id, status__in=['NEW', 'PENDING']
-        ).select_related('etablissement').order_by('-urgency_level', '-created_at')
+        ).select_related('etablissement').order_by('-created_at')
 
         data = [self._serialize(d) for d in demandes]
         return Response({"count": len(data), "demandes": data})
@@ -41,17 +41,25 @@ class PendingRequestsView(APIView):
         return {
             "id":              d.id,
             "jeune":           f"{d.first_name} {d.last_name}",
+            "first_name":      d.first_name,
+            "last_name":       d.last_name,
+            "email":           d.email,
+            "phone":           d.phone,
+            "birth_date":      str(d.birth_date) if d.birth_date else '',
             "age":             self._age(d.birth_date) if d.birth_date else None,
+            "gender":          d.gender,
+            "gender_label":    {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}.get(d.gender, ''),
+            "commune":         d.commune if hasattr(d, 'commune') else d.city,
+            "code_postal":     d.code_postal if hasattr(d, 'code_postal') else '',
             "ville":           d.city,
             "nom_etablissement": d.etablissement.nom if d.etablissement_id else d.nom_etablissement,
             "diplome_prepare": d.diplome_prepare,
             "diplome_label":   d.get_diplome_prepare_display() if d.diplome_prepare else '',
             "situation":       d.situation,
             "situation_label": d.get_situation_display() if d.situation else '',
-            "urgence":         d.urgency_level,
             "date_demande":    d.created_at,
-            "besoins":           d.needs_description[:100] + '…' if len(d.needs_description) > 100 else d.needs_description,
-            "raison_transfert":  d.raison_transfert or '',
+            "besoins":         d.needs_description,
+            "raison_transfert": d.raison_transfert or '',
         }
 
     @staticmethod
@@ -65,11 +73,11 @@ class PendingRequestsView(APIView):
 
 class RerouterDemandeView(APIView):
     """
-    ACP : Renvoyer une demande vers un autre pôle.
+    AP/ACP : Renvoyer une demande vers un autre pôle.
     POST /api/pole/requests/{pk}/rerouter/
-    Body : { "pole_id": int, "raison"?: str }
+    Body : { "pole_id": int }
     """
-    permission_classes = [IsAuthenticated, IsACP]
+    permission_classes = [IsAuthenticated, IsAnimateur]
 
     def post(self, request, pk):
         user = request.user
@@ -110,13 +118,13 @@ class RerouterDemandeView(APIView):
 
 class SetEtablissementDemandeView(APIView):
     """
-    ACP : Modifier l'établissement d'une demande.
+    AP/ACP : Modifier l'établissement d'une demande.
     PATCH /api/pole/requests/{pk}/etablissement/
     Body (un parmi) :
       { "etablissement_id": int }          → établissement validé du pôle
       { "nom_manuel": "Nom libre" }         → saisie manuelle sans créer d'entité
     """
-    permission_classes = [IsAuthenticated, IsACP]
+    permission_classes = [IsAuthenticated, IsAnimateur]
 
     def patch(self, request, pk):
         user = request.user
@@ -183,12 +191,6 @@ class CreateDemandeView(APIView):
         commune     = (data.get('commune') or '').strip()
         code_postal = (data.get('code_postal') or '').strip()
 
-        # ── Urgence (valider 1-5) ─────────────────────────────
-        try:
-            urgency_level = max(1, min(5, int(data.get('urgency_level', 1))))
-        except (ValueError, TypeError):
-            urgency_level = 1
-
         # ── Création ──────────────────────────────────────────
         demande = YoungRequest.objects.create(
             first_name        = first_name,
@@ -204,7 +206,6 @@ class CreateDemandeView(APIView):
             diplome_prepare   = (data.get('diplome_prepare') or '').strip(),
             situation         = (data.get('situation') or '').strip(),
             needs_description = needs_description,
-            urgency_level     = urgency_level,
             pole              = pole,
             status            = 'NEW',
         )

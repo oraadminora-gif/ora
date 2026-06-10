@@ -519,12 +519,6 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
                 poleData.urgences_details.map((u, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0',
                     borderBottom: i < poleData.urgences_details.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                    <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: 9, fontWeight: 700,
-                      background: u.urgency_level >= 5 ? '#fee2e2' : '#fef3c7',
-                      color: u.urgency_level >= 5 ? '#b91c1c' : '#92400e' }}>
-                      {u.urgency_level}
-                    </span>
                     <span style={{ flex: 1, fontSize: 10 }}>{u.first_name} {u.last_name} — {u.city}</span>
                     <span style={{ fontSize: 9, color: '#94a3b8' }}>
                       {new Date(u.request_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
@@ -1079,9 +1073,6 @@ export function PoleKPIs() {
                 <div className="divide-y divide-slate-100">
                   {poleData.urgences_details.map((u, i) => (
                     <div key={i} className="py-2 flex items-center gap-3">
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                        u.urgency_level >= 5 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                      }`}>{u.urgency_level}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">{u.first_name} {u.last_name}</p>
                         <p className="text-xs text-slate-500">{u.city}</p>

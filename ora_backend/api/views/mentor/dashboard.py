@@ -9,7 +9,6 @@ from datetime import date  # ✅ AJOUTÉ pour validation date
 from core.models import Mentorat, Department, SuiviMentorat, Etablissement
 from api.permissions import IsMentor
 
-URGENCY_LABELS = {1: 'Faible', 2: 'Modérée', 3: 'Normale', 4: 'Haute', 5: 'Très urgente'}
 
 
 def serialize_suivi(s):
@@ -88,8 +87,6 @@ class MentorDashboardView(APIView):
                             "gender":            m.young_request.get_gender_display(),
                             "birth_date":        m.young_request.birth_date,
                             "needs_description": m.young_request.needs_description,
-                            "urgency_level":     m.young_request.urgency_level,
-                            "urgency_label":     URGENCY_LABELS.get(m.young_request.urgency_level, '—'),
                             "request_date":      m.young_request.request_date,
                             "situation":         m.young_request.situation or '',
                             "situation_label":   m.young_request.get_situation_display() if m.young_request.situation else '',

@@ -1,6 +1,6 @@
 // src/pages/member/acp/ACPDashboard.tsx
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, AlertTriangle, Building2 } from 'lucide-react';
+import { Loader2, AlertCircle, Building2 } from 'lucide-react';
 import api from '../../../services/api';
 import type { ACPDashboardData } from './ACPDashboard.types';
 import { ACPStatsBar } from '../../../components/acp/ACPStatsBar';
@@ -59,30 +59,16 @@ export function ACPDashboard() {
       {/* ── En-tête ─────────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Espace Coordinateur</h1>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-sm text-slate-500">
-              {coordinateur.first_name} {coordinateur.last_name}
-            </span>
-            <span className="text-slate-300">·</span>
-            <span className="text-sm font-semibold text-violet-600">
-              Pôle {coordinateur.pole.name}
-            </span>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Pôle {coordinateur.pole.name ?? coordinateur.pole.code}
             {coordinateur.pole.villes?.length > 0 && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="text-xs text-slate-400">{coordinateur.pole.villes.join(', ')}</span>
-              </>
+              <span className="text-slate-400 font-normal">
+                {' · '}{coordinateur.pole.villes[0]}
+              </span>
             )}
-          </div>
-        </div>
-        {/* Badge pôle */}
-        <div className="shrink-0 text-right">
-          <span className="px-3 py-1.5 rounded-xl text-xs font-bold border uppercase tracking-wider bg-violet-50 text-violet-700 border-violet-200">
-            ACP
-          </span>
-          <p className="text-[10px] text-slate-400 mt-1 font-mono">
-            {coordinateur.pole.code}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {coordinateur.first_name} {coordinateur.last_name}
           </p>
         </div>
       </div>
@@ -90,40 +76,12 @@ export function ACPDashboard() {
       {/* ── Stats bar ───────────────────────────────────────────────────────── */}
       <ACPStatsBar stats={stats} />
 
-      {/* ── Bannière alerte si urgences ─────────────────────────────────────── */}
-      {(stats.alertes_rouges > 0 || stats.demandes_en_attente > 0) && (
-        <div className={`flex items-start gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${
-          stats.alertes_rouges > 0
-            ? 'bg-red-50 border-red-200 text-red-800'
-            : 'bg-amber-50 border-amber-200 text-amber-800'
-        }`}>
-          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-          <span>
-            {stats.alertes_rouges > 0 && (
-              <>
-                <strong>
-                  {stats.alertes_rouges} alerte{stats.alertes_rouges > 1 ? 's' : ''} rouge{stats.alertes_rouges > 1 ? 's' : ''}
-                </strong>{' '}
-                nécessite{stats.alertes_rouges > 1 ? 'nt' : ''} votre attention.{' '}
-              </>
-            )}
-            {stats.demandes_en_attente > 0 && (
-              <>
-                <strong>
-                  {stats.demandes_en_attente} demande{stats.demandes_en_attente > 1 ? 's' : ''}
-                </strong>{' '}
-                en attente de matching.
-              </>
-            )}
-          </span>
-        </div>
-      )}
 
-      {/* ── Contenu principal : 2 colonnes ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* ── Contenu principal ──────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
-        {/* Colonne gauche : Associations (2/3) */}
-        <div className="xl:col-span-2 space-y-4">
+        {/* Associations (3/5) */}
+        <div className="xl:col-span-3 space-y-4">
           {/* Header section */}
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
@@ -152,8 +110,8 @@ export function ACPDashboard() {
           )}
         </div>
 
-        {/* Colonne droite : Demandes (1/3) */}
-        <div className="xl:col-span-1">
+        {/* Demandes (2/5) */}
+        <div className="xl:col-span-2">
           <ACPDemandesPanel
             demandes={demandes_en_attente}
             poleId={coordinateur.pole.id}

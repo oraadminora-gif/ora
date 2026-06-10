@@ -92,7 +92,7 @@ function MobileHeader() {
     'MENTOR': { label: 'Espace Mentor', color: 'bg-green-100 text-green-700' },
     'AP': { label: 'Espace Association', color: 'bg-blue-100 text-blue-700' },
     'ACP': { label: 'Gestion de Pôle', color: 'bg-purple-100 text-purple-700' },
-    'CN': { label: 'Coordination Nationale', color: 'bg-slate-800 text-white' },
+    'CN': { label: 'Comité National', color: 'bg-slate-800 text-white' },
   };
 
   const config = roleConfig[activeRole] || { label: 'Espace Membre', color: 'bg-slate-100 text-slate-700' };

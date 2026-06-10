@@ -32,7 +32,7 @@ const MentorDashboard           = lazy(() => import('./pages/member/mentor/Mento
 const PoleDashboard             = lazy(() => import('./pages/member/pole/PoleDashboard').then(m => ({ default: m.PoleDashboard })));
 const MatchingBoard             = lazy(() => import('./pages/member/pole/MatchingBoard').then(m => ({ default: m.MatchingBoard })));
 const PoleKPIs                  = lazy(() => import('./pages/member/pole/PoleKPIs').then(m => ({ default: m.PoleKPIs })));
-const APDashboard               = lazy(() => import('./pages/member/ap/APDashboard').then(m => ({ default: m.APDashboard })));
+const APMesMentorats            = lazy(() => import('./pages/member/ap/APMesMentorats').then(m => ({ default: m.APMesMentorats })));
 const ACPDashboard              = lazy(() => import('./pages/member/acp/ACPDashboard').then(m => ({ default: m.ACPDashboard })));
 const GestionMentors            = lazy(() => import('./pages/member/acp/GestionMentors').then(m => ({ default: m.GestionMentors })));
 const GestionAnimateurs         = lazy(() => import('./pages/member/acp/GestionAnimateurs').then(m => ({ default: m.GestionAnimateurs })));
@@ -111,18 +111,16 @@ function App() {
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['AP', 'ACP', 'CN']} />}>
-                <Route path="ap/dashboard" element={<Suspense fallback={<DashboardLoader />}><APDashboard /></Suspense>} />
-              </Route>
-
-              <Route element={<ProtectedRoute allowedRoles={['AP', 'ACP', 'CN']} />}>
-                <Route path="acp/mentors" element={<Suspense fallback={<DashboardLoader />}><GestionMentors /></Suspense>} />
+                <Route path="ap/dashboard"  element={<Suspense fallback={<DashboardLoader />}><ACPDashboard /></Suspense>} />
+                <Route path="ap/mentorats"  element={<Suspense fallback={<DashboardLoader />}><APMesMentorats /></Suspense>} />
+                <Route path="acp/mentors"   element={<Suspense fallback={<DashboardLoader />}><GestionMentors /></Suspense>} />
+                <Route path="acp/annuaire"  element={<Suspense fallback={<DashboardLoader />}><AnnuairePole /></Suspense>} />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['ACP', 'CN']} />}>
                 <Route path="acp/dashboard"  element={<Suspense fallback={<DashboardLoader />}><ACPDashboard /></Suspense>} />
                 <Route path="acp/animateurs" element={<Suspense fallback={<DashboardLoader />}><GestionAnimateurs /></Suspense>} />
                 <Route path="acp/mentorats"  element={<Suspense fallback={<DashboardLoader />}><GestionMentorats /></Suspense>} />
-                <Route path="acp/annuaire"   element={<Suspense fallback={<DashboardLoader />}><AnnuairePole /></Suspense>} />
                 <Route path="pole/dashboard" element={<Suspense fallback={<DashboardLoader />}><PoleDashboard /></Suspense>} />
                 <Route path="matching"       element={<Suspense fallback={<DashboardLoader />}><MatchingBoard /></Suspense>} />
                 <Route path="pole/kpi"       element={<Suspense fallback={<DashboardLoader />}><PoleKPIs /></Suspense>} />
@@ -131,6 +129,9 @@ function App() {
               <Route element={<ProtectedRoute allowedRoles={['CN']} />}>
                 <Route path="cn/dashboard"     element={<Suspense fallback={<DashboardLoader />}><CNDashboard /></Suspense>} />
                 <Route path="cn/annuaire"      element={<Suspense fallback={<DashboardLoader />}><AnnuaireORA /></Suspense>} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={['AP', 'ACP', 'CN']} />}>
                 <Route path="cn/implantations" element={<Suspense fallback={<DashboardLoader />}><ImplantationsPoles /></Suspense>} />
                 <Route path="cn/kpis"          element={<Suspense fallback={<DashboardLoader />}><NationalKPIs /></Suspense>} />
               </Route>

@@ -88,8 +88,20 @@ class PoleMentorsView(APIView):
         if not pole_id:
             return Response({"error": "Pas de pôle"}, status=400)
 
-        mentors = _annotated_mentor_qs(pole_id=pole_id).order_by('association__name', 'last_name')
-        return Response({"count": mentors.count(), "mentors": [_serialize_mentor(m) for m in mentors]})
+        animateur = request.user.animateur
+        pole      = animateur.pole
+        mentors   = _annotated_mentor_qs(pole_id=pole_id).order_by('association__name', 'last_name')
+        return Response({
+            "pole": {
+                "id":     pole.id,
+                "name":   pole.name,
+                "code":   pole.code,
+                "villes": pole.villes if isinstance(pole.villes, list) else [],
+            },
+            "my_association_id": animateur.association_id,
+            "count":   mentors.count(),
+            "mentors": [_serialize_mentor(m) for m in mentors],
+        })
 
     @transaction.atomic
     def post(self, request):
@@ -114,7 +126,7 @@ class PoleMentorsView(APIView):
             return Response({"error": "Association introuvable"}, status=400)
 
         # AP : uniquement sa propre association
-        if not animateur.is_coordinator and association.id != animateur.association_id:
+        if not animateur.is_acp and association.id != animateur.association_id:
             return Response(
                 {"error": "Vous ne pouvez créer des mentors que pour votre association."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -208,7 +220,7 @@ class PoleMentorDetailView(APIView):
             id=mentor_id, pole_id=pole_id,
         )
         # AP : peut uniquement modifier les mentors de sa propre association
-        if not animateur.is_coordinator and mentor.association_id != animateur.association_id:
+        if not animateur.is_acp and mentor.association_id != animateur.association_id:
             return None, None, Response(
                 {"error": "Vous ne pouvez modifier que les mentors de votre association."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -230,11 +242,11 @@ class PoleMentorDetailView(APIView):
 
         data = request.data
         animateur = request.user.animateur
-        is_ap = not animateur.is_coordinator
+        is_ap = not animateur.is_acp
 
         if 'association_id' in data:
-            if is_ap:
-                # AP ne peut pas changer l'association d'un mentor
+            if is_ap and int(data['association_id']) != mentor.association_id:
+                # AP ne peut pas changer l'association d'un mentor vers une autre
                 return Response(
                     {"error": "Vous n'êtes pas autorisé à changer l'association d'un mentor."},
                     status=status.HTTP_403_FORBIDDEN,

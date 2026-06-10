@@ -139,7 +139,7 @@ class PoleKPIsView(APIView):
 
         # ── Demandes en attente (état actuel, sans filtre période) ────────
         demandes_en_attente   = YoungRequest.objects.filter(pole=pole, status__in=['NEW', 'PENDING']).count()
-        urgences_non_traitees = YoungRequest.objects.filter(pole=pole, status__in=['NEW', 'PENDING'], urgency_level__gte=4).count()
+        urgences_non_traitees = 0
 
         # ── Mentorats — état actuel ───────────────────────────────────────
         m_qs = Mentorat.objects.filter(pole=pole)
@@ -225,7 +225,7 @@ class PoleKPIsView(APIView):
         )
 
         # ── APs actifs (suivent au moins un mentorat actif) ───────────────
-        aps_total  = Animateur.objects.filter(pole=pole, is_coordinator=False, is_active=True).count()
+        aps_total  = Animateur.objects.filter(pole=pole, is_ap=True, is_active=True).count()
         aps_actifs = (
             m_qs.filter(status='ACTIVE', ap_responsable__isnull=False)
             .values('ap_responsable_id')
@@ -233,12 +233,7 @@ class PoleKPIsView(APIView):
             .count()
         )
 
-        # ── Demandes sans mentor (urgences à traiter en priorité) ─────────
-        urgences_details = list(
-            YoungRequest.objects.filter(pole=pole, status__in=['NEW', 'PENDING'], urgency_level__gte=4)
-            .order_by('-urgency_level', 'request_date')
-            .values('first_name', 'last_name', 'city', 'urgency_level', 'request_date')[:5]
-        )
+        urgences_details = []
 
         return {
             # ── Demandes (filtrées période) ──────────────
@@ -346,9 +341,7 @@ class NationalKPIsView(APIView):
         mentorats_pending     = Mentorat.objects.filter(status='PENDING').count()
         alertes_rouges        = Mentorat.objects.filter(status='ACTIVE', alerte_rouge=True).count()
         demandes_en_attente   = YoungRequest.objects.filter(status__in=['NEW', 'PENDING']).count()
-        urgences_non_traitees = YoungRequest.objects.filter(
-            status__in=['NEW', 'PENDING'], urgency_level__gte=4
-        ).count()
+        urgences_non_traitees = 0
 
         mentors_total        = Mentor.objects.filter(is_active=True).count()
         mentors_inactifs_nat = Mentor.objects.filter(is_active=False).count()

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import Animateur, Mentor
+from core.models import Animateur, Mentor, CNMember
 from api.permissions import IsAnimateur
 
 
@@ -30,10 +30,24 @@ class PoleAnnuaireView(APIView):
             Animateur.objects
             .filter(pole=pole)
             .select_related('association')
-            .order_by('-is_coordinator', 'last_name', 'first_name')
+            .order_by('-is_acp', 'last_name', 'first_name')
         )
         if search:
             anim_qs = anim_qs.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search)  |
+                Q(email__icontains=search)
+            )
+
+        # ── Membres CN rattachés au pôle ─────────────────────
+        cn_qs = (
+            CNMember.objects
+            .filter(is_active=True)
+            .select_related('association')
+            .order_by('last_name', 'first_name')
+        )
+        if search:
+            cn_qs = cn_qs.filter(
                 Q(first_name__icontains=search) |
                 Q(last_name__icontains=search)  |
                 Q(email__icontains=search)
@@ -63,7 +77,8 @@ class PoleAnnuaireView(APIView):
                 "city":             a.city,
                 "association_id":   a.association_id,
                 "association_name": a.association.name,
-                "is_coordinator":   a.is_coordinator,
+                "is_acp":           a.is_acp,
+                "is_ap":            a.is_ap,
                 "is_active":        a.is_active,
             }
             for a in anim_qs
@@ -87,13 +102,36 @@ class PoleAnnuaireView(APIView):
             for m in mentor_qs
         ]
 
+        cn_data = [
+            {
+                "id":               c.id,
+                "first_name":       c.first_name,
+                "last_name":        c.last_name,
+                "email":            c.email,
+                "phone":            c.phone,
+                "ville":            c.ville,
+                "fonction":         c.fonction,
+                "fonction_label":   c.get_fonction_display(),
+                "association_name": c.association.name if c.association_id else "",
+                "is_active":        c.is_active,
+            }
+            for c in cn_qs
+        ]
+
+        animateur = user.animateur
         return Response({
             "pole": {
-                "id":   pole.id,
-                "name": pole.name,
-                "code": pole.code,
+                "id":     pole.id,
+                "name":   pole.name,
+                "code":   pole.code,
+                "villes": pole.villes if isinstance(pole.villes, list) else [],
             },
-            "animateurs": animateurs_data,
-            "mentors":    mentors_data,
-            "total":      len(animateurs_data) + len(mentors_data),
+            "moi": {
+                "first_name": animateur.first_name,
+                "last_name":  animateur.last_name,
+            },
+            "cn_members":  cn_data,
+            "animateurs":  animateurs_data,
+            "mentors":     mentors_data,
+            "total":       len(cn_data) + len(animateurs_data) + len(mentors_data),
         })

@@ -57,11 +57,11 @@ class MeView(APIView):
         if hasattr(user, 'mentor'):
             roles.append('MENTOR')
         if hasattr(user, 'animateur'):
-            if user.animateur.is_coordinator:
+            if user.animateur.is_acp:
                 roles.append('ACP')
-                roles.append('AP')   # ACP hérite des droits AP
-            else:
-                roles.append('AP')
+            if user.animateur.is_ap or user.animateur.is_acp:
+                if 'AP' not in roles:
+                    roles.append('AP')
         if hasattr(user, 'cn_member'):
             roles.append('CN')
         

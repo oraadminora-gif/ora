@@ -1,5 +1,5 @@
 // src/layouts/HeaderACP.tsx
-import { LogOut, Bell, LayoutDashboard, Users, BarChart3, FileText, Crown } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, Users, BarChart3, FileText, Crown, Globe, BarChart2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -25,7 +25,7 @@ export function HeaderACP() {
               {user.first_name} {user.last_name}
             </h1>
             <p className="text-[11px] text-violet-300 font-semibold uppercase tracking-wider">
-              Coordinateur de Pôle
+              Coordonnateur de Pôle
             </p>
           </div>
         </div>
@@ -61,6 +61,18 @@ export function HeaderACP() {
             icon={<Crown className="w-4 h-4" />}
             label="Gestion"
             active={location.pathname.startsWith('/member/acp/mentors')}
+          />
+          <NavLink
+            to="/member/cn/implantations"
+            icon={<Globe className="w-4 h-4" />}
+            label="Implantations"
+            active={location.pathname === '/member/cn/implantations'}
+          />
+          <NavLink
+            to="/member/cn/kpis"
+            icon={<BarChart2 className="w-4 h-4" />}
+            label="KPIs Nationaux"
+            active={location.pathname === '/member/cn/kpis'}
           />
         </nav>
 

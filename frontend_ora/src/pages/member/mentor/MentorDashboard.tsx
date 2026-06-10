@@ -44,7 +44,7 @@ export interface MentoratActif {
     id: number; name: string; email: string; phone: string;
     ville: string; department: string | null; gender: string;
     birth_date: string | null; needs_description: string;
-    urgency_level: number; urgency_label: string; request_date: string;
+    request_date: string;
     situation: string; situation_label: string; etablissement_id: number | null; nom_etablissement: string;
   };
   date_debut: string;

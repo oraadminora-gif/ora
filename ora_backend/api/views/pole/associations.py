@@ -25,7 +25,7 @@ class PoleAssociationsView(APIView):
         animateur = user.animateur
         pole_id   = animateur.pole_id
 
-        if animateur.is_coordinator:
+        if animateur.is_acp:
             # ACP : toutes les associations représentées dans le pôle
             associations = (
                 Association.objects

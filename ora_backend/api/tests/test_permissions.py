@@ -6,9 +6,9 @@ class TestPermissions(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.cn = CNMemberFactory().user
-        self.ap = AnimateurFactory(is_coordinator=False).user
+        self.ap = AnimateurFactory(is_acp=False, is_ap=True).user
         self.mentor = MentorFactory().user
-        self.acp = AnimateurFactory(is_coordinator=True).user
+        self.acp = AnimateurFactory(is_acp=True, is_ap=False).user
         self.user_simple = UserFactory()   # ← ajouté
 
     def test_is_cn(self):

@@ -67,24 +67,6 @@ function buildMessage(meta: ClotureMeta, mentorName: string, stats: SuiviStats):
   return `Bonjour ${prenom},\n\nJe me permets de vous informer que votre mentorat avec ${mentorName} prend fin à compter d'aujourd'hui.\n\nNous espérons que cet accompagnement vous aura été utile. Une équipe reste disponible pour assurer la suite de votre suivi.\n\nBien cordialement,\n${mentorName}`;
 }
 
-// ── UrgencyBadge ──────────────────────────────────────────────────────────────
-function UrgencyBadge({ level, label }: { level: number; label: string }) {
-  const cfg =
-    level >= 5 ? 'bg-red-100 text-red-700 border-red-200' :
-    level >= 4 ? 'bg-orange-100 text-orange-700 border-orange-200' :
-    level >= 3 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-    'bg-slate-100 text-slate-600 border-slate-200';
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg}`}>
-      <span className="flex gap-0.5">
-        {Array.from({ length: 5 }, (_, i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full ${i < level ? 'bg-current' : 'bg-slate-200'}`} />
-        ))}
-      </span>
-      {label}
-    </span>
-  );
-}
 
 // ── SuiviStats mini ───────────────────────────────────────────────────────────
 function SuiviStatsBadges({ stats }: { stats: SuiviStats }) {
@@ -603,10 +585,6 @@ function MentoratCard({ mentorat, onCloture }: {
 
         {tab === 'demande' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Urgence</span>
-              <UrgencyBadge level={mentorat.jeune.urgency_level} label={mentorat.jeune.urgency_label} />
-            </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Description des besoins</p>
               <div className="bg-ora-blue/3 border border-ora-blue/10 rounded-xl p-4">

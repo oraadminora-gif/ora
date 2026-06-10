@@ -3,9 +3,45 @@ from django.db import models
 from django.utils import timezone
 
 
+CLOSURE_REASON_CHOICES = [
+    ('NO_CONTACT',        'Aucun vrai contact établi'),
+    ('LOST_CONTACT',      'Perte définitive du contact'),
+    ('DIPLOMA_FAIL',      'Échec diplôme'),
+    ('MENTEE_STOP',       'Arrêt souhaité par le mentoré'),
+    ('OBJECTIVE_REACHED', 'Objectif atteint'),
+]
+
+CLOSURE_REASON_SCORE = {
+    'NO_CONTACT':        0,
+    'LOST_CONTACT':     -1,
+    'DIPLOMA_FAIL':     -1,
+    'MENTEE_STOP':       1,
+    'OBJECTIVE_REACHED': 1,
+}
+
+PROBLEMATIQUES_CHOICES = [
+    ('AIDE_INFO',       'Aide informatique'),
+    ('FLE',             'Apprentissage du Français (FLE)'),
+    ('CHANGER_EMP',     "Changer d'Employeur"),
+    ('HANDICAP',        'Handicap'),
+    ('LOGEMENT',        'Logement'),
+    ('ORIENTATION',     'Orientation'),
+    ('PB_ADMIN',        'Pb Administratifs'),
+    ('PB_FINANCES',     'Pb Financiers – Gérer Budget'),
+    ('PB_PSYCHO',       'Pb Psychologiques'),
+    ('PREP_DOSSIER',    'Prép. Dossier Professionnel'),
+    ('REL_EMPLOYEUR',   'Relations avec Employeur'),
+    ('RECH_CONTRAT',    'Recherche Contrat Apprentissage'),
+    ('SALAIRE',         'Salaire / respect des conventions'),
+    ('SOUTIEN_MORAL',   'Soutien Moral'),
+    ('SOUTIEN_SCOL',    'Soutien Scolaire'),
+    ('ADDICTIONS',      'Addictions'),
+]
+
+
 class Mentorat(models.Model):
     STATUS_CHOICES = [
-        ('PENDING', 'En attente'),  # Créé mais pas encore actif
+        ('PENDING', 'En attente'),
         ('ACTIVE', 'Actif'),
         ('CLOSED', 'Clôturé'),
         ('ABORTED', 'Abandonné'),
@@ -49,13 +85,28 @@ class Mentorat(models.Model):
     closure_reason = models.TextField(blank=True)
     message_cloture = models.TextField(blank=True, help_text="Message envoyé au jeune lors de la clôture")
     
+    # Raison de clôture structurée
+    closure_reason_code = models.CharField(
+        max_length=20, blank=True, choices=CLOSURE_REASON_CHOICES,
+        verbose_name='Raison de clôture',
+    )
+
     # Suivi
     alerte_rouge = models.BooleanField(default=False, help_text="Problème signalé")
     dernier_contact = models.DateField(null=True, blank=True)
-    notes_suivi = models.TextField(blank=True, help_text="Notes de l'AP")
+    nb_rencontres = models.PositiveIntegerField(default=0, verbose_name='Nombre de rencontres')
+    nb_heures = models.DecimalField(
+        max_digits=6, decimal_places=1, default=0,
+        verbose_name="Nombre d'heures de suivi",
+    )
+    objectif_mentor = models.TextField(blank=True, verbose_name='Objectif du mentor')
+    notes_suivi = models.TextField(
+        blank=True, verbose_name='Bilan sommaire du suivi',
+        help_text="Bilan de l'AP sur le déroulement du mentorat",
+    )
     problematiques = models.JSONField(
         default=list, blank=True,
-        help_text="Liste de codes (max 3) parmi les problématiques prédéfinies"
+        help_text="Liste de codes parmi les problématiques prédéfinies"
     )
 
     # Demande de clôture par le mentor (en attente de confirmation AP)

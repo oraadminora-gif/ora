@@ -85,7 +85,6 @@ class YoungRequest(models.Model):
     request_date      = models.DateField(auto_now_add=True)
     status            = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
     needs_description = models.TextField(verbose_name='Description des besoins')
-    urgency_level     = models.IntegerField(default=1, help_text='1-5, 5 = très urgent')
 
     # ── Attribution ──────────────────────────────────────────
     pole = models.ForeignKey(

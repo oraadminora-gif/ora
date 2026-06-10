@@ -49,7 +49,7 @@ class Mentor(models.Model):
     disponibilite_reelle = models.IntegerField(default=1, help_text="Places disponibles actuellement")
 
     # Observations libres (visibles ACP uniquement)
-    observations = models.TextField(blank=True, default='', verbose_name='Observations')
+    observations = models.TextField(blank=True, default='', verbose_name='Particularité pour l\'affectation')
 
     # Statut
     is_active = models.BooleanField(default=True)

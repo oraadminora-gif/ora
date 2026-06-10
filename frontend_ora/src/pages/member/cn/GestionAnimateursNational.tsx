@@ -15,7 +15,7 @@ interface Animateur {
   email: string; phone: string; city: string;
   pole_id: number; pole_name: string; pole_code: string;
   association_id: number; association_name: string;
-  is_coordinator: boolean; is_active: boolean; has_account: boolean;
+  is_acp: boolean; is_ap: boolean; is_active: boolean; has_account: boolean;
 }
 interface Pole        { id: number; name: string; code: string; }
 interface Association { id: number; name: string; code: string; }
@@ -26,12 +26,12 @@ interface AnimForm {
   first_name: string; last_name: string; email: string;
   phone: string; city: string;
   pole_id: string; association_id: string;
-  is_coordinator: boolean; is_active: boolean;
+  is_acp: boolean; is_ap: boolean; is_active: boolean;
 }
 
 const EMPTY_FORM: AnimForm = {
   first_name: '', last_name: '', email: '', phone: '', city: '',
-  pole_id: '', association_id: '', is_coordinator: false, is_active: true,
+  pole_id: '', association_id: '', is_acp: false, is_ap: true, is_active: true,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -116,7 +116,8 @@ function AnimModal({
         city:           anim.city,
         pole_id:        String(anim.pole_id),
         association_id: String(anim.association_id),
-        is_coordinator: anim.is_coordinator,
+        is_acp:         anim.is_acp,
+        is_ap:          anim.is_ap,
         is_active:      anim.is_active,
       });
       // Charger les associations du pôle existant
@@ -234,16 +235,19 @@ function AnimModal({
           <Field label="Rôle *">
             <div className="flex gap-2">
               <button type="button"
-                onClick={() => setForm(prev => ({ ...prev, is_coordinator: false }))}
-                className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold border transition-all ${!form.is_coordinator ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300'}`}>
-                AP
+                onClick={() => setForm(prev => ({ ...prev, is_ap: !prev.is_ap }))}
+                className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold border transition-all ${form.is_ap ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300'}`}>
+                AP {form.is_ap && '✓'}
               </button>
               <button type="button"
-                onClick={() => setForm(prev => ({ ...prev, is_coordinator: true }))}
-                className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold border transition-all ${form.is_coordinator ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}`}>
-                ACP
+                onClick={() => setForm(prev => ({ ...prev, is_acp: !prev.is_acp }))}
+                className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold border transition-all ${form.is_acp ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}`}>
+                ACP {form.is_acp && '✓'}
               </button>
             </div>
+            {!form.is_ap && !form.is_acp && (
+              <p className="text-xs text-red-500 mt-1">Sélectionner au moins un rôle</p>
+            )}
           </Field>
 
           {mode === 'edit' && (
@@ -405,7 +409,7 @@ export function GestionAnimateursNational() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Gestion nationale des animateurs</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {tc ? `${tc.all} animateur${tc.all > 1 ? 's' : ''} · ${tc.acps} ACP · ${tc.aps} AP` : 'Tous les pôles · ACP et AP'}
+            {tc ? `${tc.all} animateur${tc.all > 1 ? 's' : ''} · ${tc.acps} APC · ${tc.aps} AP` : 'Tous les pôles · APC et AP'}
           </p>
         </div>
         <button onClick={() => { setEditingAnim(null); setModalMode('create'); }}
@@ -418,7 +422,7 @@ export function GestionAnimateursNational() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Total',        value: tc?.all          ?? 0, color: 'bg-violet-50 text-violet-700 border-violet-200' },
-          { label: 'ACPs',         value: tc?.acps         ?? 0, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+          { label: 'APCs',         value: tc?.acps         ?? 0, color: 'bg-blue-50 text-blue-700 border-blue-200' },
           { label: 'APs',          value: tc?.aps          ?? 0, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
           { label: 'Avec compte',  value: tc?.with_account ?? 0, color: 'bg-amber-50 text-amber-700 border-amber-200' },
         ].map(s => (
@@ -459,7 +463,7 @@ export function GestionAnimateursNational() {
         <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
           className="px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30">
           <option value="">Tous les rôles</option>
-          <option value="ACP">ACP uniquement</option>
+          <option value="ACP">APC uniquement</option>
           <option value="AP">AP uniquement</option>
         </select>
         {/* Filtre actif/inactif */}
@@ -512,7 +516,7 @@ export function GestionAnimateursNational() {
                   <tr key={a.id} className={`hover:bg-slate-50/50 transition-colors ${!a.is_active ? 'opacity-50' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_coordinator ? 'bg-blue-500' : 'bg-violet-500'}`}>
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_acp ? 'bg-blue-500' : 'bg-violet-500'}`}>
                           {`${a.first_name[0] ?? ''}${a.last_name[0] ?? ''}`.toUpperCase()}
                         </div>
                         <div>
@@ -527,8 +531,8 @@ export function GestionAnimateursNational() {
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-600">{a.association_name}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_coordinator ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
-                        {a.is_coordinator ? 'ACP' : 'AP'}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_acp ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
+                        {(a.is_acp && a.is_ap) ? 'APC/AP' : a.is_acp ? 'APC' : 'AP'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">

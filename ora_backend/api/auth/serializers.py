@@ -20,9 +20,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if hasattr(user, 'mentor'):
             roles.append('MENTOR')
         if hasattr(user, 'animateur'):
-            if user.animateur.is_coordinator:
+            if user.animateur.is_acp:
                 roles.append('ACP')
-            else:
+            if user.animateur.is_ap:
                 roles.append('AP')
         if hasattr(user, 'cn_member'):
             roles.append('CN')

@@ -8,7 +8,7 @@ export interface APAnimateur {
   last_name: string;
   role: 'AP' | 'ACP';
   association: { id: number; name: string; code: string };
-  pole: { id: number | null; name: string | null; code: string | null };
+  pole: { id: number | null; name: string | null; code: string | null; villes: string[] };
 }
 
 export interface APStats {
@@ -50,7 +50,6 @@ export interface APMentoratActif {
     phone: string;
     city: string;
     needs_description: string;
-    urgency_level: number;
   } | null;
   suivi_stats: APSuiviStats;
 }
@@ -96,13 +95,16 @@ export interface APMesMenutorat {
   };
   jeune: {
     name: string;
+    phone: string;
     city: string;
     diplome_label: string;
     situation: string;
     situation_label: string;
     etablissement_id: number | null;
     nom_etablissement: string;
+    needs_description: string;
   } | null;
+  objectif_mentor: string;
   suivi_stats: APSuiviStats;
   // Demande de clôture en attente
   cloture_en_attente: boolean;

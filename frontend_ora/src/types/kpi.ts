@@ -36,7 +36,7 @@ export interface PoleKPI {
   // File d'attente (absolu)
   demandes_en_attente:     number;
   urgences_non_traitees:   number;
-  urgences_details:        { first_name: string; last_name: string; city: string; urgency_level: number; request_date: string }[];
+  urgences_details:        { first_name: string; last_name: string; city: string; request_date: string }[];
   // Mentorats état actuel
   mentorats_actifs:        number;
   mentorats_pending:       number;

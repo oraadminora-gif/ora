@@ -1,5 +1,8 @@
+import threading
 from django.db import transaction, IntegrityError
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,6 +12,96 @@ from django.shortcuts import get_object_or_404
 from core.models import YoungRequest, Mentor, Mentorat, MatchingDecision, Animateur
 from core.services.matching import get_mentor_suggestions
 from api.permissions import IsACP, CanMatchRequest
+
+
+def _send_mentorat_emails(mentorat_id: int):
+    """Envoie les emails de notification au mentor et à l'AP (thread non bloquant)."""
+    try:
+        from core.models import Mentorat as M
+        m = M.objects.select_related(
+            'mentor', 'mentor__association',
+            'young_request',
+            'ap_responsable', 'ap_responsable__association',
+        ).get(id=mentorat_id)
+
+        mentor = m.mentor
+        jeune  = m.young_request
+        ap     = m.ap_responsable
+
+        diplome   = jeune.get_diplome_prepare_display() if jeune.diplome_prepare else ''
+        situation = jeune.get_situation_display() if jeune.situation else ''
+        etab      = jeune.nom_etablissement or ''
+
+        # ── Email au mentor ──────────────────────────────────────
+        if mentor.email:
+            sujet_mentor = f"ORA Mentorat – Nouveau mentorat avec {jeune.first_name} {jeune.last_name}"
+            corps_mentor = f"""Bonjour {mentor.first_name} {mentor.last_name},
+
+Nous vous remercions chaleureusement pour votre engagement en tant que mentor au sein d'ORA Mentorat.
+
+Un nouveau mentorat vient de vous être assigné. Voici les informations sur le/la jeune que vous allez accompagner :
+
+Nom : {jeune.first_name} {jeune.last_name}
+Email : {jeune.email or '—'}
+Téléphone : {jeune.phone or '—'}
+Commune : {jeune.city or '—'}
+{f"Diplôme préparé : {diplome}" if diplome else ""}
+{f"Situation : {situation}" if situation else ""}
+{f"Établissement / CFA : {etab}" if etab else ""}
+
+Description de sa demande :
+{jeune.needs_description}
+
+Votre animateur de suivi est : {ap.first_name} {ap.last_name} ({ap.email})
+
+Merci encore pour votre implication. N'hésitez pas à contacter votre animateur pour toute question.
+
+L'équipe ORA Mentorat
+"""
+            send_mail(
+                subject=sujet_mentor,
+                message=corps_mentor,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[mentor.email],
+                fail_silently=True,
+            )
+
+        # ── Email à l'AP ─────────────────────────────────────────
+        if ap and ap.email:
+            sujet_ap = f"ORA – Nouveau mentorat à suivre : {mentor.first_name} {mentor.last_name} / {jeune.first_name} {jeune.last_name}"
+            corps_ap = f"""Bonjour {ap.first_name} {ap.last_name},
+
+Un nouveau mentorat vient d'être créé dans votre association {ap.association.name}. Vous en assurez le suivi.
+
+Mentor
+  Nom : {mentor.first_name} {mentor.last_name}
+  Email : {mentor.email or '—'}
+  Téléphone : {mentor.phone or '—'}
+
+Jeune accompagné(e)
+  Nom : {jeune.first_name} {jeune.last_name}
+  Email : {jeune.email or '—'}
+  Téléphone : {jeune.phone or '—'}
+  Commune : {jeune.city or '—'}
+  {f"Diplôme : {diplome}" if diplome else ""}
+  {f"Situation : {situation}" if situation else ""}
+
+Demande :
+{jeune.needs_description}
+
+Merci de prendre contact avec le mentor pour démarrer le suivi.
+
+L'équipe ORA Mentorat
+"""
+            send_mail(
+                subject=sujet_ap,
+                message=corps_ap,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[ap.email],
+                fail_silently=True,
+            )
+    except Exception:
+        pass  # Non bloquant — l'affectation reste valide même si l'email échoue
 
 
 class MatchingSuggestionsView(APIView):
@@ -188,6 +281,13 @@ class AssignMentorView(APIView):
         young_request.status = 'ASSIGNED'
         young_request.save()
 
+        # ── Emails de notification (non bloquants) ───────────────
+        threading.Thread(
+            target=_send_mentorat_emails,
+            args=(mentorat.id,),
+            daemon=True,
+        ).start()
+
         # ── Audit (ne bloque jamais l'assignation) ───────────────
         if ai_score is not None:
             try:
@@ -255,6 +355,6 @@ class AssignMentorView(APIView):
                 pole=mentor.pole,
                 is_active=True,
             )
-            .order_by('is_coordinator')  # AP (False) avant ACP (True)
+            .order_by('is_acp')  # AP-only avant ACP
             .first()
         )

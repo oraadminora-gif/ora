@@ -2,15 +2,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import api from '../../../services/api';
 import {
-  Search, Loader2, AlertCircle, Pencil, X, CheckCircle,
-  HandHeart, AlertTriangle, Calendar, User, FileText,
-  UserCheck, Building2, Download, ClipboardList, Lock, ChevronDown,
+  Search, Loader2, AlertCircle, X, CheckCircle,
+  HandHeart, AlertTriangle, Download, ClipboardList, ChevronDown,
 } from 'lucide-react';
-import {
-  APMentoratSuiviModal,
-  APSuiviPanelModal,
-  CloturerDirectModal,
-} from '../../../components/shared/MentoratAPWidgets';
+import { APSuiviMentoratModal } from '../../../components/ap/APSuiviMentoratModal';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -40,7 +35,6 @@ interface Mentorat {
   jeune_diplome_label: string;
   jeune_situation: string;
   jeune_situation_label: string;
-  jeune_urgency_level: number;
   jeune_etablissement_id: number | null;
   jeune_nom_etablissement: string;
   ap_responsable_id: number | null;
@@ -451,12 +445,10 @@ export function GestionMentorats() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch]           = useState('');
   const [tab, setTab]                 = useState<TabFilter>('ACTIVE');
-  const [editing, setEditing]         = useState<Mentorat | null>(null);
   const [successMsg, setSuccessMsg]   = useState<string | null>(null);
-  const [showExport, setShowExport]   = useState(false);
-  const [showSuiviModal, setShowSuiviModal]           = useState<number | null>(null);
-  const [showRencontresModal, setShowRencontresModal] = useState<number | null>(null);
-  const [showClotureModal, setShowClotureModal]       = useState<number | null>(null);
+  const [showSuiviModal, setShowSuiviModal] = useState<number | null>(null);
+  const [exportDebut, setExportDebut]       = useState('');
+  const [exportFin, setExportFin]           = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Chargement paginé des mentorats ────────────────────────────────────────
@@ -562,13 +554,37 @@ export function GestionMentorats() {
             {meta && mentorats.length < meta.count && ` · ${mentorats.length} affichés sur ${meta.count}`}
           </p>
         </div>
-        <button
-          onClick={() => setShowExport(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm shrink-0"
-        >
-          <Download className="w-4 h-4" />
-          Exporter
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <input type="date" value={exportDebut} onChange={e => setExportDebut(e.target.value)}
+            title="Date début (affectation)"
+            className="px-2.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400" />
+          <span className="text-slate-400 text-sm">→</span>
+          <input type="date" value={exportFin} onChange={e => setExportFin(e.target.value)}
+            title="Date fin (affectation)"
+            className="px-2.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400" />
+          <button
+            onClick={async () => {
+              try {
+                const params = new URLSearchParams({ file_format: 'xlsx' });
+                if (exportDebut) params.append('date_debut', exportDebut);
+                if (exportFin)   params.append('date_fin',   exportFin);
+                const res = await api.get(`/pole/mentorats/export-csv/?${params}`, { responseType: 'blob' });
+                const disposition = res.headers['content-disposition'] ?? '';
+                const match = disposition.match(/filename="(.+?)"/);
+                const filename = match ? match[1] : `mentorats_${new Date().toISOString().slice(0,10)}.xlsx`;
+                const url  = URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+                const link = document.createElement('a');
+                link.href = url; link.setAttribute('download', filename);
+                document.body.appendChild(link); link.click();
+                document.body.removeChild(link); URL.revokeObjectURL(url);
+              } catch { alert("Erreur lors de l'export."); }
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Exporter
+          </button>
+        </div>
       </div>
 
       {/* Succès */}
@@ -640,7 +656,7 @@ export function GestionMentorats() {
                   <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">AP responsable</th>
                   <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Statut</th>
                   <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Assigné le</th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                  <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Suivi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -680,40 +696,13 @@ export function GestionMentorats() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-0.5">
-                        <button
-                          onClick={() => setEditing(m)}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
-                          title={m.status === 'CLOSED' || m.status === 'ABORTED' ? 'Consulter' : 'Modifier'}
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        {m.status === 'ACTIVE' && (
-                          <>
-                            <button
-                              onClick={() => setShowSuiviModal(m.id)}
-                              className="p-1.5 hover:bg-violet-50 rounded-lg text-slate-400 hover:text-violet-600 transition-colors"
-                              title="Modifier le suivi"
-                            >
-                              <ClipboardList className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setShowRencontresModal(m.id)}
-                              className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-ora-blue transition-colors"
-                              title="Rencontres"
-                            >
-                              <Calendar className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setShowClotureModal(m.id)}
-                              className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors"
-                              title="Clôturer / Arrêter"
-                            >
-                              <Lock className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => setShowSuiviModal(m.id)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-ora-blue/10 hover:bg-ora-blue text-ora-blue hover:text-white rounded-lg text-xs font-semibold border border-ora-blue/20 hover:border-ora-blue transition-all"
+                      >
+                        <ClipboardList className="w-3.5 h-3.5" />
+                        Suivi
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -739,45 +728,11 @@ export function GestionMentorats() {
         </div>
       )}
 
-      {/* Modal */}
-      {editing && (
-        <MentoratModal
-          mentorat={editing}
-          animateurs={animateurs}
-          mentors={mentors}
-          poles={poles}
-          onClose={() => setEditing(null)}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {showExport && (
-        <ExportModal onClose={() => setShowExport(false)} />
-      )}
-
-      {/* Modals AP/ACP partagés */}
       {showSuiviModal !== null && (
-        <APMentoratSuiviModal
+        <APSuiviMentoratModal
           mentoratId={showSuiviModal}
-          jeuneName={mentorats.find(m => m.id === showSuiviModal)?.jeune_name ?? '—'}
           onClose={() => setShowSuiviModal(null)}
-        />
-      )}
-
-      {showRencontresModal !== null && (
-        <APSuiviPanelModal
-          mentoratId={showRencontresModal}
-          jeuneName={mentorats.find(m => m.id === showRencontresModal)?.jeune_name ?? '—'}
-          onClose={() => setShowRencontresModal(null)}
-        />
-      )}
-
-      {showClotureModal !== null && (
-        <CloturerDirectModal
-          id={showClotureModal}
-          jeuneName={mentorats.find(m => m.id === showClotureModal)?.jeune_name ?? '—'}
-          onClose={() => setShowClotureModal(null)}
-          onDone={() => { setShowClotureModal(null); loadData(); setSuccessMsg('Mentorat clôturé.'); setTimeout(() => setSuccessMsg(null), 4000); }}
+          onSaved={() => { setShowSuiviModal(null); loadData(); }}
         />
       )}
     </div>

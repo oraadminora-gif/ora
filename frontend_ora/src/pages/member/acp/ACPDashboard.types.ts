@@ -35,6 +35,7 @@ export interface ACPAssociationAP {
 export interface ACPAssociationStats {
   total_mentors: number;
   mentors_disponibles: number;
+  capacite_dispo: number;
   mentorats_actifs: number;
   alertes_rouges: number;
   mentors_inactifs: number;
@@ -51,9 +52,17 @@ export interface ACPAssociation {
 export interface ACPDemande {
   id: number;
   nom: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  birth_date: string;
+  gender: string;
+  gender_label: string;
+  commune: string;
+  code_postal: string;
   city: string;
   needs_description: string;
-  urgency_level: number;
   status: 'NEW' | 'PENDING';
   request_date: string;
   nom_etablissement: string;

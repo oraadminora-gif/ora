@@ -78,7 +78,6 @@ class CreateYoungRequestView(APIView):
             diplome_prepare=data.get('diplome_prepare', ''),
             situation=data.get('situation', ''),
             needs_description=data['needs_description'],
-            urgency_level=data.get('urgency_level', 1),
             pole=pole,
             status='NEW',
         )
