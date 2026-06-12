@@ -220,9 +220,20 @@ class PoleMentoratDetailView(APIView):
                     m.young_request.save()
                 # Sinon (CLOSED↔ABORTED) : juste mise à jour du statut + raison, pas d'effet de bord
             elif new_status == 'ACTIVE' and was_terminated:
-                # Réactivation par l'ACP : restaure la capacité et la demande
-                m.closed_at = None
-                m.closure_reason = ''
+                # Réactivation par l'ACP : efface tous les champs de clôture
+                m.closed_at              = None
+                m.closure_reason         = ''
+                m.closure_reason_code    = ''
+                m.message_cloture        = ''
+                m.cloture_en_attente     = False
+                m.cloture_action_demandee   = ''
+                m.cloture_reason_demandee   = ''
+                m.cloture_message_demandee  = ''
+                # Supprimer l'évaluation envoyée au jeune (jeton invalidé)
+                try:
+                    m.evaluation_mentor.delete()
+                except Exception:
+                    pass
                 mentor = m.mentor
                 mentor.disponibilite_reelle = max(0, mentor.disponibilite_reelle - 1)
                 mentor.save()

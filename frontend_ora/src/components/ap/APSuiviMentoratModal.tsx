@@ -24,6 +24,8 @@ interface SuiviDetail {
   objectif_mentor: string;
   bilan_suivi: string;
   problematiques: string[];
+  type_mentorat: string;
+  type_mentorat_label: string;
   closure_reason_choices: Choice[];
   problematiques_choices: Choice[];
   mentor: {
@@ -359,6 +361,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
   const [objectif, setObjectif]               = useState('');
   const [bilan, setBilan]                     = useState('');
   const [problematiques, setProblematiques]   = useState<string[]>([]);
+  const [typeMentorat, setTypeMentorat]       = useState('');
   const [closureCode, setClosureCode]         = useState('');
   const [closedAt, setClosedAt]               = useState('');
 
@@ -373,6 +376,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
       setObjectif(d.objectif_mentor);
       setBilan(d.bilan_suivi);
       setProblematiques(d.problematiques ?? []);
+      setTypeMentorat(d.type_mentorat ?? '');
       setClosureCode(d.closure_reason_code ?? '');
       setClosedAt(d.closed_at ?? '');
     }).catch(() => setError('Erreur de chargement')).finally(() => setLoading(false));
@@ -391,6 +395,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
     objectif_mentor:   objectif,
     bilan_suivi:       bilan,
     problematiques,
+    type_mentorat:     typeMentorat,
   });
 
   const handleSave = async () => {
@@ -553,6 +558,22 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
                       <label className="block text-xs font-semibold text-slate-500 mb-1">Nombre d'heures</label>
                       <input type="number" min="0" step="0.5" value={nbHeures} onChange={e => setNbHeures(e.target.value)}
                         disabled={isClosed} className={INPUT} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-2">Type de mentorat</label>
+                    <div className="flex gap-2">
+                      {([['', '— Non renseigné —'], ['presentiel', 'Présentiel'], ['distanciel', 'Distanciel']] as [string, string][]).map(([val, lbl]) => (
+                        <button key={val} type="button"
+                          disabled={isClosed}
+                          onClick={() => setTypeMentorat(val)}
+                          className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            typeMentorat === val
+                              ? 'bg-ora-blue text-white border-ora-blue'
+                              : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                          }`}>{lbl}</button>
+                      ))}
                     </div>
                   </div>
 

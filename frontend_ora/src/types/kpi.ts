@@ -40,6 +40,7 @@ export interface PoleKPI {
   // Mentorats état actuel
   mentorats_actifs:        number;
   mentorats_pending:       number;
+  mentorats_crees:         number;
   alertes_rouges_actives:  number;
   mentorats_alertes_rouges: number; // legacy
   // Mentorats terminés (période)
@@ -56,6 +57,9 @@ export interface PoleKPI {
   mentors_disponibles:     number;
   mentors_satures:         number;
   capacite_restante:       number;
+  mentors_sans_mentorat:   number;
+  moyen_par_mentor:        number;
+  max_par_mentor:          number;
   // Performance
   duree_moyenne:           number;
   heures_cumulees:         number;
@@ -70,6 +74,17 @@ export interface PoleKPI {
   par_diplome?:      DiplomaKPI[];
   en_apprentissage?: number;
   en_recherche?:     number;
+  // Performance qualitative (mentorats clos)
+  heures_moy_par_mentorat?:     number;
+  rencontres_moy_par_mentorat?: number;
+  pct_presentiel?:              number;
+  pct_distanciel?:              number;
+  financement_pct?:             { national: number; local: number; sans: number };
+  cloture_par_sentiment?:       { positif: number; nul: number; negatif: number };
+  problematiques_top5?:         { code: string; label: string; count: number }[];
+  pct_diplome_moins5?:          number;
+  // Mentors par association — capacité
+  capacite_par_association?:    { association__name: string | null; capacite: number }[];
   // Financements
   financements_pole?:            FinancementKPI[];
   financements_par_association?: FinancementParAssocKPI[];
@@ -115,6 +130,13 @@ export interface NationalKPIDetailed extends NationalKPI {
   taux_couverture?:        number;
   taux_saturation?:        number;
   taux_attente?:           number;
+  // Performance qualitative (comparaison)
+  heures_moy_par_mentorat?:     number;
+  rencontres_moy_par_mentorat?: number;
+  pct_presentiel?:              number;
+  cloture_par_sentiment?:       { positif: number; nul: number; negatif: number };
+  max_par_mentor?:              number;
+  pct_diplome_moins5?:          number;
   // Profil des jeunes (national)
   tranches_age?:           TrancheAge;
   par_diplome?:            DiplomaKPI[];

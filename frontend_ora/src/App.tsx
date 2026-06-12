@@ -123,6 +123,9 @@ function App() {
                 <Route path="acp/mentorats"  element={<Suspense fallback={<DashboardLoader />}><GestionMentorats /></Suspense>} />
                 <Route path="pole/dashboard" element={<Suspense fallback={<DashboardLoader />}><PoleDashboard /></Suspense>} />
                 <Route path="matching"       element={<Suspense fallback={<DashboardLoader />}><MatchingBoard /></Suspense>} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={['AP', 'ACP', 'CN']} />}>
                 <Route path="pole/kpi"       element={<Suspense fallback={<DashboardLoader />}><PoleKPIs /></Suspense>} />
               </Route>
 

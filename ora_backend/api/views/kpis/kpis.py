@@ -1,8 +1,8 @@
 # api/views/kpis/kpis.py
 from collections import Counter
-from datetime import timedelta
+from datetime import date, timedelta
 
-from django.db.models import Count, Sum
+from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,15 +18,29 @@ DIPLOME_LABELS = {
     'BUT': 'BUT', 'MASTER': 'Master', 'DEA': 'DEA', 'DES': 'DES', 'ING': 'Ingénieur',
 }
 
+PROBLEMATIQUE_LABELS = {
+    'AIDE_INFO': 'Aide informatique', 'FLE': 'Apprentissage du Français',
+    'CHANGER_EMP': "Changer d'Employeur", 'HANDICAP': 'Handicap',
+    'LOGEMENT': 'Logement', 'ORIENTATION': 'Orientation',
+    'PB_ADMIN': 'Pb Administratifs', 'PB_FINANCES': 'Pb Financiers',
+    'PB_PSYCHO': 'Pb Psychologiques', 'PREP_DOSSIER': 'Prép. Dossier Pro.',
+    'REL_EMPLOYEUR': 'Rel. Employeur', 'RECH_CONTRAT': 'Rech. Contrat',
+    'SALAIRE': 'Salaire', 'SOUTIEN_MORAL': 'Soutien Moral',
+    'SOUTIEN_SCOL': 'Soutien Scolaire', 'ADDICTIONS': 'Addictions',
+}
+
 
 # ── Utilitaire filtre de période ─────────────────────────────────────────────
-def _date_from(period: str):
-    today = timezone.now().date()
+def _date_range(period: str) -> tuple:
+    """Retourne (date_from, date_to) pour la période choisie (None = sans limite)."""
+    year = timezone.now().date().year
     if period == 'semester':
-        return today - timedelta(days=182)
+        return date(year, 1, 1), date(year, 6, 30)
     elif period == 'year':
-        return today - timedelta(days=365)
-    return None   # 'all' → pas de filtre
+        return date(year, 7, 1), date(year, 12, 31)
+    elif period == 'annee':
+        return date(year, 1, 1), date(year, 12, 31)
+    return None, None   # 'all' → pas de filtre
 
 
 # ── Helpers profil jeunes ─────────────────────────────────────────────────────
@@ -122,13 +136,15 @@ class PoleKPIsView(APIView):
         return Response(self._compute(pole, period))
 
     def _compute(self, pole, period):
-        today     = timezone.now().date()
-        date_from = _date_from(period)
+        today               = timezone.now().date()
+        date_from, date_to  = _date_range(period)
 
         # ── Demandes (filtrées par période) ──────────────────────────────
         req_qs = YoungRequest.objects.filter(pole=pole)
         if date_from:
             req_qs = req_qs.filter(request_date__gte=date_from)
+        if date_to:
+            req_qs = req_qs.filter(request_date__lte=date_to)
 
         total_demandes = req_qs.count()
         filles         = req_qs.filter(gender='F').count()
@@ -137,25 +153,77 @@ class PoleKPIsView(APIView):
         filles_pct     = round(filles  / total_demandes * 100, 1) if total_demandes else 0
         garcons_pct    = round(garcons / total_demandes * 100, 1) if total_demandes else 0
 
-        # ── Demandes en attente (état actuel, sans filtre période) ────────
-        demandes_en_attente   = YoungRequest.objects.filter(pole=pole, status__in=['NEW', 'PENDING']).count()
+        # ── Demandes en attente (filtrées par période) ───────────────────
+        demandes_en_attente   = req_qs.filter(status__in=['NEW', 'PENDING']).count()
         urgences_non_traitees = 0
 
-        # ── Mentorats — état actuel ───────────────────────────────────────
+        # ── Mentorats créés dans la période ──────────────────────────────
         m_qs = Mentorat.objects.filter(pole=pole)
-        mentorats_actifs  = m_qs.filter(status='ACTIVE').count()
-        mentorats_pending = m_qs.filter(status='PENDING').count()
-        alertes_rouges    = m_qs.filter(status='ACTIVE', alerte_rouge=True).count()
+        created_qs = m_qs
+        if date_from:
+            created_qs = created_qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            created_qs = created_qs.filter(created_at__date__lte=date_to)
+        mentorats_crees   = created_qs.count()
+        mentorats_actifs  = created_qs.filter(status='ACTIVE').count()
+        mentorats_pending = created_qs.filter(status='PENDING').count()
+        alertes_rouges    = created_qs.filter(status='ACTIVE', alerte_rouge=True).count()
 
         # ── Mentorats clôturés dans la période ────────────────────────────
         closed_qs = m_qs.filter(status__in=['CLOSED', 'ABORTED'])
         if date_from:
             closed_qs = closed_qs.filter(closed_at__gte=date_from)
-        mentorats_closes     = closed_qs.filter(status='CLOSED').count()
+        if date_to:
+            closed_qs = closed_qs.filter(closed_at__lte=date_to)
+        clos_qs              = closed_qs.filter(status='CLOSED')
+        mentorats_closes     = clos_qs.count()
         mentorats_abandonnes = closed_qs.filter(status='ABORTED').count()
         termines_total       = mentorats_closes + mentorats_abandonnes
         taux_reussite        = round(mentorats_closes     / termines_total * 100, 1) if termines_total else 0
         taux_abandon         = round(mentorats_abandonnes / termines_total * 100, 1) if termines_total else 0
+
+        # ── Performance qualitative (sur mentorats clos de la période) ────
+        heures_moy_par_mentorat     = round(float(clos_qs.aggregate(moy=Avg('nb_heures'))['moy'] or 0), 1)
+        rencontres_moy_par_mentorat = round(float(clos_qs.aggregate(moy=Avg('nb_rencontres'))['moy'] or 0), 1)
+
+        # Type de mentorat (présentiel / distanciel)
+        typed_total    = clos_qs.filter(type_mentorat__in=['presentiel', 'distanciel']).count()
+        pct_presentiel = round(clos_qs.filter(type_mentorat='presentiel').count() / typed_total * 100) if typed_total else 0
+        pct_distanciel = round(clos_qs.filter(type_mentorat='distanciel').count() / typed_total * 100) if typed_total else 0
+
+        # Financement % sur mentorats clos
+        fin_total      = clos_qs.count()
+        fin_national   = clos_qs.filter(financements__financement__type='national').distinct().count()
+        fin_local      = clos_qs.filter(financements__financement__type='local').distinct().count()
+        fin_sans       = clos_qs.filter(financements__isnull=True).count()
+        financement_pct = {
+            'national': round(fin_national / fin_total * 100) if fin_total else 0,
+            'local':    round(fin_local    / fin_total * 100) if fin_total else 0,
+            'sans':     round(fin_sans     / fin_total * 100) if fin_total else 0,
+        }
+
+        # Sentiment de clôture (CLOSED uniquement)
+        POSITIF_CODES = ['OBJECTIVE_REACHED']
+        NUL_CODES     = ['NO_CONTACT']
+        pos  = clos_qs.filter(closure_reason_code__in=POSITIF_CODES).count()
+        nul  = clos_qs.filter(closure_reason_code__in=NUL_CODES).count()
+        neg  = clos_qs.exclude(closure_reason_code__in=POSITIF_CODES + NUL_CODES).exclude(closure_reason_code='').count()
+        sent_total = pos + nul + neg
+        cloture_par_sentiment = {
+            'positif': round(pos / sent_total * 100) if sent_total else 0,
+            'nul':     round(nul / sent_total * 100) if sent_total else 0,
+            'negatif': round(neg / sent_total * 100) if sent_total else 0,
+        }
+
+        # ── Problématiques top 5 (sur mentorats de la période) ───────────
+        prob_counter = Counter()
+        for codes in created_qs.values_list('problematiques', flat=True):
+            if isinstance(codes, list):
+                prob_counter.update(codes)
+        problematiques_top5 = [
+            {'code': code, 'label': PROBLEMATIQUE_LABELS.get(code, code), 'count': count}
+            for code, count in prob_counter.most_common(5)
+        ]
 
         # ── Mentors ───────────────────────────────────────────────────────
         mentors_qs         = Mentor.objects.filter(pole=pole, is_active=True)
@@ -166,13 +234,36 @@ class PoleKPIsView(APIView):
         taux_saturation    = round(mentors_satures    / mentors_total * 100, 1) if mentors_total else 0
         capacite_restante  = mentors_qs.aggregate(s=Sum('disponibilite_reelle'))['s'] or 0
 
-        # ── Taux de couverture (actifs / toutes demandes du pôle) ─────────
-        total_all = YoungRequest.objects.filter(pole=pole).count()
-        taux_couverture = round(mentorats_actifs / total_all * 100, 1) if total_all else 0
+        # ── Stats mentors avancées (filtrées par période) ─────────────────
+        nb_filter = Q()
+        if date_from:
+            nb_filter &= Q(mentorats__created_at__date__gte=date_from)
+        if date_to:
+            nb_filter &= Q(mentorats__created_at__date__lte=date_to)
+
+        mentors_sans_mentorat = (
+            mentors_qs.filter(disponibilite_reelle__gt=0)
+            .annotate(nb=Count('mentorats', filter=nb_filter))
+            .filter(nb=0)
+            .count()
+        )
+        _m_counts = list(mentors_qs.annotate(nb=Count('mentorats', filter=nb_filter)).values_list('nb', flat=True))
+        moyen_par_mentor = round(sum(_m_counts) / len(_m_counts), 1) if _m_counts else 0
+        max_par_mentor   = max(_m_counts) if _m_counts else 0
+
+        # ── Capacité par association ──────────────────────────────────────
+        capacite_par_association = list(
+            mentors_qs.values('association__name')
+            .annotate(capacite=Sum('disponibilite_reelle'))
+            .order_by('-capacite')
+        )
+
+        # ── Taux de couverture (actifs de la période / demandes de la période)
+        taux_couverture = round(mentorats_actifs / total_demandes * 100, 1) if total_demandes else 0
 
         # ── Durées & heures (calcul Python pour compatibilité multi-DB) ───
         mentorats_dates = list(
-            m_qs.filter(assigned_at__isnull=False)
+            created_qs.filter(assigned_at__isnull=False)
             .values('assigned_at', 'closed_at', 'status')
         )
         durees_mois = []
@@ -191,7 +282,7 @@ class PoleKPIsView(APIView):
 
         # ── Délai moyen d'assignation (jours) ─────────────────────────────
         assign_data = list(
-            Mentorat.objects.filter(pole=pole, assigned_at__isnull=False)
+            created_qs.filter(assigned_at__isnull=False)
             .values('assigned_at', 'young_request__request_date')
         )
         delais = [
@@ -211,6 +302,11 @@ class PoleKPIsView(APIView):
         # ── Par situation ─────────────────────────────────────────────────
         en_apprentissage = req_qs.filter(situation='apprentissage').count()
         en_recherche     = req_qs.filter(situation='recherche').count()
+
+        # ── Diplôme < niveau 5 (CAP, BEP, Bac Pro, Bac autre, BP) ───────
+        _DIPLOMES_MOINS_5 = ['CAP', 'BEP', 'BAC_PRO', 'BAC_AUTRE', 'BP']
+        jeunes_moins_5 = req_qs.filter(diplome_prepare__in=_DIPLOMES_MOINS_5).count()
+        pct_diplome_moins5 = round(jeunes_moins_5 / total_demandes * 100, 1) if total_demandes else 0
 
         # ── Financements du pôle ──────────────────────────────────────────
         financements_pole             = _compute_financements(mentorat__pole=pole)
@@ -250,6 +346,7 @@ class PoleKPIsView(APIView):
             # ── Mentorats (absolu) ────────────────────────
             "mentorats_actifs":        mentorats_actifs,
             "mentorats_pending":       mentorats_pending,
+            "mentorats_crees":         mentorats_crees,
             "alertes_rouges_actives":  alertes_rouges,
             "mentorats_alertes_rouges": alertes_rouges,   # compat legacy
             # ── Mentorats terminés (filtrés période) ──────
@@ -261,25 +358,37 @@ class PoleKPIsView(APIView):
             "taux_couverture":         taux_couverture,
             "taux_saturation":         taux_saturation,
             # ── Mentors (absolu) ──────────────────────────
-            "mentors_total":           mentors_total,
-            "mentors_inactifs":        mentors_inactifs,
-            "mentors_disponibles":     mentors_disponibles,
-            "mentors_satures":         mentors_satures,
-            "capacite_restante":       int(capacite_restante),
+            "mentors_total":            mentors_total,
+            "mentors_inactifs":         mentors_inactifs,
+            "mentors_disponibles":      mentors_disponibles,
+            "mentors_satures":          mentors_satures,
+            "capacite_restante":        int(capacite_restante),
+            "mentors_sans_mentorat":    mentors_sans_mentorat,
+            "moyen_par_mentor":         moyen_par_mentor,
+            "max_par_mentor":           max_par_mentor,
+            "capacite_par_association": capacite_par_association,
             # ── Performance ───────────────────────────────
-            "duree_moyenne":           duree_moyenne,
-            "heures_cumulees":         heures_cumulees,
-            "delai_moyen":             delai_moyen,
+            "duree_moyenne":               duree_moyenne,
+            "heures_cumulees":             heures_cumulees,
+            "delai_moyen":                 delai_moyen,
+            "heures_moy_par_mentorat":     heures_moy_par_mentorat,
+            "rencontres_moy_par_mentorat": rencontres_moy_par_mentorat,
+            "pct_presentiel":              pct_presentiel,
+            "pct_distanciel":              pct_distanciel,
+            "financement_pct":             financement_pct,
+            "cloture_par_sentiment":       cloture_par_sentiment,
+            "problematiques_top5":         problematiques_top5,
             # ── APs ──────────────────────────────────────
             "aps_total":               aps_total,
             "aps_actifs":              aps_actifs,
             # ── Breakdown ────────────────────────────────
             "mentors_par_association": mentors_par_association,
             # ── Profil des jeunes ─────────────────────────
-            "tranches_age":      tranches_age,
-            "par_diplome":       par_diplome,
-            "en_apprentissage":  en_apprentissage,
-            "en_recherche":      en_recherche,
+            "tranches_age":         tranches_age,
+            "par_diplome":          par_diplome,
+            "en_apprentissage":     en_apprentissage,
+            "en_recherche":         en_recherche,
+            "pct_diplome_moins5":   pct_diplome_moins5,
             # ── Financements ──────────────────────────────────
             "financements_pole":            financements_pole,
             "financements_par_association": financements_par_association,
@@ -314,12 +423,14 @@ class NationalKPIsView(APIView):
             return Response(PoleKPIsView()._compute(pole, period))
 
         # Mode national
-        today     = timezone.now().date()
-        date_from = _date_from(period)
+        today              = timezone.now().date()
+        date_from, date_to = _date_range(period)
 
         youngs_qs    = YoungRequest.objects.all()
         if date_from:
             youngs_qs = youngs_qs.filter(request_date__gte=date_from)
+        if date_to:
+            youngs_qs = youngs_qs.filter(request_date__lte=date_to)
         youngs_total = youngs_qs.count()
         filles       = youngs_qs.filter(gender='F').count()
         garcons      = youngs_qs.filter(gender='M').count()
@@ -330,17 +441,24 @@ class NationalKPIsView(APIView):
         m_closed_qs      = Mentorat.objects.filter(status__in=['CLOSED', 'ABORTED'])
         if date_from:
             m_closed_qs  = m_closed_qs.filter(closed_at__gte=date_from)
+        if date_to:
+            m_closed_qs  = m_closed_qs.filter(closed_at__lte=date_to)
         mentorats_closes     = m_closed_qs.filter(status='CLOSED').count()
         mentorats_abandonnes = m_closed_qs.filter(status='ABORTED').count()
         termines             = mentorats_closes + mentorats_abandonnes
         taux_reussite        = round(mentorats_closes     / termines * 100, 1) if termines else 0
         taux_abandon         = round(mentorats_abandonnes / termines * 100, 1) if termines else 0
 
-        # État actuel (absolu)
-        mentorats_actifs      = Mentorat.objects.filter(status='ACTIVE').count()
-        mentorats_pending     = Mentorat.objects.filter(status='PENDING').count()
-        alertes_rouges        = Mentorat.objects.filter(status='ACTIVE', alerte_rouge=True).count()
-        demandes_en_attente   = YoungRequest.objects.filter(status__in=['NEW', 'PENDING']).count()
+        # Mentorats créés dans la période (filtrés)
+        m_created_qs = Mentorat.objects.all()
+        if date_from:
+            m_created_qs = m_created_qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            m_created_qs = m_created_qs.filter(created_at__date__lte=date_to)
+        mentorats_actifs      = m_created_qs.filter(status='ACTIVE').count()
+        mentorats_pending     = m_created_qs.filter(status='PENDING').count()
+        alertes_rouges        = m_created_qs.filter(status='ACTIVE', alerte_rouge=True).count()
+        demandes_en_attente   = youngs_qs.filter(status__in=['NEW', 'PENDING']).count()
         urgences_non_traitees = 0
 
         mentors_total        = Mentor.objects.filter(is_active=True).count()
@@ -358,9 +476,9 @@ class NationalKPIsView(APIView):
         jeunes_avec_diplome  = youngs_qs.exclude(diplome_prepare='').count()
         taux_diplome_nat     = round(jeunes_avec_diplome / youngs_total * 100, 1) if youngs_total else 0
 
-        # ── Top 5 problématiques des mentorats (national) ─────────────────
+        # ── Top 5 problématiques des mentorats (national, période) ──────────
         prob_counter = Counter()
-        for codes in Mentorat.objects.values_list('problematiques', flat=True):
+        for codes in m_created_qs.values_list('problematiques', flat=True):
             if isinstance(codes, list):
                 prob_counter.update(codes)
         problematiques_top5 = [
@@ -370,7 +488,7 @@ class NationalKPIsView(APIView):
 
         # ── Performance globale (durée + délai) ───────────────────────────
         all_mentorats_dates = list(
-            Mentorat.objects.filter(assigned_at__isnull=False)
+            m_created_qs.filter(assigned_at__isnull=False)
             .values('assigned_at', 'closed_at', 'status')
         )
         durees_mois_nat = []
@@ -382,7 +500,7 @@ class NationalKPIsView(APIView):
         duree_moyenne_nat = round(sum(durees_mois_nat) / len(durees_mois_nat), 1) if durees_mois_nat else 0
 
         all_assign_data = list(
-            Mentorat.objects.filter(assigned_at__isnull=False)
+            m_created_qs.filter(assigned_at__isnull=False)
             .values('assigned_at', 'young_request__request_date')
         )
         delais_nat = [
@@ -398,6 +516,43 @@ class NationalKPIsView(APIView):
         taux_saturation_nat  = round(mentors_satures   / mentors_total * 100, 1) if mentors_total else 0
         taux_attente_nat     = round(demandes_en_attente / youngs_total * 100, 1) if youngs_total else 0
 
+        # ── Performance qualitative nationale (mentorats clos de la période)
+        nat_clos_qs = m_closed_qs.filter(status='CLOSED')
+        heures_moy_nat      = round(float(nat_clos_qs.aggregate(moy=Avg('nb_heures'))['moy'] or 0), 1)
+        rencontres_moy_nat  = round(float(nat_clos_qs.aggregate(moy=Avg('nb_rencontres'))['moy'] or 0), 1)
+        nat_typed_total     = nat_clos_qs.filter(type_mentorat__in=['presentiel', 'distanciel']).count()
+        pct_presentiel_nat  = round(nat_clos_qs.filter(type_mentorat='presentiel').count() / nat_typed_total * 100) if nat_typed_total else 0
+
+        POSITIF_CODES_NAT = ['OBJECTIVE_REACHED']
+        NUL_CODES_NAT     = ['NO_CONTACT']
+        pos_nat  = nat_clos_qs.filter(closure_reason_code__in=POSITIF_CODES_NAT).count()
+        nul_nat  = nat_clos_qs.filter(closure_reason_code__in=NUL_CODES_NAT).count()
+        neg_nat  = nat_clos_qs.exclude(closure_reason_code__in=POSITIF_CODES_NAT + NUL_CODES_NAT).exclude(closure_reason_code='').count()
+        sent_tot_nat = pos_nat + nul_nat + neg_nat
+        cloture_par_sentiment_nat = {
+            'positif': round(pos_nat / sent_tot_nat * 100) if sent_tot_nat else 0,
+            'nul':     round(nul_nat / sent_tot_nat * 100) if sent_tot_nat else 0,
+            'negatif': round(neg_nat / sent_tot_nat * 100) if sent_tot_nat else 0,
+        }
+
+        # Max mentorats / mentor national (filtré par période)
+        nb_filter_nat = Q()
+        if date_from:
+            nb_filter_nat &= Q(mentorats__created_at__date__gte=date_from)
+        if date_to:
+            nb_filter_nat &= Q(mentorats__created_at__date__lte=date_to)
+        _nat_m_counts = list(
+            Mentor.objects.filter(is_active=True)
+            .annotate(nb=Count('mentorats', filter=nb_filter_nat))
+            .values_list('nb', flat=True)
+        )
+        max_par_mentor_nat = max(_nat_m_counts) if _nat_m_counts else 0
+
+        # Diplôme < niveau 5 national
+        _DIPLOMES_MOINS_5 = ['CAP', 'BEP', 'BAC_PRO', 'BAC_AUTRE', 'BP']
+        jeunes_moins_5_nat    = youngs_qs.filter(diplome_prepare__in=_DIPLOMES_MOINS_5).count()
+        pct_diplome_moins5_nat = round(jeunes_moins_5_nat / youngs_total * 100, 1) if youngs_total else 0
+
         # ── Financements (national) ───────────────────────────────────────
         financements_national = _compute_financements()
 
@@ -405,12 +560,23 @@ class NationalKPIsView(APIView):
         poles    = Pole.objects.all().order_by('name')
         par_pole = []
         for p in poles:
-            p_req    = YoungRequest.objects.filter(pole=p)
-            p_m      = Mentorat.objects.filter(pole=p)
-            p_actifs = p_m.filter(status='ACTIVE').count()
+            p_req = YoungRequest.objects.filter(pole=p)
+            if date_from:
+                p_req = p_req.filter(request_date__gte=date_from)
+            if date_to:
+                p_req = p_req.filter(request_date__lte=date_to)
+            p_m = Mentorat.objects.filter(pole=p)
+            p_m_created = p_m
+            if date_from:
+                p_m_created = p_m_created.filter(created_at__date__gte=date_from)
+            if date_to:
+                p_m_created = p_m_created.filter(created_at__date__lte=date_to)
+            p_actifs = p_m_created.filter(status='ACTIVE').count()
             p_closed = p_m.filter(status__in=['CLOSED', 'ABORTED'])
             if date_from:
                 p_closed = p_closed.filter(closed_at__gte=date_from)
+            if date_to:
+                p_closed = p_closed.filter(closed_at__lte=date_to)
             p_closes   = p_closed.filter(status='CLOSED').count()
             p_termines = p_closed.count()
             par_pole.append({
@@ -420,7 +586,7 @@ class NationalKPIsView(APIView):
                 "total_demandes":      p_req.count(),
                 "mentorats_actifs":    p_actifs,
                 "mentors_total":       Mentor.objects.filter(pole=p, is_active=True).count(),
-                "alertes_rouges":      p_m.filter(status='ACTIVE', alerte_rouge=True).count(),
+                "alertes_rouges":      p_m_created.filter(status='ACTIVE', alerte_rouge=True).count(),
                 "taux_reussite":       round(p_closes / p_termines * 100, 1) if p_termines else 0,
                 "demandes_en_attente": p_req.filter(status__in=['NEW', 'PENDING']).count(),
             })
@@ -457,7 +623,14 @@ class NationalKPIsView(APIView):
             "en_apprentissage":       en_apprentissage_nat,
             "en_recherche":           en_recherche_nat,
             "taux_diplome":           taux_diplome_nat,
+            "pct_diplome_moins5":     pct_diplome_moins5_nat,
             "problematiques_top5":    problematiques_top5,
+            # ── Performance qualitative nationale ─────────
+            "heures_moy_par_mentorat":     heures_moy_nat,
+            "rencontres_moy_par_mentorat": rencontres_moy_nat,
+            "pct_presentiel":              pct_presentiel_nat,
+            "cloture_par_sentiment":       cloture_par_sentiment_nat,
+            "max_par_mentor":              max_par_mentor_nat,
             # ── Financements ──────────────────────────────
             "financements_national":  financements_national,
         })

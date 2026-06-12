@@ -24,8 +24,9 @@ type SortKey = keyof PoleSummaryKPI;
 type SortDir = 'asc' | 'desc';
 
 const PERIOD_LABELS: Record<KpiPeriod, string> = {
-  semester: '6 mois',
-  year:     '12 mois',
+  semester: 'Semestre 1',
+  year:     'Semestre 2',
+  annee:    'Année',
   all:      'Tout',
 };
 

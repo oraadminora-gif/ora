@@ -2,7 +2,7 @@
 import api from './api';
 import type { PoleKPI, NationalKPI, NationalKPIDetailed } from '../types/kpi';
 
-export type KpiPeriod = 'semester' | 'year' | 'all';
+export type KpiPeriod = 'semester' | 'year' | 'annee' | 'all';
 
 export const fetchPoleKPIs = async (period: KpiPeriod = 'year', poleId?: number): Promise<PoleKPI> => {
   const params: Record<string, string | number> = { period };

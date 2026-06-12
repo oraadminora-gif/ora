@@ -457,7 +457,7 @@ export function APMesMentorats() {
             )}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Suivi des mentorats assignés à{' '}
+            Suivi des mentors assignés à{' '}
             <span className="font-semibold text-slate-700">{animateur.first_name} {animateur.last_name}</span>
             <span className="text-slate-300 mx-1.5">·</span>
             <span className="font-semibold text-ora-blue">{animateur.association.name}</span>

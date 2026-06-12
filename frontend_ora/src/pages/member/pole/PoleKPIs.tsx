@@ -1,9 +1,9 @@
 // src/pages/member/pole/PoleKPIs.tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { fetchPoleKPIs, fetchNationalKPIs } from '../../../services/kpiService';
+import { fetchPoleKPIs, fetchNationalKPIsDetailed } from '../../../services/kpiService';
 import type { KpiPeriod } from '../../../services/kpiService';
-import type { PoleKPI, NationalKPI } from '../../../types/kpi';
+import type { PoleKPI, NationalKPIDetailed } from '../../../types/kpi';
 import { useAuth } from '../../../contexts/AuthContext';
 import api from '../../../services/api';
 import {
@@ -15,22 +15,45 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 
+// ─── Diplôme → niveau RNCP ───────────────────────────────────────────────────
+const DIPLOME_NIVEAU: Record<string, { niveau: number; label: string }> = {
+  CAP:      { niveau: 3, label: 'CAP — Niv. 3' },
+  BEP:      { niveau: 3, label: 'BEP — Niv. 3' },
+  BAC_PRO:  { niveau: 4, label: 'Bac Pro — Niv. 4' },
+  BAC_AUTRE:{ niveau: 4, label: 'Bac (autre) — Niv. 4' },
+  BP:       { niveau: 4, label: 'BP — Niv. 4' },
+  BTS:      { niveau: 5, label: 'BTS — Niv. 5' },
+  DUT:      { niveau: 5, label: 'DUT — Niv. 5' },
+  BUT:      { niveau: 6, label: 'BUT — Niv. 6' },
+  LIC_PRO:  { niveau: 6, label: 'Licence Pro — Niv. 6' },
+  MASTER:   { niveau: 7, label: 'Master — Niv. 7' },
+  ING:      { niveau: 7, label: 'Ingénieur — Niv. 7' },
+  DEA:      { niveau: 8, label: 'DEA — Niv. 8' },
+  DES:      { niveau: 8, label: 'DES — Niv. 8' },
+};
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EXPORT_SECTIONS = [
   { id: 'kpi-section-global',      label: 'Vue globale' },
   { id: 'kpi-section-mentors',     label: 'Mentors & Capacité' },
   { id: 'kpi-section-performance', label: 'Performance qualitative' },
-  { id: 'kpi-section-charts',      label: 'Graphiques' },
-  { id: 'kpi-section-jeunes',      label: 'Profil des jeunes' },
-  { id: 'kpi-section-aps',         label: 'APs & Urgences' },
+  { id: 'kpi-section-jeunes',      label: 'Résultats jeunes' },
   { id: 'kpi-section-national',    label: 'Comparaison nationale' },
 ] as const;
 
 const PERIOD_LABELS: Record<KpiPeriod, string> = {
-  semester: '6 mois',
-  year:     '12 mois',
+  semester: 'Semestre 1',
+  year:     'Semestre 2',
+  annee:    'Année',
   all:      'Tout',
+};
+
+const PERIOD_DESC: Record<KpiPeriod, string> = {
+  semester: '1er jan – 30 jun',
+  year:     '1er jul – 31 déc',
+  annee:    '1er jan – 31 déc',
+  all:      'Accumulation totale',
 };
 
 // ─── Screen sub-components ────────────────────────────────────────────────────
@@ -142,7 +165,7 @@ function ExportModal({ period, included, onToggle, onPrint, onClose }: {
         <div className="px-6 py-4 border-b border-slate-200">
           <h2 className="font-semibold text-slate-900 text-lg">Exporter en PDF</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Période : <strong>{PERIOD_LABELS[period]}</strong> — Décochez les rubriques à exclure
+            Période : <strong>{PERIOD_LABELS[period]}</strong> ({PERIOD_DESC[period]}) — Décochez les rubriques à exclure
           </p>
         </div>
         <div className="px-6 py-4 space-y-3">
@@ -209,9 +232,9 @@ function PStat({ label, value, sub }: { label: string; value: string | number; s
   );
 }
 
-function PGrid({ children }: { children: React.ReactNode }) {
+function PGrid({ children, cols = 4 }: { children: React.ReactNode; cols?: number }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8, marginBottom: 12 }}>
       {children}
     </div>
   );
@@ -232,7 +255,7 @@ function PTauxBar({ label, value, color = '#3b82f6' }: { label: string; value: n
 }
 
 function PrintContent({ poleData, nationalData, period, includedSections }: {
-  poleData: PoleKPI; nationalData: NationalKPI;
+  poleData: PoleKPI; nationalData: NationalKPIDetailed;
   period: KpiPeriod; includedSections: Set<string>;
 }) {
   const genderData = [
@@ -265,31 +288,35 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
 
       {/* Section 1 : Vue globale */}
       {includedSections.has('kpi-section-global') && (
-        <PSection title="Vue globale — période {PERIOD_LABELS[period]}">
-          <PGrid>
+        <PSection title={`Vue globale — ${PERIOD_LABELS[period]} · de l'activité demandes / mentorats (${PERIOD_DESC[period]})`}>
+          <PGrid cols={6}>
             <PStat label="Demandes reçues" value={poleData.total_demandes}
               sub={`${poleData.filles_pct}% filles · ${poleData.garcons_pct}% garçons`} />
-            <PStat label="Mentorats actifs" value={poleData.mentorats_actifs}
-              sub={`${poleData.mentorats_pending} en attente`} />
-            <PStat label="Taux de réussite" value={`${poleData.taux_reussite}%`}
-              sub={`${poleData.mentorats_closes} clôturés`} />
-            <PStat label="Taux d'abandon" value={`${poleData.taux_abandon}%`}
-              sub={`${poleData.mentorats_abandonnes} abandonnés`} />
+            <PStat label="Demandes en attente" value={poleData.demandes_en_attente} />
+            <PStat label="Mentorats créés" value={poleData.mentorats_crees ?? 0}
+              sub="sur la période" />
+            <PStat label="Mentorats en cours" value={poleData.mentorats_actifs} />
+            <PStat label="Mentorats clos" value={poleData.mentorats_closes} />
+            <PStat label="Délai moyen d'affectation" value={`${poleData.delai_moyen} j`}
+              sub="demande → mentor" />
           </PGrid>
         </PSection>
       )}
 
       {/* Section 2 : Mentors & Capacité */}
       {includedSections.has('kpi-section-mentors') && (
-        <PSection title="Mentors & Capacité">
-          <PGrid>
-            <PStat label="Mentors actifs" value={poleData.mentors_total}
-              sub={`${poleData.mentors_disponibles} disponibles`} />
-            <PStat label="Capacité restante" value={poleData.capacite_restante} sub="places disponibles" />
-            <PStat label="Demandes en attente" value={poleData.demandes_en_attente}
-              sub={`${poleData.urgences_non_traitees} urgences`} />
-            <PStat label="Taux de saturation" value={`${poleData.taux_saturation}%`}
+        <PSection title="Mentors & Capacité — Mentorats sur la période et à date">
+          <PGrid cols={6}>
+            <PStat label="Mentors disponibles sur Pôle" value={poleData.mentors_total}
               sub={`${poleData.mentors_satures} saturés`} />
+            <PStat label="Mentors disponibles pour affectation" value={poleData.mentors_disponibles}
+              sub={`sur ${poleData.mentors_total} actifs`} />
+            <PStat label="Mentorats possibles" value={poleData.capacite_restante} sub="places disponibles" />
+            <PStat label="Mentors dispo sans mentorat" value={poleData.mentors_sans_mentorat ?? 0}
+              sub="n'ont eu aucun mentorat" />
+            <PStat label="Nbre moyen / mentor" value={poleData.moyen_par_mentor ?? 0}
+              sub="mentorats par mentor actif" />
+            <PStat label="Nbre max / mentor" value={poleData.max_par_mentor ?? 0} />
           </PGrid>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px' }}>
             <PTauxBar label="Taux de couverture" value={poleData.taux_couverture} color="#10b981" />
@@ -299,98 +326,56 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
         </PSection>
       )}
 
-      {/* Section 3 : Performance qualitative */}
+      {/* Section 3 : Performance qualitative — Résultats mentorats clos */}
       {includedSections.has('kpi-section-performance') && (
-        <PSection title="Performance qualitative">
-          <PGrid>
-            <PStat label="Durée moyenne" value={`${poleData.duree_moyenne} mois`} sub="par mentorat" />
-            <PStat label="Heures cumulées" value={poleData.heures_cumulees} sub="estimation 4 h/mois" />
-            <PStat label="Délai d'assignation" value={`${poleData.delai_moyen} j`} sub="demande → mentor" />
-            <PStat label="Taux de couverture" value={`${poleData.taux_couverture}%`} sub="actifs / demandes" />
+        <PSection title={`Performance qualitative — Résultats mentorats clos · ${PERIOD_LABELS[period]} (${PERIOD_DESC[period]})`}>
+          {/* Ligne 1 : 3 stats chiffrées */}
+          <PGrid cols={3}>
+            <PStat label="Durée moyenne / mentorat" value={`${poleData.duree_moyenne} mois`} />
+            <PStat label="Heures moy. / mentorat"   value={`${poleData.heures_moy_par_mentorat ?? 0} h`} />
+            <PStat label="Rencontres moy. / mentorat" value={poleData.rencontres_moy_par_mentorat ?? 0} />
           </PGrid>
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px' }}>
-            <PTauxBar label="Réussite"         value={poleData.taux_reussite}   color="#10b981" />
-            <PTauxBar label="Abandon"           value={poleData.taux_abandon}    color="#ef4444" />
-            <PTauxBar label="Couverture"        value={poleData.taux_couverture} color="#3b82f6" />
-            <PTauxBar label="Saturation"        value={poleData.taux_saturation}
-              color={poleData.taux_saturation > 70 ? '#ef4444' : '#f59e0b'} />
+          {/* Ligne 2 : 3 breakdowns */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+            {/* Type de mentorat */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Type de mentorat</div>
+              {(poleData.pct_presentiel ?? 0) + (poleData.pct_distanciel ?? 0) === 0
+                ? <div style={{ fontSize: 9, color: '#94a3b8' }}>Non renseigné</div>
+                : <>
+                    <PTauxBar label="Présentiel"  value={poleData.pct_presentiel ?? 0}  color="#3b82f6" />
+                    <PTauxBar label="Distanciel"  value={poleData.pct_distanciel ?? 0}  color="#a78bfa" />
+                  </>}
+            </div>
+            {/* Financement */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Financement</div>
+              {poleData.financement_pct
+                ? <>
+                    <PTauxBar label="National" value={poleData.financement_pct.national} color="#8b5cf6" />
+                    <PTauxBar label="Local"    value={poleData.financement_pct.local}    color="#3b82f6" />
+                    <PTauxBar label="Sans fin." value={poleData.financement_pct.sans}    color="#94a3b8" />
+                  </>
+                : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+            </div>
+            {/* Statut des mentorats clos */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Statut clos</div>
+              {poleData.cloture_par_sentiment
+                ? <>
+                    <PTauxBar label="Positif"  value={poleData.cloture_par_sentiment.positif}  color="#10b981" />
+                    <PTauxBar label="Nul"      value={poleData.cloture_par_sentiment.nul}       color="#94a3b8" />
+                    <PTauxBar label="Négatif"  value={poleData.cloture_par_sentiment.negatif}   color="#ef4444" />
+                  </>
+                : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+            </div>
           </div>
         </PSection>
       )}
 
-      {/* Section 4 : Graphiques */}
-      {includedSections.has('kpi-section-charts') && (
-        <PSection title="Graphiques">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-            {/* Genre */}
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Répartition par genre</div>
-              {poleData.total_demandes > 0 ? (
-                <>
-                  <PieChart width={290} height={130}>
-                    <Pie data={genderData} cx="50%" cy="50%" outerRadius={50} dataKey="value">
-                      {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => [v ?? 0, '']} />
-                  </PieChart>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 12, fontSize: 9, marginTop: 4 }}>
-                    {genderData.map((e, i) => (
-                      <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: e.color, display: 'inline-block' }} />
-                        {e.name} ({e.value})
-                      </span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 10, padding: '20px 0' }}>Aucune donnée</div>
-              )}
-            </div>
-            {/* Statut */}
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Statut des mentorats</div>
-              {statutData.length > 0 ? (
-                <>
-                  <PieChart width={290} height={130}>
-                    <Pie data={statutData} cx="50%" cy="50%" outerRadius={50} dataKey="value">
-                      {statutData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => [v ?? 0, '']} />
-                  </PieChart>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, fontSize: 9, marginTop: 4 }}>
-                    {statutData.map((e, i) => (
-                      <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: e.color, display: 'inline-block' }} />
-                        {e.name} ({e.value})
-                      </span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 10, padding: '20px 0' }}>Aucun mentorat</div>
-              )}
-            </div>
-          </div>
-          {/* Mentors par association */}
-          {assocData.length > 0 && (
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Mentors par association</div>
-              <BarChart width={600} height={Math.max(100, assocData.length * 26)}
-                data={assocData} layout="vertical" margin={{ left: 8, right: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9 }} />
-                <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 9 }} />
-                <Tooltip />
-                <Bar dataKey="mentors" fill="#3b82f6" radius={[0, 3, 3, 0]} />
-              </BarChart>
-            </div>
-          )}
-        </PSection>
-      )}
-
-      {/* Section 5 : Profil des jeunes */}
+      {/* Section 5 : Résultats jeunes */}
       {includedSections.has('kpi-section-jeunes') && (
-        <PSection title="Profil des jeunes">
+        <PSection title={`Résultats jeunes — ${PERIOD_LABELS[period]} (${PERIOD_DESC[period]})`}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
 
             {/* Tranches d'âge */}
@@ -424,25 +409,34 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
               )}
             </div>
 
-            {/* Diplôme préparé */}
+            {/* Diplôme préparé — par niveau RNCP */}
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplôme préparé</div>
-              {poleData.par_diplome && poleData.par_diplome.length > 0 ? (
-                poleData.par_diplome.slice(0, 7).map(d => {
-                  const pct = poleData.total_demandes > 0 ? Math.round(d.count / poleData.total_demandes * 100) : 0;
+              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplôme préparé (par niveau)</div>
+              {poleData.par_diplome && poleData.par_diplome.length > 0 ? (() => {
+                const byNiveau = new Map<number, number>();
+                poleData.par_diplome!.forEach(d => {
+                  const niv = DIPLOME_NIVEAU[d.code]?.niveau ?? 99;
+                  byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+                });
+                const rows = [...byNiveau.entries()].sort(([a], [b]) => a - b)
+                  .map(([niv, count]) => ({ label: niv === 99 ? 'Autre' : `Niveau ${niv}`, count }));
+                const total = rows.reduce((s, r) => s + r.count, 0);
+                const colors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
+                return rows.map((r, i) => {
+                  const pct = total > 0 ? Math.round(r.count / total * 100) : 0;
                   return (
-                    <div key={d.code} style={{ marginBottom: 5 }}>
+                    <div key={r.label} style={{ marginBottom: 5 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
-                        <span>{d.label}</span>
-                        <span style={{ fontWeight: 600 }}>{d.count} ({pct}%)</span>
+                        <span style={{ fontWeight: 600 }}>{r.label}</span>
+                        <span style={{ fontWeight: 600 }}>{r.count} ({pct}%)</span>
                       </div>
                       <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#3b82f6', borderRadius: 2 }} />
+                        <div style={{ height: '100%', width: `${pct}%`, background: colors[i % colors.length], borderRadius: 2 }} />
                       </div>
                     </div>
                   );
-                })
-              ) : (
+                });
+              })() : (
                 <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>
               )}
             </div>
@@ -485,55 +479,9 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
         </PSection>
       )}
 
-      {/* Section 6 : APs & Urgences */}
-      {includedSections.has('kpi-section-aps') && (
-        <PSection title="APs & Urgences">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 8, color: '#475569' }}>APs mobilisés</div>
-              <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse' }}>
-                <tbody>
-                  {[
-                    ['APs au total',        poleData.aps_total],
-                    ['APs actifs',          poleData.aps_actifs],
-                    ['Taux de mobilisation', poleData.aps_total > 0
-                      ? `${Math.round(poleData.aps_actifs / poleData.aps_total * 100)}%` : '—'],
-                  ].map(([lbl, val]) => (
-                    <tr key={String(lbl)}>
-                      <td style={{ padding: '3px 0', color: '#64748b' }}>{lbl}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 600, color: '#1e293b' }}>{val}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>
-                Urgences non traitées ({poleData.urgences_non_traitees})
-              </div>
-              {(poleData.urgences_details ?? []).length === 0 ? (
-                <div style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>
-                  Aucune urgence
-                </div>
-              ) : (
-                poleData.urgences_details.map((u, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0',
-                    borderBottom: i < poleData.urgences_details.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                    <span style={{ flex: 1, fontSize: 10 }}>{u.first_name} {u.last_name} — {u.city}</span>
-                    <span style={{ fontSize: 9, color: '#94a3b8' }}>
-                      {new Date(u.request_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </PSection>
-      )}
-
       {/* Section 6 : Comparaison nationale */}
       {includedSections.has('kpi-section-national') && (
-        <PSection title="Comparaison nationale">
+        <PSection title={`Comparaison nationale — ${PERIOD_LABELS[period]} (${PERIOD_DESC[period]})`}>
           <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -546,22 +494,24 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
               </tr>
             </thead>
             <tbody>
-              {[
-                { label: '% filles',                  pole: poleData.filles_pct,    nat: nationalData.filles_pct,    unit: '%' },
-                { label: 'Taux de réussite',           pole: poleData.taux_reussite, nat: nationalData.taux_reussite, unit: '%' },
-                { label: 'Mentors disponibles / total',
-                  pole: poleData.mentors_total > 0 ? Math.round(poleData.mentors_disponibles / poleData.mentors_total * 100) : 0,
-                  nat:  nationalData.mentors_total > 0 ? Math.round(nationalData.mentors_dispo / nationalData.mentors_total * 100) : 0,
-                  unit: '%' },
-              ].map(row => {
+              {([
+                { label: '% filles',                              pole: poleData.filles_pct,                          nat: nationalData.filles_pct,                          unit: '%',  higherIsBetter: true },
+                { label: 'Heures moy. / mentorat',                pole: poleData.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
+                { label: 'Rencontres moy. / mentorat',            pole: poleData.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
+                { label: 'Clôtures positives (objectif atteint)', pole: poleData.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
+                { label: 'Nbre max mentorats / mentor',           pole: poleData.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                { label: 'Présentiel (mentorats clos)',           pole: poleData.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
+                { label: 'Diplôme niv. < 5 (CAP→BP)',            pole: poleData.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
+              ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
                 const diff = row.pole - row.nat;
+                const positive = row.higherIsBetter ? diff >= 0 : diff <= 0;
                 return (
                   <tr key={row.label} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '5px 8px', color: '#1e293b' }}>{row.label}</td>
                     <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600 }}>{row.pole.toFixed(1)}{row.unit}</td>
                     <td style={{ padding: '5px 8px', textAlign: 'right', color: '#64748b' }}>{row.nat.toFixed(1)}{row.unit}</td>
                     <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600,
-                      color: diff >= 0 ? '#16a34a' : '#dc2626' }}>
+                      color: positive ? '#16a34a' : '#dc2626' }}>
                       {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{row.unit}
                     </td>
                   </tr>
@@ -582,7 +532,7 @@ export function PoleKPIs() {
   const isCN = activeRole === 'CN';
 
   const [poleData, setPoleData]         = useState<PoleKPI | null>(null);
-  const [nationalData, setNationalData] = useState<NationalKPI | null>(null);
+  const [nationalData, setNationalData] = useState<NationalKPIDetailed | null>(null);
   const [loading, setLoading]           = useState(true);
   const [refreshing, setRefreshing]     = useState(false);
   const [error, setError]               = useState<string | null>(null);
@@ -634,7 +584,7 @@ export function PoleKPIs() {
     try {
       const [pole, national] = await Promise.all([
         fetchPoleKPIs(period, isCN ? selectedPoleId! : undefined),
-        fetchNationalKPIs(),
+        fetchNationalKPIsDetailed(period),
       ]);
       setPoleData(pole);
       setNationalData(national);
@@ -708,10 +658,9 @@ export function PoleKPIs() {
   const assocData = (poleData.mentors_par_association ?? []).slice(0, 8).map(a => ({
     name: a.association__name ?? '—', mentors: a.count,
   }));
-  const capaciteData = [
-    { name: 'Capacité restante',   value: poleData.capacite_restante },
-    { name: 'Demandes en attente', value: poleData.demandes_en_attente },
-  ];
+  const capaciteAssocData = (poleData.capacite_par_association ?? []).slice(0, 8).map(a => ({
+    name: a.association__name ?? '—', places: a.capacite,
+  }));
 
   return (
     <>
@@ -747,8 +696,9 @@ export function PoleKPIs() {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-              {(['semester', 'year', 'all'] as KpiPeriod[]).map(p => (
+              {(['semester', 'year', 'annee', 'all'] as KpiPeriod[]).map(p => (
                 <button key={p} onClick={() => setPeriod(p)}
+                  title={PERIOD_DESC[p]}
                   className={`px-3 py-1.5 font-medium transition-colors ${
                     period === p ? 'bg-ora-blue text-white' : 'bg-white text-slate-600 hover:bg-slate-50'
                   }`}>
@@ -794,92 +744,198 @@ export function PoleKPIs() {
 
         {/* ── Section 1 : Vue globale ─────────────────────────────────── */}
         <div id="kpi-section-global" className="space-y-3">
-          <SectionTitle>Vue globale — période {PERIOD_LABELS[period]}</SectionTitle>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+            <SectionTitle>Vue globale — {PERIOD_LABELS[period]}</SectionTitle>
+            <span className="text-xs text-slate-400 mb-3">de l'activité demandes / mentorats ({PERIOD_DESC[period]})</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatCard label="Demandes reçues" value={poleData.total_demandes}
               sub={`${poleData.filles_pct}% filles · ${poleData.garcons_pct}% garçons`}
               icon={<Users size={20} />} color="blue" />
-            <StatCard label="Mentorats actifs" value={poleData.mentorats_actifs}
-              sub={`${poleData.mentorats_pending} en attente`}
+            <StatCard label="Demandes en attente" value={poleData.demandes_en_attente}
+              icon={<Hourglass size={20} />} color="amber" />
+            <StatCard label="Mentorats créés" value={poleData.mentorats_crees ?? 0}
+              sub="sur la période"
+              icon={<TrendingUp size={20} />} color="purple" />
+            <StatCard label="Mentorats en cours" value={poleData.mentorats_actifs}
               icon={<UserCheck size={20} />} color="green" />
-            <StatCard label="Taux de réussite" value={`${poleData.taux_reussite}%`}
-              sub={`${poleData.mentorats_closes} clôturés avec succès`}
-              icon={<CheckCircle size={20} />} color="green" up={poleData.taux_reussite >= 50} />
-            <StatCard label="Taux d'abandon" value={`${poleData.taux_abandon}%`}
-              sub={`${poleData.mentorats_abandonnes} abandonnés`}
-              icon={<XCircle size={20} />} color="red" up={poleData.taux_abandon < 20} />
+            <StatCard label="Mentorats clos" value={poleData.mentorats_closes}
+              icon={<CheckCircle size={20} />} color="slate" />
+            <StatCard label="Délai moyen d'affectation" value={`${poleData.delai_moyen} j`}
+              sub="demande → mentor"
+              icon={<Clock size={20} />} color={poleData.delai_moyen > 14 ? 'red' : 'green'}
+              up={poleData.delai_moyen <= 14} />
           </div>
         </div>
 
         {/* ── Section 2 : Mentors & Capacité ─────────────────────────── */}
         <div id="kpi-section-mentors" className="space-y-3">
-          <SectionTitle>Mentors & Capacité</SectionTitle>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Mentors actifs" value={poleData.mentors_total}
-              sub={`${poleData.mentors_disponibles} disponibles`}
-              icon={<Users size={20} />} color="blue" />
-            <StatCard label="Capacité restante" value={poleData.capacite_restante}
-              sub="places mentor disponibles" icon={<Activity size={20} />} color="green" />
-            <StatCard label="Demandes en attente" value={poleData.demandes_en_attente}
-              sub={`${poleData.urgences_non_traitees} urgences`}
-              icon={<Hourglass size={20} />}
-              color={poleData.demandes_en_attente > poleData.capacite_restante ? 'red' : 'amber'} />
-            <StatCard label="Taux de saturation" value={`${poleData.taux_saturation}%`}
-              sub={`${poleData.mentors_satures} mentors saturés`}
-              icon={<AlertTriangle size={20} />}
-              color={poleData.taux_saturation > 70 ? 'red' : 'amber'}
-              up={poleData.taux_saturation < 70} />
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+            <SectionTitle>Mentors &amp; Capacité</SectionTitle>
+            <span className="text-xs text-slate-400 mb-3">Mentorats sur la période et à date</span>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-            <h3 className="text-sm font-semibold text-slate-700">Prévision offre / demande</h3>
-            <TauxBar label="Taux de couverture" value={poleData.taux_couverture} color="#10b981" />
-            <TauxBar label="Taux de saturation mentors" value={poleData.taux_saturation}
-              color={poleData.taux_saturation > 70 ? '#ef4444' : '#f59e0b'} />
-            {poleData.demandes_en_attente > 0 && (
-              <p className={`text-xs font-medium ${poleData.capacite_restante >= poleData.demandes_en_attente ? 'text-green-700' : 'text-red-700'}`}>
-                {poleData.capacite_restante >= poleData.demandes_en_attente
-                  ? `Capacité suffisante : ${poleData.capacite_restante} places pour ${poleData.demandes_en_attente} demandes.`
-                  : `Attention : ${poleData.demandes_en_attente - poleData.capacite_restante} demande(s) sans mentor disponible.`}
-              </p>
-            )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard label="Mentors disponibles sur Pôle" value={poleData.mentors_total}
+              sub={`${poleData.mentors_satures} saturés`}
+              icon={<Users size={20} />} color="blue" />
+            <StatCard label="Mentors disponibles pour affectation" value={poleData.mentors_disponibles}
+              sub={`sur ${poleData.mentors_total} actifs`}
+              icon={<UserCheck size={20} />} color="green" />
+            <StatCard label="Mentorats possibles" value={poleData.capacite_restante}
+              sub="places disponibles"
+              icon={<Activity size={20} />} color="green" />
+            <StatCard label="Mentors dispo sans mentorat" value={poleData.mentors_sans_mentorat ?? 0}
+              sub="n'ont eu aucun mentorat"
+              icon={<Hourglass size={20} />} color="amber" />
+            <StatCard label="Nbre moyen de mentorats / mentor" value={poleData.moyen_par_mentor ?? 0}
+              sub="parmi les mentors actifs"
+              icon={<TrendingUp size={20} />} color="purple" />
+            <StatCard label="Nbre max de mentorats / mentor" value={poleData.max_par_mentor ?? 0}
+              icon={<Zap size={20} />} color={(poleData.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ChartCard title="Mentors par association">
+              {assocData.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-8">Aucune association</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(120, assocData.length * 32)}>
+                  <BarChart data={assocData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Bar dataKey="mentors" name="Mentors" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </ChartCard>
+            <ChartCard title="Mentorats possibles par association">
+              {capaciteAssocData.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={Math.max(120, capaciteAssocData.length * 32)}>
+                  <BarChart data={capaciteAssocData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Bar dataKey="places" name="Places dispo" fill="#10b981" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </ChartCard>
           </div>
         </div>
 
         {/* ── Section 3 : Performance qualitative ────────────────────── */}
         <div id="kpi-section-performance" className="space-y-3">
-          <SectionTitle>Performance qualitative</SectionTitle>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Durée moyenne" value={`${poleData.duree_moyenne} mois`} sub="par mentorat"
-              icon={<Clock size={20} />} color="purple" />
-            <StatCard label="Heures cumulées" value={poleData.heures_cumulees} sub="estimation (4 h/mois)"
-              icon={<TrendingUp size={20} />} color="purple" />
-            <StatCard label="Délai d'assignation" value={`${poleData.delai_moyen} j`} sub="entre demande et 1er mentor"
-              icon={<Hourglass size={20} />} color={poleData.delai_moyen > 14 ? 'red' : 'green'} up={poleData.delai_moyen <= 14} />
-            <StatCard label="Taux de couverture" value={`${poleData.taux_couverture}%`} sub="mentorats actifs / demandes"
-              icon={<Activity size={20} />} color="blue" up={poleData.taux_couverture >= 50} />
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+            <SectionTitle>Performance qualitative — DES MENTORATS CLOS</SectionTitle>
+            <span className="text-xs text-slate-400 mb-3">sur la période sélectionnée</span>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-            <h3 className="text-sm font-semibold text-slate-700">Synthèse des taux</h3>
-            <TauxBar label="Réussite"   value={poleData.taux_reussite}   color="#10b981" />
-            <TauxBar label="Abandon"    value={poleData.taux_abandon}    color="#ef4444" />
-            <TauxBar label="Couverture" value={poleData.taux_couverture} color="#3b82f6" />
-            <TauxBar label="Saturation mentors" value={poleData.taux_saturation}
-              color={poleData.taux_saturation > 70 ? '#ef4444' : '#f59e0b'} />
+
+          {/* Résultats mentorats */}
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">— Résultats mentorats</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard label="Durée moyenne par mentorat" value={`${poleData.duree_moyenne} mois`}
+              icon={<Clock size={20} />} color="purple" />
+            <StatCard label="Heures moy. par mentorat" value={`${poleData.heures_moy_par_mentorat ?? 0} h`}
+              icon={<TrendingUp size={20} />} color="purple" />
+            <StatCard label="Rencontres moy. par mentorat" value={poleData.rencontres_moy_par_mentorat ?? 0}
+              icon={<Activity size={20} />} color="blue" />
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600"><Zap size={20} /></div>
+              </div>
+              <p className="text-xs font-semibold text-slate-500 leading-tight">Type de mentorat constaté</p>
+              {(poleData.pct_presentiel ?? 0) + (poleData.pct_distanciel ?? 0) === 0 ? (
+                <p className="text-xs text-slate-400 italic">Non renseigné</p>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-600">Présentiel</span>
+                    <span className="font-bold text-slate-900">{poleData.pct_presentiel ?? 0}%</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${poleData.pct_presentiel ?? 0}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-600">Distanciel</span>
+                    <span className="font-bold text-slate-900">{poleData.pct_distanciel ?? 0}%</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-purple-400" style={{ width: `${poleData.pct_distanciel ?? 0}%` }} />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <div className="p-2 rounded-lg bg-amber-50 text-amber-600"><TrendingUp size={20} /></div>
+              </div>
+              <p className="text-xs font-semibold text-slate-500 leading-tight">Financement des mentorats</p>
+              {poleData.financement_pct ? (
+                <div className="space-y-1">
+                  {([
+                    ['National', poleData.financement_pct.national, '#8b5cf6'],
+                    ['Local',    poleData.financement_pct.local,    '#3b82f6'],
+                    ['Sans fin.', poleData.financement_pct.sans,    '#94a3b8'],
+                  ] as [string, number, string][]).map(([lbl, pct, color]) => (
+                    <div key={lbl}>
+                      <div className="flex justify-between text-xs mb-0.5">
+                        <span className="text-slate-600">{lbl}</span>
+                        <span className="font-bold text-slate-900">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <div className="p-2 rounded-lg bg-green-50 text-green-600"><CheckCircle size={20} /></div>
+              </div>
+              <p className="text-xs font-semibold text-slate-500 leading-tight">Statut des mentorats clos</p>
+              {poleData.cloture_par_sentiment ? (
+                <div className="space-y-1">
+                  {([
+                    ['Positif',  poleData.cloture_par_sentiment.positif, '#10b981'],
+                    ['Nul',      poleData.cloture_par_sentiment.nul,     '#94a3b8'],
+                    ['Négatif',  poleData.cloture_par_sentiment.negatif, '#ef4444'],
+                  ] as [string, number, string][]).map(([lbl, pct, color]) => (
+                    <div key={lbl}>
+                      <div className="flex justify-between text-xs mb-0.5">
+                        <span className="text-slate-600">{lbl}</span>
+                        <span className="font-bold text-slate-900">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+            </div>
           </div>
         </div>
 
-        {/* ── Section 4 : Graphiques ──────────────────────────────────── */}
-        <div id="kpi-section-charts" className="space-y-3">
-          <SectionTitle>Graphiques</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ── Section 5 : Résultats jeunes ───────────────────────────── */}
+        <div id="kpi-section-jeunes" className="space-y-3">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">— Résultats jeunes</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            {/* Répartition par genre */}
             <ChartCard title="Répartition par genre">
               {poleData.total_demandes === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-8">Aucune donnée sur la période</p>
               ) : (
                 <>
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
-                      <Pie data={genderData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
+                      <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={4} dataKey="value">
                         {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
                       <Tooltip formatter={(v) => [v ?? 0, '']} />
@@ -891,64 +947,9 @@ export function PoleKPIs() {
                 </>
               )}
             </ChartCard>
-            <ChartCard title="Statut des mentorats">
-              {statutData.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-8">Aucun mentorat sur la période</p>
-              ) : (
-                <>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie data={statutData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
-                        {statutData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                      </Pie>
-                      <Tooltip formatter={(v) => [v ?? 0, '']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex flex-wrap justify-center gap-3 mt-2">
-                    {statutData.map((e, i) => <LegendDot key={i} color={e.color} label={`${e.name} (${e.value})`} />)}
-                  </div>
-                </>
-              )}
-            </ChartCard>
-            <ChartCard title="Mentors par association" className="lg:col-span-2">
-              {assocData.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-8">Aucune association</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={assocData} layout="vertical" margin={{ left: 16, right: 16 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="mentors" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </ChartCard>
-            <ChartCard title="Offre vs Demande (actuel)" className="lg:col-span-2">
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={capaciteData} margin={{ left: 8, right: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    <Cell fill="#10b981" />
-                    <Cell fill={poleData.demandes_en_attente > poleData.capacite_restante ? '#ef4444' : '#f59e0b'} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
-        </div>
-
-        {/* ── Section 5 : Profil des jeunes ──────────────────────────── */}
-        <div id="kpi-section-jeunes" className="space-y-3">
-          <SectionTitle>Profil des jeunes — période {PERIOD_LABELS[period]}</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Tranches d'âge */}
-            <ChartCard title="Tranches d'âge" className="lg:col-span-1">
+            <ChartCard title="Tranches d'âge">
               {!poleData.tranches_age || poleData.total_demandes === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
               ) : (
@@ -975,30 +976,49 @@ export function PoleKPIs() {
               )}
             </ChartCard>
 
-            {/* Diplôme préparé */}
-            <ChartCard title="Diplôme préparé" className="lg:col-span-1">
+            {/* Diplôme par niveau — regroupé */}
+            <ChartCard title="Diplôme préparé (par niveau)">
               {!poleData.par_diplome || poleData.par_diplome.length === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
-              ) : (
-                <div className="space-y-2">
-                  {poleData.par_diplome.slice(0, 8).map(d => (
-                    <div key={d.code} className="space-y-0.5">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-slate-600">{d.label}</span>
-                        <span className="font-medium text-slate-900">{d.count}</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-400 rounded-full"
-                          style={{ width: `${poleData.total_demandes > 0 ? Math.round(d.count / poleData.total_demandes * 100) : 0}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ) : (() => {
+                // Regrouper par niveau RNCP
+                const byNiveau = new Map<number, number>();
+                poleData.par_diplome!.forEach(d => {
+                  const niv = DIPLOME_NIVEAU[d.code]?.niveau ?? 99;
+                  byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+                });
+                const rows = [...byNiveau.entries()]
+                  .sort(([a], [b]) => a - b)
+                  .map(([niv, count]) => ({
+                    label: niv === 99 ? 'Autre' : `Niveau ${niv}`,
+                    count,
+                  }));
+                const total = rows.reduce((s, r) => s + r.count, 0);
+                const colors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
+                return (
+                  <div className="space-y-2">
+                    {rows.map((r, i) => {
+                      const pct = total > 0 ? Math.round(r.count / total * 100) : 0;
+                      return (
+                        <div key={r.label} className="space-y-0.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-700 font-medium">{r.label}</span>
+                            <span className="font-bold text-slate-900">{r.count} <span className="text-slate-400 font-normal">({pct}%)</span></span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full"
+                              style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </ChartCard>
 
             {/* Situation */}
-            <ChartCard title="Situation" className="lg:col-span-1">
+            <ChartCard title="Situation">
               {(poleData.en_apprentissage ?? 0) + (poleData.en_recherche ?? 0) === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
               ) : (
@@ -1030,67 +1050,41 @@ export function PoleKPIs() {
               )}
             </ChartCard>
 
-          </div>
-        </div>
-
-        {/* ── Section 6 : APs & Urgences ─────────────────────────────── */}
-        <div id="kpi-section-aps" className="space-y-3">
-          <SectionTitle>Animateurs de Pôle & Urgences</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-4">APs mobilisés</h3>
-              <div className="flex items-center gap-8">
-                <GaugeRing value={poleData.aps_actifs} max={poleData.aps_total} color="#8b5cf6" label="APs avec mentorat actif" />
-                <div className="space-y-2 flex-1">
-                  {[
-                    ['APs au total', poleData.aps_total, 'text-slate-900'],
-                    ['APs actifs', poleData.aps_actifs, 'text-purple-700'],
-                    ['Taux de mobilisation', poleData.aps_total > 0 ? `${Math.round(poleData.aps_actifs / poleData.aps_total * 100)}%` : '—', 'text-slate-900'],
-                  ].map(([lbl, val, cls]) => (
-                    <div key={String(lbl)} className="flex justify-between text-sm">
-                      <span className="text-slate-600">{lbl}</span>
-                      <span className={`font-semibold ${cls}`}>{val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-4">
-                Top urgences non traitées
-                {poleData.urgences_non_traitees > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                    {poleData.urgences_non_traitees}
-                  </span>
-                )}
-              </h3>
-              {(poleData.urgences_details ?? []).length === 0 ? (
-                <div className="flex flex-col items-center py-6 text-slate-400 gap-2">
-                  <CheckCircle size={32} className="text-green-400" />
-                  <p className="text-sm">Aucune urgence non traitée</p>
-                </div>
+            {/* Principales problématiques (5) */}
+            <ChartCard title="Les principales problématiques (5)" className="lg:col-span-2 xl:col-span-2">
+              {!poleData.problematiques_top5 || poleData.problematiques_top5.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-8">Aucune problématique renseignée</p>
               ) : (
-                <div className="divide-y divide-slate-100">
-                  {poleData.urgences_details.map((u, i) => (
-                    <div key={i} className="py-2 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">{u.first_name} {u.last_name}</p>
-                        <p className="text-xs text-slate-500">{u.city}</p>
+                <div className="space-y-2">
+                  {poleData.problematiques_top5.map((p, i) => {
+                    const maxCount = poleData.problematiques_top5![0].count;
+                    const pct = maxCount > 0 ? Math.round(p.count / maxCount * 100) : 0;
+                    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+                    return (
+                      <div key={p.code} className="space-y-0.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-700 font-medium">{i + 1}. {p.label}</span>
+                          <span className="font-bold text-slate-900">{p.count}</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colors[i] }} />
+                        </div>
                       </div>
-                      <span className="text-xs text-slate-400 shrink-0">
-                        {new Date(u.request_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
-            </div>
+            </ChartCard>
+
           </div>
         </div>
 
         {/* ── Section 6 : Comparaison nationale ──────────────────────── */}
         <div id="kpi-section-national" className="space-y-3">
-          <SectionTitle>Comparaison nationale</SectionTitle>
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+            <SectionTitle>Comparaison nationale</SectionTitle>
+            <span className="text-xs text-slate-400 mb-3">Même période — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})</span>
+          </div>
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
@@ -1101,21 +1095,58 @@ export function PoleKPIs() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {[
-                  { label: '% filles',                  pole: poleData.filles_pct,    nat: nationalData.filles_pct,    unit: '%' },
-                  { label: 'Taux de réussite',           pole: poleData.taux_reussite, nat: nationalData.taux_reussite, unit: '%' },
-                  { label: 'Mentors disponibles / total',
-                    pole: poleData.mentors_total > 0 ? Math.round(poleData.mentors_disponibles / poleData.mentors_total * 100) : 0,
-                    nat:  nationalData.mentors_total > 0 ? Math.round(nationalData.mentors_dispo / nationalData.mentors_total * 100) : 0,
-                    unit: '%' },
-                ].map(row => {
+                {([
+                  {
+                    label: '% filles',
+                    pole: poleData.filles_pct,
+                    nat:  nationalData.filles_pct,
+                    unit: '%', higherIsBetter: true,
+                  },
+                  {
+                    label: 'Heures moy. / mentorat',
+                    pole: poleData.heures_moy_par_mentorat ?? 0,
+                    nat:  nationalData.heures_moy_par_mentorat ?? 0,
+                    unit: ' h', higherIsBetter: true,
+                  },
+                  {
+                    label: 'Rencontres moy. / mentorat',
+                    pole: poleData.rencontres_moy_par_mentorat ?? 0,
+                    nat:  nationalData.rencontres_moy_par_mentorat ?? 0,
+                    unit: '', higherIsBetter: true,
+                  },
+                  {
+                    label: 'Clôtures positives (objectif atteint)',
+                    pole: poleData.cloture_par_sentiment?.positif ?? 0,
+                    nat:  nationalData.cloture_par_sentiment?.positif ?? 0,
+                    unit: '%', higherIsBetter: true,
+                  },
+                  {
+                    label: 'Nbre max de mentorats / mentor',
+                    pole: poleData.max_par_mentor ?? 0,
+                    nat:  nationalData.max_par_mentor ?? 0,
+                    unit: '', higherIsBetter: false,
+                  },
+                  {
+                    label: 'Type présentiel (mentorats clos)',
+                    pole: poleData.pct_presentiel ?? 0,
+                    nat:  nationalData.pct_presentiel ?? 0,
+                    unit: '%', higherIsBetter: true,
+                  },
+                  {
+                    label: 'Diplôme préparé niv. < 5 (CAP→BP)',
+                    pole: poleData.pct_diplome_moins5 ?? 0,
+                    nat:  nationalData.pct_diplome_moins5 ?? 0,
+                    unit: '%', higherIsBetter: false,
+                  },
+                ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
                   const diff = row.pole - row.nat;
+                  const positive = row.higherIsBetter ? diff >= 0 : diff <= 0;
                   return (
                     <tr key={row.label}>
                       <td className="px-6 py-3 text-slate-800">{row.label}</td>
                       <td className="px-6 py-3 text-right font-semibold text-slate-900">{row.pole.toFixed(1)}{row.unit}</td>
                       <td className="px-6 py-3 text-right text-slate-500">{row.nat.toFixed(1)}{row.unit}</td>
-                      <td className={`px-6 py-3 text-right font-semibold ${diff >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <td className={`px-6 py-3 text-right font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
                         {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{row.unit}
                       </td>
                     </tr>

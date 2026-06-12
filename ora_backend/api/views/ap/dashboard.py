@@ -1546,6 +1546,8 @@ class APMentoratSuiviDetailView(APIView):
             'objectif_mentor': m.objectif_mentor,
             'bilan_suivi':     m.notes_suivi,
             'problematiques':  m.problematiques,
+            'type_mentorat':   m.type_mentorat,
+            'type_mentorat_label': m.get_type_mentorat_display() if m.type_mentorat else '',
 
             # Choix disponibles
             'closure_reason_choices': [
@@ -1641,6 +1643,10 @@ class APMentoratSuiviDetailView(APIView):
                 codes = data['problematiques']
                 if isinstance(codes, list):
                     m.problematiques = codes
+            if 'type_mentorat' in data:
+                val = (data['type_mentorat'] or '').strip()
+                if val in ('presentiel', 'distanciel', ''):
+                    m.type_mentorat = val
 
             # Clôture directe
             if data.get('cloturer'):

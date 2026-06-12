@@ -109,6 +109,17 @@ class Mentorat(models.Model):
         help_text="Liste de codes parmi les problématiques prédéfinies"
     )
 
+    # Type de modalité
+    TYPE_MENTORAT_CHOICES = [
+        ('presentiel',  'Présentiel'),
+        ('distanciel',  'Distanciel'),
+    ]
+    type_mentorat = models.CharField(
+        max_length=12, blank=True, choices=TYPE_MENTORAT_CHOICES,
+        verbose_name='Type de mentorat',
+        help_text="Modalité principale constatée : présentiel ou distanciel",
+    )
+
     # Demande de clôture par le mentor (en attente de confirmation AP)
     cloture_en_attente = models.BooleanField(
         default=False,

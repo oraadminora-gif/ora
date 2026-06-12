@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import api from '../../../services/api';
 import {
   Search, Loader2, AlertCircle, X, CheckCircle,
-  HandHeart, AlertTriangle, Download, ClipboardList, ChevronDown,
+  HandHeart, AlertTriangle, Download, ClipboardList, ChevronDown, RotateCcw,
 } from 'lucide-react';
 import { APSuiviMentoratModal } from '../../../components/ap/APSuiviMentoratModal';
 
@@ -433,6 +433,64 @@ interface MentoratMeta {
   counts: Record<TabFilter, number>;
 }
 
+// ─────────────────────────────────────────────────────────────
+// MODAL RÉOUVERTURE (ACP uniquement)
+// ─────────────────────────────────────────────────────────────
+function ReopenModal({ mentorat, onClose, onConfirm, loading }: {
+  mentorat: Mentorat;
+  onClose: () => void;
+  onConfirm: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-amber-50">
+            <RotateCcw className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <h2 className="font-bold text-slate-900">Réouvrir ce mentorat ?</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Action réservée à l'ACP</p>
+          </div>
+          <button onClick={onClose} className="ml-auto text-slate-400 hover:text-slate-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="px-6 py-5 space-y-3">
+          <div className="bg-slate-50 rounded-xl p-4 text-sm space-y-1">
+            <p><span className="text-slate-500">Mentor :</span> <span className="font-semibold text-slate-800">{mentorat.mentor_name}</span></p>
+            <p><span className="text-slate-500">Jeune :</span> <span className="font-semibold text-slate-800">{mentorat.jeune_name}</span></p>
+            {mentorat.closed_at && (
+              <p><span className="text-slate-500">Clôturé le :</span> <span className="text-slate-700">{new Date(mentorat.closed_at).toLocaleDateString('fr-FR')}</span></p>
+            )}
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+            <p className="font-semibold">Effets de la réouverture :</p>
+            <ul className="list-disc list-inside space-y-0.5 text-amber-700">
+              <li>Le mentorat repasse en statut <strong>Actif</strong></li>
+              <li>La raison de clôture est effacée</li>
+              <li>Le lien d'évaluation envoyé au jeune est invalidé</li>
+              <li>La capacité du mentor est réduite d'une place</li>
+            </ul>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 justify-end">
+          <button onClick={onClose} disabled={loading}
+            className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">
+            Annuler
+          </button>
+          <button onClick={onConfirm} disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-colors disabled:opacity-50">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Confirmer la réouverture
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GestionMentorats() {
   const [mentorats, setMentorats]     = useState<Mentorat[]>([]);
   const [meta, setMeta]               = useState<MentoratMeta | null>(null);
@@ -446,7 +504,10 @@ export function GestionMentorats() {
   const [search, setSearch]           = useState('');
   const [tab, setTab]                 = useState<TabFilter>('ACTIVE');
   const [successMsg, setSuccessMsg]   = useState<string | null>(null);
+  const [editing, setEditing]               = useState<Mentorat | null>(null);
   const [showSuiviModal, setShowSuiviModal] = useState<number | null>(null);
+  const [reopenTarget, setReopenTarget]     = useState<Mentorat | null>(null);
+  const [reopenLoading, setReopenLoading]   = useState(false);
   const [exportDebut, setExportDebut]       = useState('');
   const [exportFin, setExportFin]           = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -541,6 +602,27 @@ export function GestionMentorats() {
     }
     setEditing(null);
     setTimeout(() => setSuccessMsg(null), 4000);
+  };
+
+  const handleReopen = async () => {
+    if (!reopenTarget) return;
+    setReopenLoading(true);
+    try {
+      const res = await api.patch(`/pole/mentorats/${reopenTarget.id}/`, { status: 'ACTIVE' });
+      setMentorats(prev => prev.map(m => m.id === reopenTarget.id ? res.data : m));
+      setReopenTarget(null);
+      setSuccessMsg(`Mentorat de ${reopenTarget.mentor_name} réouvert avec succès.`);
+      setTimeout(() => setSuccessMsg(null), 5000);
+      // Recharger pour mettre à jour les compteurs par onglet
+      fetchMentorats(tab, search, 1, false);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setSuccessMsg(null);
+      setReopenTarget(null);
+      alert(err?.response?.data?.error ?? 'Erreur lors de la réouverture.');
+    } finally {
+      setReopenLoading(false);
+    }
   };
 
   return (
@@ -696,13 +778,25 @@ export function GestionMentorats() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => setShowSuiviModal(m.id)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-ora-blue/10 hover:bg-ora-blue text-ora-blue hover:text-white rounded-lg text-xs font-semibold border border-ora-blue/20 hover:border-ora-blue transition-all"
-                      >
-                        <ClipboardList className="w-3.5 h-3.5" />
-                        Suivi
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setShowSuiviModal(m.id)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-ora-blue/10 hover:bg-ora-blue text-ora-blue hover:text-white rounded-lg text-xs font-semibold border border-ora-blue/20 hover:border-ora-blue transition-all"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          Suivi
+                        </button>
+                        {m.status === 'CLOSED' && (
+                          <button
+                            onClick={() => setReopenTarget(m)}
+                            title="Réouvrir ce mentorat (ACP uniquement)"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-lg text-xs font-semibold border border-amber-200 hover:border-amber-500 transition-all"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            Réouvrir
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -733,6 +827,15 @@ export function GestionMentorats() {
           mentoratId={showSuiviModal}
           onClose={() => setShowSuiviModal(null)}
           onSaved={() => { setShowSuiviModal(null); loadData(); }}
+        />
+      )}
+
+      {reopenTarget && (
+        <ReopenModal
+          mentorat={reopenTarget}
+          onClose={() => setReopenTarget(null)}
+          onConfirm={handleReopen}
+          loading={reopenLoading}
         />
       )}
     </div>
