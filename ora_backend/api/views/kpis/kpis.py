@@ -412,10 +412,8 @@ class NationalKPIsView(APIView):
         period  = request.query_params.get('period', 'year')
         pole_id = request.query_params.get('pole_id')
 
-        # Mode pôle spécifique : réservé au CN
+        # Mode pôle spécifique : accessible à tout animateur (AP, ACP, CN)
         if pole_id:
-            if not hasattr(request.user, 'cn_member'):
-                return Response({"error": "Réservé au CN"}, status=403)
             try:
                 pole = Pole.objects.get(id=pole_id)
             except Pole.DoesNotExist:
@@ -455,6 +453,7 @@ class NationalKPIsView(APIView):
             m_created_qs = m_created_qs.filter(created_at__date__gte=date_from)
         if date_to:
             m_created_qs = m_created_qs.filter(created_at__date__lte=date_to)
+        mentorats_crees_nat   = m_created_qs.count()
         mentorats_actifs      = m_created_qs.filter(status='ACTIVE').count()
         mentorats_pending     = m_created_qs.filter(status='PENDING').count()
         alertes_rouges        = m_created_qs.filter(status='ACTIVE', alerte_rouge=True).count()
@@ -522,6 +521,7 @@ class NationalKPIsView(APIView):
         rencontres_moy_nat  = round(float(nat_clos_qs.aggregate(moy=Avg('nb_rencontres'))['moy'] or 0), 1)
         nat_typed_total     = nat_clos_qs.filter(type_mentorat__in=['presentiel', 'distanciel']).count()
         pct_presentiel_nat  = round(nat_clos_qs.filter(type_mentorat='presentiel').count() / nat_typed_total * 100) if nat_typed_total else 0
+        pct_distanciel_nat  = round(nat_clos_qs.filter(type_mentorat='distanciel').count() / nat_typed_total * 100) if nat_typed_total else 0
 
         POSITIF_CODES_NAT = ['OBJECTIVE_REACHED']
         NUL_CODES_NAT     = ['NO_CONTACT']
@@ -535,6 +535,17 @@ class NationalKPIsView(APIView):
             'negatif': round(neg_nat / sent_tot_nat * 100) if sent_tot_nat else 0,
         }
 
+        # Financement % national (sur mentorats clos de la période)
+        fin_total_nat    = nat_clos_qs.count()
+        fin_national_nat = nat_clos_qs.filter(financements__financement__type='national').distinct().count()
+        fin_local_nat    = nat_clos_qs.filter(financements__financement__type='local').distinct().count()
+        fin_sans_nat     = nat_clos_qs.filter(financements__isnull=True).count()
+        financement_pct_nat = {
+            'national': round(fin_national_nat / fin_total_nat * 100) if fin_total_nat else 0,
+            'local':    round(fin_local_nat    / fin_total_nat * 100) if fin_total_nat else 0,
+            'sans':     round(fin_sans_nat     / fin_total_nat * 100) if fin_total_nat else 0,
+        }
+
         # Max mentorats / mentor national (filtré par période)
         nb_filter_nat = Q()
         if date_from:
@@ -546,7 +557,14 @@ class NationalKPIsView(APIView):
             .annotate(nb=Count('mentorats', filter=nb_filter_nat))
             .values_list('nb', flat=True)
         )
-        max_par_mentor_nat = max(_nat_m_counts) if _nat_m_counts else 0
+        max_par_mentor_nat   = max(_nat_m_counts) if _nat_m_counts else 0
+        moyen_par_mentor_nat = round(sum(_nat_m_counts) / len(_nat_m_counts), 1) if _nat_m_counts else 0
+        mentors_sans_mentorat_nat = (
+            Mentor.objects.filter(is_active=True, disponibilite_reelle__gt=0)
+            .annotate(nb=Count('mentorats', filter=nb_filter_nat))
+            .filter(nb=0)
+            .count()
+        )
 
         # Diplôme < niveau 5 national
         _DIPLOMES_MOINS_5 = ['CAP', 'BEP', 'BAC_PRO', 'BAC_AUTRE', 'BP']
@@ -555,6 +573,20 @@ class NationalKPIsView(APIView):
 
         # ── Financements (national) ───────────────────────────────────────
         financements_national = _compute_financements()
+
+        # ── Mentors par association (national) ────────────────────────────
+        mentors_par_association_nat = list(
+            Mentor.objects.filter(is_active=True)
+            .values('association__name')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+        capacite_par_association_nat = list(
+            Mentor.objects.filter(is_active=True)
+            .values('association__name')
+            .annotate(capacite=Sum('disponibilite_reelle'))
+            .order_by('-capacite')
+        )
 
         # Breakdown par pôle
         poles    = Pole.objects.all().order_by('name')
@@ -594,8 +626,10 @@ class NationalKPIsView(APIView):
         return Response({
             "poles_total":            poles_total,
             "total_jeunes":           youngs_total,
+            "total_demandes":         youngs_total,
             "filles_pct":             filles_pct,
             "garcons_pct":            garcons_pct,
+            "mentorats_crees":        mentorats_crees_nat,
             "mentorats_actifs":       mentorats_actifs,
             "mentorats_pending":      mentorats_pending,
             "mentorats_closes":       mentorats_closes,
@@ -604,6 +638,8 @@ class NationalKPIsView(APIView):
             "mentors_inactifs":       mentors_inactifs_nat,
             "mentors_dispo":          mentors_dispo,
             "mentors_satures":        mentors_satures,
+            "mentors_sans_mentorat":  mentors_sans_mentorat_nat,
+            "moyen_par_mentor":       moyen_par_mentor_nat,
             "taux_reussite":          taux_reussite,
             "taux_abandon":           taux_abandon,
             "demandes_en_attente":      demandes_en_attente,
@@ -629,8 +665,13 @@ class NationalKPIsView(APIView):
             "heures_moy_par_mentorat":     heures_moy_nat,
             "rencontres_moy_par_mentorat": rencontres_moy_nat,
             "pct_presentiel":              pct_presentiel_nat,
+            "pct_distanciel":              pct_distanciel_nat,
+            "financement_pct":             financement_pct_nat,
             "cloture_par_sentiment":       cloture_par_sentiment_nat,
             "max_par_mentor":              max_par_mentor_nat,
+            # ── Mentors par association ───────────────────
+            "mentors_par_association":    mentors_par_association_nat,
+            "capacite_par_association":   capacite_par_association_nat,
             # ── Financements ──────────────────────────────
             "financements_national":  financements_national,
         })

@@ -4,7 +4,7 @@ import { useReactToPrint } from 'react-to-print';
 import api from '../../../services/api';
 import { fetchNationalKPIsDetailed } from '../../../services/kpiService';
 import type { KpiPeriod } from '../../../services/kpiService';
-import type { NationalKPIDetailed, PoleKPI, PoleSummaryKPI, FinancementKPI, FinancementParAssocKPI } from '../../../types/kpi';
+import type { NationalKPIDetailed, PoleKPI, PoleSummaryKPI, FinancementParAssocKPI } from '../../../types/kpi';
 import {
   Users, UserCheck, AlertTriangle, TrendingUp, TrendingDown,
   RefreshCw, Activity, FileDown, ChevronUp, ChevronDown,
@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 
 // ─────────────────────────────────────────────────────────────
-// TYPES
+// TYPES & CONSTANTS
 // ─────────────────────────────────────────────────────────────
 interface Pole { id: number; name: string; code: string; }
 
@@ -28,6 +28,19 @@ const PERIOD_LABELS: Record<KpiPeriod, string> = {
   year:     'Semestre 2',
   annee:    'Année',
   all:      'Tout',
+};
+
+const PERIOD_DESC: Record<KpiPeriod, string> = {
+  semester: '1er jan – 30 jun',
+  year:     '1er jul – 31 déc',
+  annee:    '1er jan – 31 déc',
+  all:      'Accumulation totale',
+};
+
+const DIPLOME_NIVEAU: Record<string, number> = {
+  CAP: 3, BEP: 3, BAC_PRO: 4, BAC_AUTRE: 4, BP: 4,
+  BTS: 5, DUT: 5, BUT: 6, LIC_PRO: 6,
+  MASTER: 7, ING: 7, DEA: 8, DES: 8,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -75,16 +88,25 @@ function ChartCard({ title, children, className = '' }: {
   );
 }
 
-function TauxBar({ label, value, color }: { label: string; value: number; color: string }) {
+function TauxBar({ label, value, color = '#3b82f6' }: { label: string; value: number; color?: string }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex justify-between text-sm">
         <span className="text-slate-600">{label}</span>
-        <span className="font-bold text-slate-900">{value}%</span>
+        <span className="font-medium text-slate-900">{value}%</span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(value, 100)}%` }} />
+        <div className="h-full rounded-full" style={{ width: `${Math.min(100, value)}%`, backgroundColor: color }} />
       </div>
+    </div>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+      <span className="text-xs text-slate-600">{label}</span>
     </div>
   );
 }
@@ -145,22 +167,19 @@ const PROB_COLORS = ['#7c3aed', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 // MODAL SÉLECTION SECTIONS PDF
 // ─────────────────────────────────────────────────────────────
 const NATIONAL_PRINT_SECTIONS = [
-  { key: 'overview',     label: "Vue d'ensemble" },
-  { key: 'charts',       label: 'Graphiques (genre & statut)' },
-  { key: 'performance',  label: 'Performance nationale' },
-  { key: 'profil',       label: 'Profil des jeunes' },
-  { key: 'financements', label: 'Financements' },
-  { key: 'poles',        label: 'Comparaison inter-pôles' },
+  { key: 'nat-global',      label: 'Vue globale' },
+  { key: 'nat-mentors',     label: 'Mentors & Capacité' },
+  { key: 'nat-performance', label: 'Performance qualitative' },
+  { key: 'nat-jeunes',      label: 'Résultats jeunes' },
+  { key: 'nat-poles',       label: 'Comparaison inter-pôles' },
 ];
 
 const POLE_PRINT_SECTIONS = [
-  { key: 'overview',     label: 'Vue globale' },
-  { key: 'mentors',      label: 'Mentors & Capacité' },
-  { key: 'performance',  label: 'Performance qualitative' },
-  { key: 'charts',       label: 'Graphiques' },
-  { key: 'profil',       label: 'Profil des bénéficiaires' },
-  { key: 'financements', label: 'Financements du pôle' },
-  { key: 'aps',          label: 'APs & Urgences' },
+  { key: 'pole-global',       label: 'Vue globale' },
+  { key: 'pole-mentors',      label: 'Mentors & Capacité' },
+  { key: 'pole-performance',  label: 'Performance qualitative' },
+  { key: 'pole-jeunes',       label: 'Résultats jeunes' },
+  { key: 'pole-national',     label: 'Comparaison nationale' },
 ];
 
 function PrintModal({ isOpen, isPoleView, onConfirm, onCancel }: {
@@ -215,7 +234,7 @@ function PrintModal({ isOpen, isPoleView, onConfirm, onCancel }: {
 }
 
 // ─────────────────────────────────────────────────────────────
-// VUE NATIONALE
+// VUE NATIONALE — structure calquée sur PoleKPIs
 // ─────────────────────────────────────────────────────────────
 function NationalView({
   data, period, onSelectPole,
@@ -239,20 +258,6 @@ function NationalView({
     return sortDir === 'asc' ? (va as number) - (vb as number) : (vb as number) - (va as number);
   });
 
-  const pieGenre = [
-    { name: 'Filles',  value: data.filles_pct,  color: '#ec4899' },
-    { name: 'Garçons', value: data.garcons_pct,  color: '#3b82f6' },
-    { name: 'Autres',  value: Math.max(0, 100 - data.filles_pct - data.garcons_pct), color: '#94a3b8' },
-  ].filter(d => d.value > 0);
-
-  const mentorats_aband = data.mentorats_abandonnes ?? 0;
-  const pieStatut = [
-    { name: 'Actifs',     value: data.mentorats_actifs,  color: '#22c55e' },
-    { name: 'Clôturés',   value: data.mentorats_closes,  color: '#3b82f6' },
-    { name: 'Abandonnés', value: mentorats_aband,        color: '#f97316' },
-    { name: 'En attente', value: data.mentorats_pending ?? 0, color: '#94a3b8' },
-  ].filter(d => d.value > 0);
-
   function Th({ k, label }: { k: SortKey; label: string }) {
     const active = sortKey === k;
     return (
@@ -266,209 +271,349 @@ function NationalView({
     );
   }
 
+  const genderData = [
+    { name: 'Filles',  value: data.filles_pct,  color: '#ec4899' },
+    { name: 'Garçons', value: data.garcons_pct,  color: '#3b82f6' },
+    { name: 'Autres',  value: Math.max(0, 100 - data.filles_pct - data.garcons_pct), color: '#94a3b8' },
+  ].filter(d => d.value > 0);
+
+  const assocData = (data.mentors_par_association ?? []).slice(0, 8).map(a => ({
+    name: a.association__name ?? '—', mentors: a.count,
+  }));
+  const capaciteAssocData = (data.capacite_par_association ?? []).slice(0, 8).map(a => ({
+    name: a.association__name ?? '—', places: a.capacite,
+  }));
+
+  const total_demandes = data.total_demandes ?? data.total_jeunes;
+
   return (
     <div className="space-y-8">
-      {/* Stat cards */}
-      <section>
-        <SectionTitle>Vue d'ensemble nationale · {PERIOD_LABELS[period]}</SectionTitle>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-          <StatCard icon={<Activity size={18} />} color="blue"
-            label="Pôles actifs" value={data.poles_total} />
-          <StatCard icon={<Users size={18} />} color="pink"
-            label="Jeunes" value={data.total_jeunes}
-            sub={`${data.filles_pct}% F · ${data.garcons_pct}% G`} />
-          <StatCard icon={<UserCheck size={18} />} color="green"
-            label="Mentorats actifs" value={data.mentorats_actifs}
-            sub={`${data.demandes_en_attente} en attente`} />
-          <StatCard icon={<TrendingUp size={18} />} color="blue"
-            label="Taux de réussite" value={`${data.taux_reussite}%`}
-            sub={`Abandon : ${data.taux_abandon}%`} up={data.taux_reussite > 60} />
-          <StatCard icon={<Users size={18} />} color="purple"
-            label="Mentors"
-            value={(data.mentors_total ?? 0) + (data.mentors_inactifs ?? 0)}
-            sub={`${data.mentors_total} actifs · ${data.mentors_inactifs ?? 0} inactifs · ${data.mentors_dispo ?? 0} dispos`} />
-          <StatCard icon={<AlertTriangle size={18} />} color="red"
-            label="Alertes rouges" value={data.alertes_rouges_actives}
-            sub={`${data.urgences_non_traitees} urgences`} up={false} />
+
+      {/* ── Section 1 : Vue globale ──────────────────────────────── */}
+      <section id="nat-section-global">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Vue globale — {PERIOD_LABELS[period]}</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">de l'activité demandes / mentorats ({PERIOD_DESC[period]})</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Demandes reçues" value={total_demandes}
+            sub={`${data.filles_pct}% filles · ${data.garcons_pct}% garçons`}
+            icon={<Users size={20} />} color="blue" />
+          <StatCard label="Demandes en attente" value={data.demandes_en_attente}
+            icon={<Hourglass size={20} />} color="amber" />
+          <StatCard label="Mentorats créés" value={data.mentorats_crees ?? 0}
+            sub="sur la période"
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Mentorats en cours" value={data.mentorats_actifs}
+            icon={<UserCheck size={20} />} color="green" />
+          <StatCard label="Mentorats clos" value={data.mentorats_closes}
+            icon={<CheckCircle size={20} />} color="slate" />
+          <StatCard label="Délai moyen d'affectation" value={`${data.delai_moyen ?? 0} j`}
+            sub="demande → mentor"
+            icon={<Clock size={20} />} color={(data.delai_moyen ?? 0) > 14 ? 'red' : 'green'}
+            up={(data.delai_moyen ?? 0) <= 14} />
         </div>
       </section>
 
-      {/* Graphiques */}
-      <section>
-        <SectionTitle>Répartition nationale</SectionTitle>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ChartCard title="Genre des bénéficiaires">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={55} dataKey="value">
-                  {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip formatter={(v) => `${v}%`} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-              {pieGenre.map(e => (
-                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                  {e.name} <span className="font-semibold">{e.value}%</span>
-                </span>
-              ))}
-            </div>
-          </ChartCard>
-          <ChartCard title="Statut des mentorats">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={55} dataKey="value">
-                  {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-              {pieStatut.map(e => (
-                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                  {e.name} <span className="font-semibold">{e.value}</span>
-                </span>
-              ))}
-            </div>
-          </ChartCard>
+      {/* ── Section 2 : Mentors & Capacité ──────────────────────── */}
+      <section id="nat-section-mentors">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Mentors &amp; Capacité</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">national — mentorats sur la période</span>
         </div>
-      </section>
-
-      {/* Performance nationale */}
-      <section>
-        <SectionTitle>Performance nationale</SectionTitle>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-            <TauxBar label="Taux de réussite des mentorats"         value={data.taux_reussite}          color="bg-emerald-500" />
-            <TauxBar label="Taux d'abandon des mentorats"           value={data.taux_abandon ?? 0}      color="bg-orange-400" />
-            <TauxBar label="Taux de couverture (actifs / jeunes)"   value={data.taux_couverture ?? 0}   color="bg-blue-500" />
-            <TauxBar label="Taux de saturation des mentors"         value={data.taux_saturation ?? 0}   color="bg-red-400" />
-            <TauxBar label="Taux de demandes en attente"            value={data.taux_attente ?? 0}      color="bg-amber-400" />
-          </div>
-          <div className="space-y-4">
-            <StatCard icon={<Clock size={18} />} color="slate"
-              label="Délai moyen d'assignation"
-              value={`${data.delai_moyen ?? 0} j`}
-              sub="entre demande et assignation" />
-            <StatCard icon={<Clock size={18} />} color="blue"
-              label="Durée moyenne d'un mentorat"
-              value={`${data.duree_moyenne ?? 0} mois`}
-              sub="sur mentorats actifs & clôturés" />
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Mentors actifs (national)" value={data.mentors_total}
+            sub={`${data.mentors_inactifs ?? 0} inactifs`}
+            icon={<Users size={20} />} color="blue" />
+          <StatCard label="Mentors disponibles" value={data.mentors_dispo ?? 0}
+            sub={`sur ${data.mentors_total} actifs`}
+            icon={<UserCheck size={20} />} color="green" />
+          <StatCard label="Places disponibles" value={data.capacite_totale_nationale ?? 0}
+            sub="capacité totale"
+            icon={<Activity size={20} />} color="green" />
+          <StatCard label="Mentors sans mentorat" value={data.mentors_sans_mentorat ?? 0}
+            sub="n'ont eu aucun mentorat"
+            icon={<Hourglass size={20} />} color="amber" />
+          <StatCard label="Nbre moyen / mentor" value={data.moyen_par_mentor ?? 0}
+            sub="parmi les mentors actifs"
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Nbre max / mentor" value={data.max_par_mentor ?? 0}
+            icon={<Zap size={20} />} color={(data.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
         </div>
-      </section>
-
-      {/* Profil des jeunes */}
-      {(data.tranches_age || (data.par_diplome ?? []).length > 0 || (data.problematiques_top5 ?? []).length > 0) && (
-        <section>
-          <SectionTitle>Profil des jeunes</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {/* Tranches d'âge en % */}
-            {data.tranches_age && (() => {
-              const t = data.tranches_age!;
-              const knownTotal = t.moins_18 + t.annees_18_25 + t.annees_26_29 + t.plus_29;
-              return (
-                <ChartCard title="Tranches d'âge">
-                  <div className="space-y-3 mt-1">
-                    <ProfilBar label="< 18 ans"    count={t.moins_18}     total={knownTotal} color="#a78bfa" />
-                    <ProfilBar label="18 – 25 ans" count={t.annees_18_25} total={knownTotal} color="#3b82f6" />
-                    <ProfilBar label="26 – 29 ans" count={t.annees_26_29} total={knownTotal} color="#10b981" />
-                    <ProfilBar label="> 29 ans"    count={t.plus_29}      total={knownTotal} color="#ef4444" />
-                  </div>
-                </ChartCard>
-              );
-            })()}
-
-            {/* Situation */}
-            {((data.en_apprentissage ?? 0) + (data.en_recherche ?? 0)) > 0 && (
-              <ChartCard title="Situation">
-                <div className="space-y-3 mt-1">
-                  <TauxBar
-                    label="En apprentissage"
-                    value={data.total_jeunes > 0 ? Math.round((data.en_apprentissage ?? 0) / data.total_jeunes * 100) : 0}
-                    color="bg-emerald-500"
-                  />
-                  <TauxBar
-                    label="En recherche"
-                    value={data.total_jeunes > 0 ? Math.round((data.en_recherche ?? 0) / data.total_jeunes * 100) : 0}
-                    color="bg-amber-400"
-                  />
-                  <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 flex flex-wrap gap-3">
-                    <span><strong className="text-slate-800">{data.en_apprentissage ?? 0}</strong> apprentissage</span>
-                    <span><strong className="text-slate-800">{data.en_recherche ?? 0}</strong> recherche</span>
-                  </div>
-                </div>
-              </ChartCard>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+          <ChartCard title="Mentors par association (national)">
+            {assocData.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(120, assocData.length * 32)}>
+                <BarChart data={assocData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="mentors" name="Mentors" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             )}
-
-            {/* Diplômes préparés en % */}
-            {(data.par_diplome ?? []).length > 0 && (() => {
-              const total = (data.par_diplome ?? []).reduce((s, d) => s + d.count, 0);
-              const top = (data.par_diplome ?? []).slice(0, 7);
-              return (
-                <ChartCard title={`Diplômes préparés · ${data.taux_diplome ?? 0}% renseignés`}>
-                  <div className="space-y-2 mt-1">
-                    {top.map(d => (
-                      <ProfilBar key={d.code} label={d.label} count={d.count} total={total} color="#3b82f6" />
-                    ))}
-                  </div>
-                </ChartCard>
-              );
-            })()}
-
-            {/* Top 5 problématiques des jeunes */}
-            {(data.problematiques_top5 ?? []).length > 0 && (() => {
-              const total = (data.problematiques_top5 ?? []).reduce((s, d) => s + d.count, 0);
-              return (
-                <ChartCard title="Top 5 problématiques des jeunes">
-                  <div className="space-y-2 mt-1">
-                    {(data.problematiques_top5 ?? []).map((d, i) => (
-                      <ProfilBar
-                        key={d.code}
-                        label={PROBLEMATIQUES_LABELS[d.code] ?? d.code}
-                        count={d.count}
-                        total={total}
-                        color={PROB_COLORS[i] ?? '#94a3b8'}
-                      />
-                    ))}
-                  </div>
-                </ChartCard>
-              );
-            })()}
-          </div>
-        </section>
-      )}
-
-      {/* Financements nationaux */}
-      {(data.financements_national ?? []).length > 0 && (
-        <section>
-          <SectionTitle>Mentorats par financeur</SectionTitle>
-          <ChartCard title="Répartition nationale des financements">
-            <ResponsiveContainer width="100%" height={Math.max(120, data.financements_national!.length * 30)}>
-              <BarChart layout="vertical" data={data.financements_national} margin={{ left: 8, right: 48 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="financement__nom" width={150} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v, _n, props) => [`${v} mentorat(s)`, props.payload?.financement__type === 'national' ? 'National' : 'Local']} />
-                <Bar dataKey="count" name="Mentorats" radius={[0, 4, 4, 0]}>
-                  {data.financements_national!.map((f, i) => (
-                    <Cell key={i} fill={f.financement__type === 'national' ? '#7c3aed' : '#06b6d4'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="flex gap-4 mt-3 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-700 inline-block" />National</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-cyan-500 inline-block" />Local</span>
-            </div>
           </ChartCard>
-        </section>
-      )}
+          <ChartCard title="Places disponibles par association">
+            {capaciteAssocData.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(120, capaciteAssocData.length * 32)}>
+                <BarChart data={capaciteAssocData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="places" name="Places dispo" fill="#10b981" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
+      </section>
 
-      {/* Tableau inter-pôles */}
-      <section>
+      {/* ── Section 3 : Performance qualitative ─────────────────── */}
+      <section id="nat-section-performance">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Performance qualitative — DES MENTORATS CLOS</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">sur la période sélectionnée</span>
+        </div>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">— Résultats mentorats</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Durée moyenne / mentorat" value={`${data.duree_moyenne ?? 0} mois`}
+            icon={<Clock size={20} />} color="purple" />
+          <StatCard label="Heures moy. / mentorat" value={`${data.heures_moy_par_mentorat ?? 0} h`}
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Rencontres moy. / mentorat" value={data.rencontres_moy_par_mentorat ?? 0}
+            icon={<Activity size={20} />} color="blue" />
+
+          {/* Type de mentorat */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 w-fit"><Zap size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Type de mentorat constaté</p>
+            {(data.pct_presentiel ?? 0) + (data.pct_distanciel ?? 0) === 0 ? (
+              <p className="text-xs text-slate-400 italic">Non renseigné</p>
+            ) : (
+              <div className="space-y-1">
+                {([['Présentiel', data.pct_presentiel ?? 0, 'bg-blue-400'], ['Distanciel', data.pct_distanciel ?? 0, 'bg-purple-400']] as [string, number, string][]).map(([lbl, pct, cls]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${cls}`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Financement */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-amber-50 text-amber-600 w-fit"><TrendingUp size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Financement des mentorats</p>
+            {data.financement_pct ? (
+              <div className="space-y-1">
+                {([['National', data.financement_pct.national, '#8b5cf6'], ['Local', data.financement_pct.local, '#3b82f6'], ['Sans fin.', data.financement_pct.sans, '#94a3b8']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+          </div>
+
+          {/* Statut clos */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-green-50 text-green-600 w-fit"><CheckCircle size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Statut des mentorats clos</p>
+            {data.cloture_par_sentiment ? (
+              <div className="space-y-1">
+                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Nul', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 4 : Résultats jeunes ────────────────────────── */}
+      <section id="nat-section-jeunes">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">— Résultats jeunes</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+          {/* Genre */}
+          <ChartCard title="Répartition par genre">
+            {total_demandes === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée sur la période</p>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={4} dataKey="value">
+                      {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                    </Pie>
+                    <Tooltip formatter={(v) => `${v}%`} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+                  {genderData.map(e => (
+                    <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                      {e.name} <span className="font-semibold">{e.value}%</span>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+          </ChartCard>
+
+          {/* Tranches d'âge */}
+          <ChartCard title="Tranches d'âge">
+            {!data.tranches_age || total_demandes === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <div className="space-y-2">
+                {([
+                  ['< 18 ans',    data.tranches_age.moins_18,      '#a78bfa'],
+                  ['18 – 25 ans', data.tranches_age.annees_18_25,  '#3b82f6'],
+                  ['26 – 29 ans', data.tranches_age.annees_26_29,  '#10b981'],
+                  ['> 29 ans',    data.tranches_age.plus_29,        '#ef4444'],
+                  ...(data.tranches_age.inconnu > 0 ? [['Non renseigné', data.tranches_age.inconnu, '#cbd5e1']] : []),
+                ] as [string, number, string][]).map(([lbl, val, color]) => (
+                  <div key={lbl} className="space-y-0.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-medium text-slate-900">{val}</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full"
+                        style={{ width: `${total_demandes > 0 ? Math.round(val / total_demandes * 100) : 0}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ChartCard>
+
+          {/* Diplôme par niveau RNCP */}
+          <ChartCard title="Diplôme préparé (par niveau)">
+            {!data.par_diplome || data.par_diplome.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (() => {
+              const byNiveau = new Map<number, number>();
+              data.par_diplome!.forEach(d => {
+                const niv = DIPLOME_NIVEAU[d.code] ?? 99;
+                byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+              });
+              const rows = [...byNiveau.entries()].sort(([a], [b]) => a - b)
+                .map(([niv, count]) => ({ label: niv === 99 ? 'Autre' : `Niveau ${niv}`, count }));
+              const total = rows.reduce((s, r) => s + r.count, 0);
+              const colors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
+              return (
+                <div className="space-y-2">
+                  {rows.map((r, i) => {
+                    const pct = total > 0 ? Math.round(r.count / total * 100) : 0;
+                    return (
+                      <div key={r.label} className="space-y-0.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-700 font-medium">{r.label}</span>
+                          <span className="font-bold text-slate-900">{r.count} <span className="text-slate-400 font-normal">({pct}%)</span></span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </ChartCard>
+
+          {/* Situation */}
+          <ChartCard title="Situation">
+            {(data.en_apprentissage ?? 0) + (data.en_recherche ?? 0) === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <>
+                <div className="space-y-3 mt-2">
+                  {[
+                    { label: 'Déjà en apprentissage', value: data.en_apprentissage ?? 0, color: '#10b981' },
+                    { label: 'En recherche',           value: data.en_recherche     ?? 0, color: '#3b82f6' },
+                  ].map(({ label, value, color }) => {
+                    const tot = (data.en_apprentissage ?? 0) + (data.en_recherche ?? 0);
+                    const pct = tot > 0 ? Math.round(value / tot * 100) : 0;
+                    return (
+                      <div key={label}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-slate-600">{label}</span>
+                          <span className="font-semibold" style={{ color }}>{value} <span className="text-xs text-slate-400">({pct}%)</span></span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-slate-400 mt-4 text-center">
+                  Total renseigné : {(data.en_apprentissage ?? 0) + (data.en_recherche ?? 0)} / {total_demandes}
+                </p>
+              </>
+            )}
+          </ChartCard>
+
+          {/* Problématiques top 5 */}
+          <ChartCard title="Les principales problématiques (5)" className="lg:col-span-2">
+            {!data.problematiques_top5 || data.problematiques_top5.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune problématique renseignée</p>
+            ) : (
+              <div className="space-y-2">
+                {data.problematiques_top5.map((p, i) => {
+                  const maxCount = data.problematiques_top5![0].count;
+                  const pct = maxCount > 0 ? Math.round(p.count / maxCount * 100) : 0;
+                  const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+                  return (
+                    <div key={p.code} className="space-y-0.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-700 font-medium">{i + 1}. {PROBLEMATIQUES_LABELS[p.code] ?? p.code}</span>
+                        <span className="font-bold text-slate-900">{p.count}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colors[i] }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ChartCard>
+
+        </div>
+      </section>
+
+      {/* ── Section 5 : Comparaison inter-pôles ─────────────────── */}
+      <section id="nat-section-poles">
         <SectionTitle>Comparaison inter-pôles</SectionTitle>
         <p className="text-xs text-slate-400 mb-3">Cliquez sur une ligne pour voir les KPIs détaillés du pôle.</p>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -515,6 +660,7 @@ function NationalView({
           </table>
         </div>
       </section>
+
     </div>
   );
 }
@@ -564,260 +710,418 @@ function FinancementsAssocTable({ rows }: { rows: FinancementParAssocKPI[] }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// VUE PÔLE DÉTAILLÉE
+// VUE PÔLE DÉTAILLÉE — identique à PoleKPIs.tsx
 // ─────────────────────────────────────────────────────────────
-function PoleDetailView({ data, poleName }: { data: PoleKPI; poleName: string }) {
-  const assocData = (data.mentors_par_association ?? []).map(e => ({
-    name: e.association__name, count: e.count,
-  }));
-
-  const pieGenre = [
+function PoleDetailView({ data, nationalData, poleName, period }: {
+  data: PoleKPI;
+  nationalData: NationalKPIDetailed | null;
+  poleName: string;
+  period: KpiPeriod;
+}) {
+  const genderData = [
     { name: 'Filles',  value: data.filles,  color: '#ec4899' },
     { name: 'Garçons', value: data.garcons, color: '#3b82f6' },
-    { name: 'Autres',  value: data.autres,  color: '#94a3b8' },
+    ...(data.autres > 0 ? [{ name: 'Autres', value: data.autres, color: '#a78bfa' }] : []),
+  ];
+  const statutData = [
+    { name: 'Actifs',     value: data.mentorats_actifs,     color: '#10b981' },
+    { name: 'En attente', value: data.mentorats_pending,    color: '#f59e0b' },
+    { name: 'Clôturés',   value: data.mentorats_closes,    color: '#6b7280' },
+    { name: 'Abandonnés', value: data.mentorats_abandonnes, color: '#ef4444' },
   ].filter(d => d.value > 0);
-
-  const pieStatut = [
-    { name: 'Actifs',     value: data.mentorats_actifs,    color: '#22c55e' },
-    { name: 'Clôturés',   value: data.mentorats_closes,    color: '#3b82f6' },
-    { name: 'Abandonnés', value: data.mentorats_abandonnes, color: '#f97316' },
-    { name: 'En attente', value: data.mentorats_pending,   color: '#94a3b8' },
-  ].filter(d => d.value > 0);
+  const assocData = (data.mentors_par_association ?? []).slice(0, 8).map(a => ({
+    name: a.association__name ?? '—', mentors: a.count,
+  }));
+  const capaciteAssocData = (data.capacite_par_association ?? []).slice(0, 8).map(a => ({
+    name: a.association__name ?? '—', places: a.capacite,
+  }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
+      {/* Bannière pôle sélectionné */}
       <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border border-violet-200 rounded-xl w-fit text-sm font-medium text-violet-700">
         <Activity size={16} />
-        Vue détaillée : {poleName}
+        Indicateurs du pôle : {poleName}
       </div>
 
-      {/* Stat globales */}
-      <section>
-        <SectionTitle>Vue globale</SectionTitle>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          <StatCard icon={<Users size={18} />} color="pink"
-            label="Demandes (période)" value={data.total_demandes}
-            sub={`${data.filles_pct}% F · ${data.garcons_pct}% G`} />
-          <StatCard icon={<Hourglass size={18} />} color="amber"
-            label="En attente" value={data.demandes_en_attente}
-            sub={`${data.urgences_non_traitees} urgences`} />
-          <StatCard icon={<UserCheck size={18} />} color="green"
-            label="Mentorats actifs" value={data.mentorats_actifs} />
-          <StatCard icon={<AlertTriangle size={18} />} color="red"
-            label="Alertes rouges" value={data.alertes_rouges_actives} up={false} />
-        </div>
-      </section>
-
-      {/* Mentors */}
-      <section>
-        <SectionTitle>Mentors & Capacité</SectionTitle>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          <StatCard icon={<Users size={18} />} color="purple"
-            label="Mentors actifs" value={data.mentors_total} />
-          <StatCard icon={<UserCheck size={18} />} color="green"
-            label="Disponibles" value={data.mentors_disponibles}
-            sub={`Capacité : ${data.capacite_restante}`} />
-          <StatCard icon={<Activity size={18} />} color="red"
-            label="Saturés" value={data.mentors_satures}
-            sub={`${data.taux_saturation}% du pool`} />
-          <StatCard icon={<Clock size={18} />} color="slate"
-            label="Délai assignation" value={`${data.delai_moyen}j`} />
-        </div>
-      </section>
-
-      {/* Taux */}
-      <section>
-        <SectionTitle>Performance qualitative</SectionTitle>
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4 max-w-xl">
-          <TauxBar label="Taux de réussite" value={data.taux_reussite} color="bg-emerald-500" />
-          <TauxBar label="Taux d'abandon"   value={data.taux_abandon}  color="bg-orange-400" />
-          <TauxBar label="Taux de couverture" value={data.taux_couverture} color="bg-blue-500" />
-          <TauxBar label="Taux de saturation" value={data.taux_saturation} color="bg-red-400" />
-          <div className="flex gap-6 pt-2 border-t border-slate-100">
-            <div>
-              <p className="text-xs text-slate-400">Durée moy. mentorat</p>
-              <p className="text-lg font-bold text-slate-900">{data.duree_moyenne} mois</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Heures cumulées</p>
-              <p className="text-lg font-bold text-slate-900">{data.heures_cumulees} h</p>
-            </div>
+      {/* Alertes */}
+      {data.alertes_rouges_actives > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="text-red-600 mt-0.5 shrink-0" size={18} />
+          <div>
+            <p className="font-semibold text-red-900">
+              {data.alertes_rouges_actives} mentorat{data.alertes_rouges_actives > 1 ? 's' : ''} en alerte rouge
+            </p>
+            <p className="text-sm text-red-700">Ces binômes nécessitent une intervention immédiate.</p>
           </div>
         </div>
-      </section>
+      )}
+      {data.urgences_non_traitees > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <Zap className="text-amber-600 mt-0.5 shrink-0" size={18} />
+          <div>
+            <p className="font-semibold text-amber-900">
+              {data.urgences_non_traitees} demande{data.urgences_non_traitees > 1 ? 's' : ''} urgente{data.urgences_non_traitees > 1 ? 's' : ''} non traitée{data.urgences_non_traitees > 1 ? 's' : ''}
+            </p>
+            <p className="text-sm text-amber-700">Niveau d'urgence ≥ 4 — sans mentor assigné.</p>
+          </div>
+        </div>
+      )}
 
-      {/* Graphiques */}
-      <section>
-        <SectionTitle>Graphiques</SectionTitle>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ChartCard title="Genre des bénéficiaires">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={pieGenre} cx="50%" cy="50%" outerRadius={55} dataKey="value">
-                  {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-              {pieGenre.map(e => (
-                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                  {e.name} <span className="font-semibold">{e.value}</span>
-                </span>
-              ))}
-            </div>
-          </ChartCard>
-          <ChartCard title="Statut des mentorats">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={pieStatut} cx="50%" cy="50%" outerRadius={55} dataKey="value">
-                  {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-              {pieStatut.map(e => (
-                <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                  {e.name} <span className="font-semibold">{e.value}</span>
-                </span>
-              ))}
-            </div>
-          </ChartCard>
-          {assocData.length > 0 && (
-            <ChartCard title="Mentors par association" className="md:col-span-2">
-              <ResponsiveContainer width="100%" height={Math.max(120, assocData.length * 30)}>
-                <BarChart layout="vertical" data={assocData} margin={{ left: 8, right: 24 }}>
+      {/* Section 1 : Vue globale */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Vue globale — {PERIOD_LABELS[period]}</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">de l'activité demandes / mentorats ({PERIOD_DESC[period]})</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Demandes reçues" value={data.total_demandes}
+            sub={`${data.filles_pct}% filles · ${data.garcons_pct}% garçons`}
+            icon={<Users size={20} />} color="blue" />
+          <StatCard label="Demandes en attente" value={data.demandes_en_attente}
+            icon={<Hourglass size={20} />} color="amber" />
+          <StatCard label="Mentorats créés" value={data.mentorats_crees ?? 0}
+            sub="sur la période"
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Mentorats en cours" value={data.mentorats_actifs}
+            icon={<UserCheck size={20} />} color="green" />
+          <StatCard label="Mentorats clos" value={data.mentorats_closes}
+            icon={<CheckCircle size={20} />} color="slate" />
+          <StatCard label="Délai moyen d'affectation" value={`${data.delai_moyen} j`}
+            sub="demande → mentor"
+            icon={<Clock size={20} />} color={data.delai_moyen > 14 ? 'red' : 'green'}
+            up={data.delai_moyen <= 14} />
+        </div>
+      </div>
+
+      {/* Section 2 : Mentors & Capacité */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Mentors &amp; Capacité</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">Mentorats sur la période et à date</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Mentors disponibles sur Pôle" value={data.mentors_total}
+            sub={`${data.mentors_satures} saturés`}
+            icon={<Users size={20} />} color="blue" />
+          <StatCard label="Mentors disponibles pour affectation" value={data.mentors_disponibles}
+            sub={`sur ${data.mentors_total} actifs`}
+            icon={<UserCheck size={20} />} color="green" />
+          <StatCard label="Mentorats possibles" value={data.capacite_restante}
+            sub="places disponibles"
+            icon={<Activity size={20} />} color="green" />
+          <StatCard label="Mentors dispo sans mentorat" value={data.mentors_sans_mentorat ?? 0}
+            sub="n'ont eu aucun mentorat"
+            icon={<Hourglass size={20} />} color="amber" />
+          <StatCard label="Nbre moyen de mentorats / mentor" value={data.moyen_par_mentor ?? 0}
+            sub="parmi les mentors actifs"
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Nbre max de mentorats / mentor" value={data.max_par_mentor ?? 0}
+            icon={<Zap size={20} />} color={(data.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ChartCard title="Mentors par association">
+            {assocData.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune association</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(120, assocData.length * 32)}>
+                <BarChart data={assocData} layout="vertical" margin={{ left: 8, right: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="mentors" name="Mentors" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </ChartCard>
-          )}
+            )}
+          </ChartCard>
+          <ChartCard title="Mentorats possibles par association">
+            {capaciteAssocData.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(120, capaciteAssocData.length * 32)}>
+                <BarChart data={capaciteAssocData} layout="vertical" margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="places" name="Places dispo" fill="#10b981" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
         </div>
-      </section>
+      </div>
 
-      {/* Profil des bénéficiaires */}
-      {(data.tranches_age || (data.par_diplome ?? []).length > 0) && (
-        <section>
-          <SectionTitle>Profil des bénéficiaires</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {data.tranches_age && (() => {
-              const t = data.tranches_age!;
-              const tranchesData = [
-                { name: '< 18 ans',  value: t.moins_18 },
-                { name: '18-25 ans', value: t.annees_18_25 },
-                { name: '26-29 ans', value: t.annees_26_29 },
-                { name: '> 29 ans',  value: t.plus_29 },
-              ].filter(d => d.value > 0);
+      {/* Section 3 : Performance qualitative */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+          <SectionTitle>Performance qualitative — DES MENTORATS CLOS</SectionTitle>
+          <span className="text-xs text-slate-400 mb-3">sur la période sélectionnée</span>
+        </div>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">— Résultats mentorats</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Durée moyenne par mentorat" value={`${data.duree_moyenne} mois`}
+            icon={<Clock size={20} />} color="purple" />
+          <StatCard label="Heures moy. par mentorat" value={`${data.heures_moy_par_mentorat ?? 0} h`}
+            icon={<TrendingUp size={20} />} color="purple" />
+          <StatCard label="Rencontres moy. par mentorat" value={data.rencontres_moy_par_mentorat ?? 0}
+            icon={<Activity size={20} />} color="blue" />
+          {/* Type de mentorat */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 w-fit"><Zap size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Type de mentorat constaté</p>
+            {(data.pct_presentiel ?? 0) + (data.pct_distanciel ?? 0) === 0 ? (
+              <p className="text-xs text-slate-400 italic">Non renseigné</p>
+            ) : (
+              <div className="space-y-1">
+                {([['Présentiel', data.pct_presentiel ?? 0, '#3b82f6'], ['Distanciel', data.pct_distanciel ?? 0, '#a78bfa']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Financement */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-amber-50 text-amber-600 w-fit"><TrendingUp size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Financement des mentorats</p>
+            {data.financement_pct ? (
+              <div className="space-y-1">
+                {([['National', data.financement_pct.national, '#8b5cf6'], ['Local', data.financement_pct.local, '#3b82f6'], ['Sans fin.', data.financement_pct.sans, '#94a3b8']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+          </div>
+          {/* Statut clos */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
+            <div className="p-2 rounded-lg bg-green-50 text-green-600 w-fit"><CheckCircle size={20} /></div>
+            <p className="text-xs font-semibold text-slate-500 leading-tight">Statut des mentorats clos</p>
+            {data.cloture_par_sentiment ? (
+              <div className="space-y-1">
+                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Nul', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                  <div key={lbl}>
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-xs text-slate-400 italic">Aucune donnée</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Section 4 : Résultats jeunes */}
+      <div className="space-y-3">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">— Résultats jeunes</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Genre */}
+          <ChartCard title="Répartition par genre">
+            {data.total_demandes === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée sur la période</p>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={4} dataKey="value">
+                      {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                    </Pie>
+                    <Tooltip formatter={(v) => [v ?? 0, '']} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-5 mt-2">
+                  {genderData.map((e, i) => <LegendDot key={i} color={e.color} label={`${e.name} (${e.value})`} />)}
+                </div>
+              </>
+            )}
+          </ChartCard>
+          {/* Tranches d'âge */}
+          <ChartCard title="Tranches d'âge">
+            {!data.tranches_age || data.total_demandes === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <div className="space-y-2">
+                {([
+                  ['< 18 ans',    data.tranches_age.moins_18,      '#a78bfa'],
+                  ['18 – 25 ans', data.tranches_age.annees_18_25, '#3b82f6'],
+                  ['26 – 29 ans', data.tranches_age.annees_26_29, '#10b981'],
+                  ['> 29 ans',    data.tranches_age.plus_29,       '#ef4444'],
+                  ...(data.tranches_age.inconnu > 0 ? [['Non renseigné', data.tranches_age.inconnu, '#cbd5e1']] : []),
+                ] as [string, number, string][]).map(([lbl, val, color]) => (
+                  <div key={lbl} className="space-y-0.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-600">{lbl}</span>
+                      <span className="font-medium text-slate-900">{val}</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full"
+                        style={{ width: `${data.total_demandes > 0 ? Math.round(val / data.total_demandes * 100) : 0}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ChartCard>
+          {/* Diplôme par niveau RNCP */}
+          <ChartCard title="Diplôme préparé (par niveau)">
+            {!data.par_diplome || data.par_diplome.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (() => {
+              const byNiveau = new Map<number, number>();
+              data.par_diplome!.forEach(d => {
+                const niv = DIPLOME_NIVEAU[d.code] ?? 99;
+                byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+              });
+              const rows = [...byNiveau.entries()].sort(([a], [b]) => a - b)
+                .map(([niv, count]) => ({ label: niv === 99 ? 'Autre' : `Niveau ${niv}`, count }));
+              const total = rows.reduce((s, r) => s + r.count, 0);
+              const colors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
               return (
-                <ChartCard title="Tranches d'âge">
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={tranchesData} margin={{ left: 0, right: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={28} />
-                      <Tooltip />
-                      <Bar dataKey="value" name="Jeunes" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartCard>
+                <div className="space-y-2">
+                  {rows.map((r, i) => {
+                    const pct = total > 0 ? Math.round(r.count / total * 100) : 0;
+                    return (
+                      <div key={r.label} className="space-y-0.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-700 font-medium">{r.label}</span>
+                          <span className="font-bold text-slate-900">{r.count} <span className="text-slate-400 font-normal">({pct}%)</span></span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full"
+                            style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               );
             })()}
-            {((data.en_apprentissage ?? 0) + (data.en_recherche ?? 0)) > 0 && (
-              <ChartCard title="Situation">
-                <div className="space-y-3 pt-2">
-                  <TauxBar
-                    label="En apprentissage"
-                    value={data.total_demandes > 0 ? Math.round((data.en_apprentissage ?? 0) / data.total_demandes * 100) : 0}
-                    color="bg-emerald-500"
-                  />
-                  <TauxBar
-                    label="En recherche d'apprentissage"
-                    value={data.total_demandes > 0 ? Math.round((data.en_recherche ?? 0) / data.total_demandes * 100) : 0}
-                    color="bg-amber-400"
-                  />
-                  <div className="flex gap-6 pt-2 border-t border-slate-100 text-sm text-slate-600">
-                    <span><strong className="text-slate-900">{data.en_apprentissage ?? 0}</strong> en apprentissage</span>
-                    <span><strong className="text-slate-900">{data.en_recherche ?? 0}</strong> en recherche</span>
-                  </div>
+          </ChartCard>
+          {/* Situation */}
+          <ChartCard title="Situation">
+            {(data.en_apprentissage ?? 0) + (data.en_recherche ?? 0) === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune donnée</p>
+            ) : (
+              <>
+                <div className="space-y-3 mt-2">
+                  {[
+                    { label: 'Déjà en apprentissage', value: data.en_apprentissage ?? 0, color: '#10b981' },
+                    { label: 'En recherche',           value: data.en_recherche     ?? 0, color: '#3b82f6' },
+                  ].map(({ label, value, color }) => {
+                    const tot = (data.en_apprentissage ?? 0) + (data.en_recherche ?? 0);
+                    const pct = tot > 0 ? Math.round(value / tot * 100) : 0;
+                    return (
+                      <div key={label}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-slate-600">{label}</span>
+                          <span className="font-semibold" style={{ color }}>{value} <span className="text-xs text-slate-400">({pct}%)</span></span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </ChartCard>
+                <p className="text-xs text-slate-400 mt-4 text-center">
+                  Total renseigné : {(data.en_apprentissage ?? 0) + (data.en_recherche ?? 0)} / {data.total_demandes}
+                </p>
+              </>
             )}
-            {(data.par_diplome ?? []).length > 0 && (
-              <ChartCard title="Diplômes préparés" className="md:col-span-2 xl:col-span-1">
-                <ResponsiveContainer width="100%" height={Math.max(140, data.par_diplome!.length * 26)}>
-                  <BarChart layout="vertical" data={data.par_diplome} margin={{ left: 8, right: 24 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-                    <YAxis type="category" dataKey="label" width={90} tick={{ fontSize: 10 }} />
-                    <Tooltip />
-                    <Bar dataKey="count" name="Jeunes" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Financements du pôle */}
-      {(data.financements_pole ?? []).length > 0 && (
-        <section>
-          <SectionTitle>Financements du pôle</SectionTitle>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <ChartCard title="Mentorats par financeur">
-              <ResponsiveContainer width="100%" height={Math.max(120, data.financements_pole!.length * 30)}>
-                <BarChart layout="vertical" data={data.financements_pole} margin={{ left: 8, right: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="financement__nom" width={140} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v) => [`${v} mentorat(s)`]} />
-                  <Bar dataKey="count" name="Mentorats" radius={[0, 4, 4, 0]}>
-                    {data.financements_pole!.map((f, i) => (
-                      <Cell key={i} fill={f.financement__type === 'national' ? '#7c3aed' : '#06b6d4'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="flex gap-4 mt-2 text-xs text-slate-500">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-700 inline-block" />National</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-cyan-500 inline-block" />Local</span>
+          </ChartCard>
+          {/* Problématiques top 5 */}
+          <ChartCard title="Les principales problématiques (5)" className="lg:col-span-2">
+            {!data.problematiques_top5 || data.problematiques_top5.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">Aucune problématique renseignée</p>
+            ) : (
+              <div className="space-y-2">
+                {data.problematiques_top5.map((p, i) => {
+                  const maxCount = data.problematiques_top5![0].count;
+                  const pct = maxCount > 0 ? Math.round(p.count / maxCount * 100) : 0;
+                  const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+                  return (
+                    <div key={p.code} className="space-y-0.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-700 font-medium">{i + 1}. {p.label ?? PROBLEMATIQUES_LABELS[p.code] ?? p.code}</span>
+                        <span className="font-bold text-slate-900">{p.count}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colors[i] }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </ChartCard>
-            {(data.financements_par_association ?? []).length > 0 && (
-              <ChartCard title="Financements par association">
-                <FinancementsAssocTable rows={data.financements_par_association!} />
-              </ChartCard>
             )}
-          </div>
-        </section>
-      )}
-
-      {/* APs + Urgences */}
-      <section>
-        <SectionTitle>APs & Urgences</SectionTitle>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-xl">
-          <StatCard icon={<Zap size={18} />} color="purple" label="APs total" value={data.aps_total} />
-          <StatCard icon={<CheckCircle size={18} />} color="green" label="APs actifs (suivi)" value={data.aps_actifs} />
-          <StatCard icon={<XCircle size={18} />} color="red" label="Urgences non traitées" value={data.urgences_non_traitees} />
+          </ChartCard>
         </div>
-        {(data.urgences_details ?? []).length > 0 && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 space-y-2 max-w-xl">
-            <p className="text-xs font-bold text-red-700 uppercase tracking-wider">Top urgences</p>
-            {data.urgences_details.map((u, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
-                <span className="text-slate-700">{u.first_name} {u.last_name} · {u.city}</span>
-              </div>
-            ))}
+      </div>
+
+      {/* Section 5 : Comparaison nationale */}
+      {nationalData && (
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+            <SectionTitle>Comparaison nationale</SectionTitle>
+            <span className="text-xs text-slate-400 mb-3">Même période — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})</span>
           </div>
-        )}
-      </section>
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  {['Indicateur', 'Ce pôle', 'National', 'Écart'].map((h, i) => (
+                    <th key={h} className={`px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider ${i === 0 ? 'text-left' : 'text-right'}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {([
+                  { label: '% filles',                              pole: data.filles_pct,                          nat: nationalData.filles_pct,                          unit: '%',  higherIsBetter: true },
+                  { label: 'Heures moy. / mentorat',                pole: data.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
+                  { label: 'Rencontres moy. / mentorat',            pole: data.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
+                  { label: 'Clôtures positives (objectif atteint)', pole: data.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
+                  { label: 'Nbre max de mentorats / mentor',        pole: data.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                  { label: 'Type présentiel (mentorats clos)',      pole: data.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
+                  { label: 'Diplôme préparé niv. < 5 (CAP→BP)',    pole: data.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
+                ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
+                  const diff = row.pole - row.nat;
+                  const positive = row.higherIsBetter ? diff >= 0 : diff <= 0;
+                  return (
+                    <tr key={row.label}>
+                      <td className="px-6 py-3 text-slate-800">{row.label}</td>
+                      <td className="px-6 py-3 text-right font-semibold text-slate-900">{row.pole.toFixed(1)}{row.unit}</td>
+                      <td className="px-6 py-3 text-right text-slate-500">{row.nat.toFixed(1)}{row.unit}</td>
+                      <td className={`px-6 py-3 text-right font-semibold ${positive ? 'text-green-600' : 'text-red-500'}`}>
+                        {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{row.unit}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -847,116 +1151,550 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
 
   /* ── VUE PÔLE ─────────────────────────────────────────────── */
   if (selectedPoleName && poleData) {
-    const pieGenre = [
-      { name: 'Filles',  value: poleData.filles,  color: '#ec4899' },
-      { name: 'Garçons', value: poleData.garcons,  color: '#3b82f6' },
-      { name: 'Autres',  value: poleData.autres,   color: '#94a3b8' },
-    ].filter(d => d.value > 0);
-
-    const pieStatut = [
-      { name: 'Actifs',     value: poleData.mentorats_actifs,    color: '#22c55e' },
-      { name: 'Clôturés',   value: poleData.mentorats_closes,    color: '#3b82f6' },
-      { name: 'Abandonnés', value: poleData.mentorats_abandonnes, color: '#f97316' },
-      { name: 'En attente', value: poleData.mentorats_pending,   color: '#94a3b8' },
-    ].filter(d => d.value > 0);
-
-    const assocData = (poleData.mentors_par_association ?? []).map(e => ({
-      name: e.association__name, count: e.count,
+    const pd = poleData;
+    const genderData = [
+      { name: 'Filles',  value: pd.filles,  color: '#ec4899' },
+      { name: 'Garçons', value: pd.garcons, color: '#3b82f6' },
+      ...(pd.autres > 0 ? [{ name: 'Autres', value: pd.autres, color: '#a78bfa' }] : []),
+    ];
+    const assocData = (pd.mentors_par_association ?? []).slice(0, 8).map(a => ({
+      name: a.association__name ?? '—', mentors: a.count,
+    }));
+    const capaciteAssocData = (pd.capacite_par_association ?? []).slice(0, 8).map(a => ({
+      name: a.association__name ?? '—', places: a.capacite,
     }));
 
+    /* ── Helper inline ── */
+    const PTauxBar2 = ({ label, value, color }: { label: string; value: number; color: string }) => (
+      <div style={{ marginBottom: 5 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+          <span>{label}</span><span style={{ fontWeight: 600 }}>{value}%</span>
+        </div>
+        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+          <div style={{ height: '100%', width: `${Math.min(100, value)}%`, background: color, borderRadius: 2 }} />
+        </div>
+      </div>
+    );
+
     return (
-      <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 4 }}>{title}</h1>
-        <p style={{ fontSize: 11, color: '#64748b', marginBottom: 16 }}>Période : {PERIOD_LABELS[period]} · Généré le {date}</p>
+      <div style={{ fontFamily: 'Arial, sans-serif', color: '#1e293b', fontSize: 12, padding: 0 }}>
+        <div style={{ marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid #0f172a' }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', color: '#0f172a' }}>
+            Indicateurs de performance — Pôle : {selectedPoleName}
+          </h1>
+          <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
+            Période : {PERIOD_LABELS[period]} &nbsp;•&nbsp; Généré le {date}
+          </p>
+        </div>
 
-        {has('overview') && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Vue globale</h2>
-          <PRow label="Demandes (période)"    value={poleData.total_demandes} />
-          <PRow label="En attente"            value={poleData.demandes_en_attente} />
-          <PRow label="Urgences non traitées" value={poleData.urgences_non_traitees} />
-          <PRow label="Mentorats actifs"      value={poleData.mentorats_actifs} />
-          <PRow label="Alertes rouges"        value={poleData.alertes_rouges_actives} />
-        </>}
-
-        {has('mentors') && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Mentors & Capacité</h2>
-          <PRow label="Total"            value={poleData.mentors_total} />
-          <PRow label="Disponibles"      value={poleData.mentors_disponibles} />
-          <PRow label="Saturés"          value={poleData.mentors_satures} />
-          <PRow label="Capacité restante" value={poleData.capacite_restante} />
-        </>}
-
-        {has('performance') && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Performance</h2>
-          <PRow label="Taux de réussite"    value={`${poleData.taux_reussite}%`} />
-          <PRow label="Taux d'abandon"      value={`${poleData.taux_abandon}%`} />
-          <PRow label="Taux de couverture"  value={`${poleData.taux_couverture}%`} />
-          <PRow label="Taux de saturation"  value={`${poleData.taux_saturation}%`} />
-          <PRow label="Durée moy. mentorat" value={`${poleData.duree_moyenne} mois`} />
-          <PRow label="Délai d'assignation" value={`${poleData.delai_moyen} jours`} />
-        </>}
-
-        {has('charts') && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '20px 0 8px' }}>Graphiques</h2>
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-            {pieGenre.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Genre des bénéficiaires</p>
-                <PieChart width={200} height={120}>
-                  <Pie data={pieGenre} cx={100} cy={60} outerRadius={50} dataKey="value">
-                    {pieGenre.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ marginTop: 4 }}>
-                  {pieGenre.map(e => (
-                    <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
-                      <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {pieStatut.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Statut des mentorats</p>
-                <PieChart width={200} height={120}>
-                  <Pie data={pieStatut} cx={100} cy={60} outerRadius={50} dataKey="value">
-                    {pieStatut.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Pie>
-                </PieChart>
-                <div style={{ marginTop: 4 }}>
-                  {pieStatut.map(e => (
-                    <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
-                      <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          {assocData.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Mentors par association</p>
-              <BarChart width={560} height={Math.max(100, assocData.length * 26)}
-                layout="vertical" data={assocData} margin={{ left: 8, right: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-                <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 10 }} />
-                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} />
-              </BarChart>
+        {/* Section 1 : Vue globale */}
+        {has('pole-global') && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+              color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+              Vue globale — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
             </div>
-          )}
-        </>}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8 }}>
+              {([
+                ['Demandes reçues',        pd.total_demandes,        `${pd.filles_pct}% F · ${pd.garcons_pct}% G`],
+                ['En attente',             pd.demandes_en_attente,  ''],
+                ['Mentorats créés',        pd.mentorats_crees ?? 0, 'sur la période'],
+                ['Mentorats en cours',     pd.mentorats_actifs,     ''],
+                ['Mentorats clos',         pd.mentorats_closes,     ''],
+                ['Délai moyen affectation', `${pd.delai_moyen} j`,  'demande → mentor'],
+              ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
+                <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                  <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+                  {sub && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>{sub}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        {has('profil') && (poleData.tranches_age || (poleData.par_diplome ?? []).length > 0) && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Profil des bénéficiaires</h2>
+        {/* Section 2 : Mentors & Capacité */}
+        {has('pole-mentors') && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+              color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+              Mentors &amp; Capacité
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8, marginBottom: 10 }}>
+              {([
+                ['Mentors sur pôle',         pd.mentors_total,            `${pd.mentors_satures} saturés`],
+                ['Mentors disponibles',       pd.mentors_disponibles,      `sur ${pd.mentors_total} actifs`],
+                ['Mentorats possibles',       pd.capacite_restante,        'places dispo'],
+                ['Sans mentorat',             pd.mentors_sans_mentorat ?? 0, 'n\'ont eu aucun'],
+                ['Moy. mentorats/mentor',     pd.moyen_par_mentor ?? 0,   'parmi actifs'],
+                ['Max mentorats/mentor',      pd.max_par_mentor ?? 0,     ''],
+              ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
+                <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                  <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+                  {sub && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>{sub}</div>}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {assocData.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Mentors par association</div>
+                  <BarChart width={280} height={Math.max(80, assocData.length * 26)} layout="vertical"
+                    data={assocData} margin={{ left: 8, right: 16 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9 }} />
+                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 9 }} />
+                    <Bar dataKey="mentors" fill="#3b82f6" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </div>
+              )}
+              {capaciteAssocData.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Places disponibles par association</div>
+                  <BarChart width={280} height={Math.max(80, capaciteAssocData.length * 26)} layout="vertical"
+                    data={capaciteAssocData} margin={{ left: 8, right: 16 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9 }} />
+                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 9 }} />
+                    <Bar dataKey="places" fill="#10b981" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Section 3 : Performance qualitative */}
+        {has('pole-performance') && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+              color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+              Performance qualitative — mentorats clos · {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 8 }}>
+              {([
+                ['Durée moy. / mentorat',      `${pd.duree_moyenne} mois`],
+                ['Heures moy. / mentorat',     `${pd.heures_moy_par_mentorat ?? 0} h`],
+                ['Rencontres moy. / mentorat', pd.rencontres_moy_par_mentorat ?? 0],
+              ] as [string, string|number][]).map(([lbl, val]) => (
+                <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                  <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Type de mentorat</div>
+                {(pd.pct_presentiel ?? 0) + (pd.pct_distanciel ?? 0) === 0
+                  ? <div style={{ fontSize: 9, color: '#94a3b8' }}>Non renseigné</div>
+                  : <><PTauxBar2 label="Présentiel" value={pd.pct_presentiel ?? 0} color="#3b82f6" />
+                     <PTauxBar2 label="Distanciel"  value={pd.pct_distanciel ?? 0} color="#a78bfa" /></>}
+              </div>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Financement</div>
+                {pd.financement_pct
+                  ? <><PTauxBar2 label="National" value={pd.financement_pct.national} color="#8b5cf6" />
+                     <PTauxBar2 label="Local"     value={pd.financement_pct.local}    color="#3b82f6" />
+                     <PTauxBar2 label="Sans fin."  value={pd.financement_pct.sans}    color="#94a3b8" /></>
+                  : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+              </div>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Statut clos</div>
+                {pd.cloture_par_sentiment
+                  ? <><PTauxBar2 label="Positif"  value={pd.cloture_par_sentiment.positif}  color="#10b981" />
+                     <PTauxBar2 label="Nul"       value={pd.cloture_par_sentiment.nul}       color="#94a3b8" />
+                     <PTauxBar2 label="Négatif"   value={pd.cloture_par_sentiment.negatif}   color="#ef4444" /></>
+                  : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 4 : Résultats jeunes */}
+        {has('pole-jeunes') && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+              color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+              Résultats jeunes — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+              {/* Genre */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Genre des bénéficiaires</div>
+                {genderData.filter(d => d.value > 0).length === 0 ? (
+                  <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>
+                ) : (
+                  <>
+                    <PieChart width={150} height={90}>
+                      <Pie data={genderData.filter(d => d.value > 0)} cx={75} cy={45}
+                        innerRadius={26} outerRadius={40} paddingAngle={3} dataKey="value">
+                        {genderData.filter(d => d.value > 0).map((e, i) => <Cell key={i} fill={e.color} />)}
+                      </Pie>
+                    </PieChart>
+                    <div style={{ marginTop: 4 }}>
+                      {genderData.filter(d => d.value > 0).map(e => (
+                        <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                          <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Tranches d'âge */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Tranches d'âge</div>
+                {pd.tranches_age && pd.total_demandes > 0 ? (
+                  (([
+                    ['< 18 ans',    pd.tranches_age.moins_18,      '#a78bfa'],
+                    ['18 – 25 ans', pd.tranches_age.annees_18_25, '#3b82f6'],
+                    ['26 – 29 ans', pd.tranches_age.annees_26_29, '#10b981'],
+                    ['> 29 ans',    pd.tranches_age.plus_29,       '#ef4444'],
+                    ...(pd.tranches_age.inconnu > 0 ? [['Non renseigné', pd.tranches_age.inconnu, '#cbd5e1']] : []),
+                  ] as [string, number, string][]).map(([lbl, val, color]) => {
+                    const pct = pd.total_demandes > 0 ? Math.round(val / pd.total_demandes * 100) : 0;
+                    return (
+                      <div key={lbl} style={{ marginBottom: 5 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                          <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val} ({pct}%)</span>
+                        </div>
+                        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  }))
+                ) : <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>}
+              </div>
+              {/* Diplôme par niveau RNCP */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplôme préparé (par niveau)</div>
+                {pd.par_diplome && pd.par_diplome.length > 0 ? (() => {
+                  const byNiveau = new Map<number, number>();
+                  pd.par_diplome!.forEach(d => {
+                    const niv = DIPLOME_NIVEAU[d.code] ?? 99;
+                    byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+                  });
+                  const rows = [...byNiveau.entries()].sort(([a], [b]) => a - b)
+                    .map(([niv, count]) => ({ label: niv === 99 ? 'Autre' : `Niveau ${niv}`, count }));
+                  const tot = rows.reduce((s, r) => s + r.count, 0);
+                  const dipColors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
+                  return rows.map((r, i) => {
+                    const pct = tot > 0 ? Math.round(r.count / tot * 100) : 0;
+                    return (
+                      <div key={r.label} style={{ marginBottom: 5 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600 }}>{r.label}</span>
+                          <span style={{ fontWeight: 600 }}>{r.count} ({pct}%)</span>
+                        </div>
+                        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: dipColors[i % dipColors.length], borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  });
+                })() : <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>}
+              </div>
+            </div>
+            {/* Ligne 2 : Situation + Problématiques */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Situation</div>
+                {(() => {
+                  const app  = pd.en_apprentissage ?? 0;
+                  const rech = pd.en_recherche ?? 0;
+                  const tot  = app + rech;
+                  if (tot === 0) return <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>;
+                  return (
+                    <>
+                      {([['Apprentissage', app, '#10b981'], ['En recherche', rech, '#3b82f6']] as [string, number, string][]).map(([lbl, val, color]) => {
+                        const pct = tot > 0 ? Math.round(val / tot * 100) : 0;
+                        return (
+                          <div key={lbl} style={{ marginBottom: 8 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                              <span>{lbl}</span><span style={{ fontWeight: 600, color }}>{val} ({pct}%)</span>
+                            </div>
+                            <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4 }}>Total : {tot} / {pd.total_demandes}</div>
+                    </>
+                  );
+                })()}
+              </div>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Top 5 problématiques</div>
+                {(pd.problematiques_top5 ?? []).length === 0
+                  ? <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune problématique renseignée</div>
+                  : (() => {
+                      const maxC   = pd.problematiques_top5![0].count;
+                      const pCols  = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'];
+                      return pd.problematiques_top5!.map((p, i) => {
+                        const pct = maxC > 0 ? Math.round(p.count / maxC * 100) : 0;
+                        return (
+                          <div key={p.code} style={{ marginBottom: 6 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                              <span>{i + 1}. {p.label ?? PROBLEMATIQUES_LABELS[p.code] ?? p.code}</span>
+                              <span style={{ fontWeight: 600 }}>{p.count}</span>
+                            </div>
+                            <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: pCols[i] ?? '#94a3b8', borderRadius: 2 }} />
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 5 : Comparaison nationale */}
+        {has('pole-national') && nationalData && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+              color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+              Comparaison nationale — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+            </div>
+            <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  {['Indicateur', 'Ce pôle', 'National', 'Écart'].map((h, i) => (
+                    <th key={h} style={{ padding: '6px 8px', textAlign: i === 0 ? 'left' : 'right',
+                      fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { label: '% filles',                              pole: pd.filles_pct,                          nat: nationalData.filles_pct,                          unit: '%',  higherIsBetter: true },
+                  { label: 'Heures moy. / mentorat',                pole: pd.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
+                  { label: 'Rencontres moy. / mentorat',            pole: pd.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
+                  { label: 'Clôtures positives (objectif atteint)', pole: pd.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
+                  { label: 'Nbre max mentorats / mentor',           pole: pd.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                  { label: 'Présentiel (mentorats clos)',           pole: pd.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
+                  { label: 'Diplôme niv. < 5 (CAP→BP)',            pole: pd.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
+                ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
+                  const diff    = row.pole - row.nat;
+                  const positive = row.higherIsBetter ? diff >= 0 : diff <= 0;
+                  return (
+                    <tr key={row.label} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '5px 8px', color: '#1e293b' }}>{row.label}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600 }}>{row.pole.toFixed(1)}{row.unit}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', color: '#64748b' }}>{row.nat.toFixed(1)}{row.unit}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600,
+                        color: positive ? '#16a34a' : '#dc2626' }}>
+                        {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{row.unit}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ── VUE NATIONALE ────────────────────────────────────────── */
+  if (!nationalData) return null;
+
+  const nd = nationalData;
+  const nd_total = nd.total_demandes ?? nd.total_jeunes;
+
+  return (
+    <div style={{ fontFamily: 'Arial, sans-serif', color: '#1e293b', fontSize: 12, padding: 0 }}>
+      <div style={{ marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid #0f172a' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', color: '#0f172a' }}>
+          Indicateurs de performance — National
+        </h1>
+        <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
+          Période : {PERIOD_LABELS[period]} &nbsp;•&nbsp; Généré le {date}
+        </p>
+      </div>
+
+      {/* Section 1 : Vue globale */}
+      {has('nat-global') && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+            color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+            Vue globale — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8, marginBottom: 12 }}>
+            {([
+              ['Demandes reçues', nd_total, `${nd.filles_pct}% F · ${nd.garcons_pct}% G`],
+              ['En attente', nd.demandes_en_attente, ''],
+              ['Mentorats créés', nd.mentorats_crees ?? 0, 'sur la période'],
+              ['En cours', nd.mentorats_actifs, ''],
+              ['Clos', nd.mentorats_closes, ''],
+              ['Délai moyen', `${nd.delai_moyen ?? 0} j`, 'demande → mentor'],
+            ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
+              <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+                {sub && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>{sub}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Section 2 : Mentors & Capacité */}
+      {has('nat-mentors') && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+            color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+            Mentors &amp; Capacité — national
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8, marginBottom: 8 }}>
+            {([
+              ['Mentors actifs', nd.mentors_total, `${nd.mentors_inactifs ?? 0} inactifs`],
+              ['Mentors disponibles', nd.mentors_dispo ?? 0, `sur ${nd.mentors_total} actifs`],
+              ['Places disponibles', nd.capacite_totale_nationale ?? 0, 'capacité totale'],
+              ['Mentors sans mentorat', nd.mentors_sans_mentorat ?? 0, 'n\'ont eu aucun'],
+              ['Nbre moyen / mentor', nd.moyen_par_mentor ?? 0, 'par mentor actif'],
+              ['Nbre max / mentor', nd.max_par_mentor ?? 0, ''],
+            ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
+              <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+                {sub && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>{sub}</div>}
+              </div>
+            ))}
+          </div>
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px' }}>
+            {([['Taux de couverture', nd.taux_couverture ?? 0, '#10b981'], ['Taux de saturation mentors', nd.taux_saturation ?? 0, '#ef4444']] as [string, number, string][]).map(([lbl, val, color]) => (
+              <div key={lbl} style={{ marginBottom: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#475569', marginBottom: 3 }}>
+                  <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val}%</span>
+                </div>
+                <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, val)}%`, background: color, borderRadius: 3 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Section 3 : Performance qualitative */}
+      {has('nat-performance') && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+            color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+            Performance qualitative — mentorats clos · {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 8 }}>
+            {([
+              ['Durée moy. / mentorat', `${nd.duree_moyenne ?? 0} mois`],
+              ['Heures moy. / mentorat', `${nd.heures_moy_par_mentorat ?? 0} h`],
+              ['Rencontres moy. / mentorat', nd.rencontres_moy_par_mentorat ?? 0],
+            ] as [string, string|number][]).map(([lbl, val]) => (
+              <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
+                <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{lbl}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Type de mentorat</div>
+              {(nd.pct_presentiel ?? 0) + (nd.pct_distanciel ?? 0) === 0
+                ? <div style={{ fontSize: 9, color: '#94a3b8' }}>Non renseigné</div>
+                : ([['Présentiel', nd.pct_presentiel ?? 0, '#3b82f6'], ['Distanciel', nd.pct_distanciel ?? 0, '#a78bfa']] as [string, number, string][]).map(([lbl, val, color]) => (
+                  <div key={lbl} style={{ marginBottom: 5 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                      <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val}%</span>
+                    </div>
+                    <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                      <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 2 }} />
+                    </div>
+                  </div>
+                ))}
+            </div>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Financement</div>
+              {nd.financement_pct
+                ? ([['National', nd.financement_pct.national, '#8b5cf6'], ['Local', nd.financement_pct.local, '#3b82f6'], ['Sans fin.', nd.financement_pct.sans, '#94a3b8']] as [string, number, string][]).map(([lbl, val, color]) => (
+                  <div key={lbl} style={{ marginBottom: 5 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                      <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val}%</span>
+                    </div>
+                    <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                      <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 2 }} />
+                    </div>
+                  </div>
+                ))
+                : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+            </div>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Statut clos</div>
+              {nd.cloture_par_sentiment
+                ? ([['Positif', nd.cloture_par_sentiment.positif, '#10b981'], ['Nul', nd.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', nd.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, val, color]) => (
+                  <div key={lbl} style={{ marginBottom: 5 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                      <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val}%</span>
+                    </div>
+                    <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                      <div style={{ height: '100%', width: `${val}%`, background: color, borderRadius: 2 }} />
+                    </div>
+                  </div>
+                ))
+                : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section 4 : Résultats jeunes */}
+      {has('nat-jeunes') && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+            color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+            Résultats jeunes — {PERIOD_LABELS[period]} ({PERIOD_DESC[period]})
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            {poleData.tranches_age && (() => {
-              const t = poleData.tranches_age!;
+            {/* Genre */}
+            {(() => {
+              const natGender = [
+                { name: 'Filles',  value: Math.round(nd_total * nd.filles_pct / 100),  color: '#ec4899' },
+                { name: 'Garçons', value: Math.round(nd_total * nd.garcons_pct / 100), color: '#3b82f6' },
+              ].filter(d => d.value > 0);
+              if (natGender.length === 0) return null;
+              return (
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Genre des bénéficiaires</div>
+                  <PieChart width={150} height={90}>
+                    <Pie data={natGender} cx={75} cy={45} innerRadius={26} outerRadius={40} paddingAngle={3} dataKey="value">
+                      {natGender.map((e, i) => <Cell key={i} fill={e.color} />)}
+                    </Pie>
+                  </PieChart>
+                  <div style={{ marginTop: 4 }}>
+                    {natGender.map(e => (
+                      <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 3 }}>
+                      {nd.filles_pct}% F · {nd.garcons_pct}% G
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            {/* Tranches d'âge */}
+            {nd.tranches_age && (() => {
+              const t = nd.tranches_age!;
               const tot = t.moins_18 + t.annees_18_25 + t.annees_26_29 + t.plus_29;
               return (
                 <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
@@ -979,9 +1717,40 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
                 </div>
               );
             })()}
+            {/* Diplôme par niveau RNCP */}
+            {(nd.par_diplome ?? []).length > 0 && (() => {
+              const byNiveau = new Map<number, number>();
+              nd.par_diplome!.forEach(d => {
+                const niv = DIPLOME_NIVEAU[d.code] ?? 99;
+                byNiveau.set(niv, (byNiveau.get(niv) ?? 0) + d.count);
+              });
+              const rows = [...byNiveau.entries()].sort(([a], [b]) => a - b)
+                .map(([niv, count]) => ({ label: niv === 99 ? 'Autre' : `Niveau ${niv}`, count }));
+              const tot = rows.reduce((s, r) => s + r.count, 0);
+              const colors = ['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#94a3b8'];
+              return (
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplôme préparé (par niveau)</div>
+                  {rows.map((r, i) => {
+                    const pct = tot > 0 ? Math.round(r.count / tot * 100) : 0;
+                    return (
+                      <div key={r.label} style={{ marginBottom: 5 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600 }}>{r.label}</span><span style={{ fontWeight: 600 }}>{r.count} ({pct}%)</span>
+                        </div>
+                        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: colors[i % colors.length], borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+            {/* Situation */}
             {(() => {
-              const app = poleData.en_apprentissage ?? 0;
-              const rech = poleData.en_recherche ?? 0;
+              const app = nd.en_apprentissage ?? 0;
+              const rech = nd.en_recherche ?? 0;
               const tot = app + rech;
               if (tot === 0) return null;
               return (
@@ -1003,208 +1772,24 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
                 </div>
               );
             })()}
-            {(poleData.par_diplome ?? []).length > 0 && (() => {
-              const tot = (poleData.par_diplome ?? []).reduce((s, d) => s + d.count, 0);
-              return (
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplômes préparés</div>
-                  {(poleData.par_diplome ?? []).slice(0, 7).map(d => {
-                    const pct = tot > 0 ? Math.round(d.count / tot * 100) : 0;
-                    return (
-                      <div key={d.code} style={{ marginBottom: 5 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
-                          <span>{d.label}</span><span style={{ fontWeight: 600 }}>{d.count} ({pct}%)</span>
-                        </div>
-                        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: '#3b82f6', borderRadius: 2 }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
           </div>
-        </>}
-
-        {has('financements') && (poleData.financements_pole ?? []).length > 0 && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Financements du pôle</h2>
-          <BarChart width={660} height={Math.max(80, (poleData.financements_pole ?? []).length * 32)}
-            layout="vertical" data={poleData.financements_pole} margin={{ left: 8, right: 52 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-            <YAxis type="category" dataKey="financement__nom" width={150} tick={{ fontSize: 10 }} />
-            <Tooltip formatter={(v) => [`${v} mentorat(s)`]} />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-              {(poleData.financements_pole ?? []).map((f, i) => (
-                <Cell key={i} fill={f.financement__type === 'national' ? '#7c3aed' : '#06b6d4'} />
-              ))}
-            </Bar>
-          </BarChart>
-        </>}
-
-        {has('aps') && <>
-          <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>APs & Urgences</h2>
-          <PRow label="APs total"          value={poleData.aps_total} />
-          <PRow label="APs actifs (suivi)" value={poleData.aps_actifs} />
-          <PRow label="Urgences non traitées" value={poleData.urgences_non_traitees} />
-        </>}
-      </div>
-    );
-  }
-
-  /* ── VUE NATIONALE ────────────────────────────────────────── */
-  if (!nationalData) return null;
-
-  const pieGenreN = [
-    { name: 'Filles',  value: nationalData.filles_pct,  color: '#ec4899' },
-    { name: 'Garçons', value: nationalData.garcons_pct,  color: '#3b82f6' },
-    { name: 'Autres',  value: Math.max(0, 100 - nationalData.filles_pct - nationalData.garcons_pct), color: '#94a3b8' },
-  ].filter(d => d.value > 0);
-
-  const pieStatutN = [
-    { name: 'Actifs',     value: nationalData.mentorats_actifs,       color: '#22c55e' },
-    { name: 'Clôturés',   value: nationalData.mentorats_closes,       color: '#3b82f6' },
-    { name: 'Abandonnés', value: nationalData.mentorats_abandonnes ?? 0, color: '#f97316' },
-    { name: 'En attente', value: nationalData.mentorats_pending ?? 0, color: '#94a3b8' },
-  ].filter(d => d.value > 0);
-
-  return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h1 style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 4 }}>{title}</h1>
-      <p style={{ fontSize: 11, color: '#64748b', marginBottom: 16 }}>Période : {PERIOD_LABELS[period]} · Généré le {date}</p>
-
-      {has('overview') && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '0 0 8px' }}>Vue d'ensemble</h2>
-        <PRow label="Pôles actifs"          value={nationalData.poles_total} />
-        <PRow label="Total jeunes"          value={nationalData.total_jeunes} />
-        <PRow label="Dont filles"           value={`${nationalData.filles_pct}%`} />
-        <PRow label="Mentorats actifs"      value={nationalData.mentorats_actifs} />
-        <PRow label="Demandes en attente"   value={nationalData.demandes_en_attente} />
-        <PRow label="Alertes rouges"        value={nationalData.alertes_rouges_actives} />
-        <PRow label="Urgences non traitées" value={nationalData.urgences_non_traitees} />
-        <PRow label="Mentors total"         value={nationalData.mentors_total} />
-        <PRow label="Mentors disponibles"   value={nationalData.mentors_dispo} />
-        <PRow label="Mentors saturés"       value={nationalData.mentors_satures} />
-      </>}
-
-      {has('performance') && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Performance nationale</h2>
-        <PRow label="Taux de réussite"           value={`${nationalData.taux_reussite}%`} />
-        <PRow label="Taux d'abandon"             value={`${nationalData.taux_abandon ?? 0}%`} />
-        <PRow label="Taux de couverture"         value={`${nationalData.taux_couverture ?? 0}%`} />
-        <PRow label="Taux de saturation mentors" value={`${nationalData.taux_saturation ?? 0}%`} />
-        <PRow label="Taux demandes en attente"   value={`${nationalData.taux_attente ?? 0}%`} />
-        <PRow label="Délai moyen d'assignation"  value={`${nationalData.delai_moyen ?? 0} jours`} />
-        <PRow label="Durée moy. d'un mentorat"   value={`${nationalData.duree_moyenne ?? 0} mois`} />
-      </>}
-
-      {has('charts') && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '20px 0 8px' }}>Graphiques</h2>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          {pieGenreN.length > 0 && (
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Genre des bénéficiaires</p>
-              <PieChart width={200} height={120}>
-                <Pie data={pieGenreN} cx={100} cy={60} outerRadius={50} dataKey="value">
-                  {pieGenreN.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-              </PieChart>
-              <div style={{ marginTop: 4 }}>
-                {pieGenreN.map(e => (
-                  <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
-                    <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {pieStatutN.length > 0 && (
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 }}>Statut des mentorats</p>
-              <PieChart width={200} height={120}>
-                <Pie data={pieStatutN} cx={100} cy={60} outerRadius={50} dataKey="value">
-                  {pieStatutN.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-              </PieChart>
-              <div style={{ marginTop: 4 }}>
-                {pieStatutN.map(e => (
-                  <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                    <div key={e.name} style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
-                    <span style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </>}
-
-      {has('profil') && (nationalData.tranches_age || (nationalData.par_diplome ?? []).length > 0 || (nationalData.problematiques_top5 ?? []).length > 0) && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Profil des jeunes</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-          {nationalData.tranches_age && (() => {
-            const t = nationalData.tranches_age!;
-            const tot = t.moins_18 + t.annees_18_25 + t.annees_26_29 + t.plus_29;
+          {/* Top 5 problématiques */}
+          {(nd.problematiques_top5 ?? []).length > 0 && (() => {
+            const maxC = nd.problematiques_top5![0].count;
+            const colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'];
             return (
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Tranches d'âge</div>
-                {([['< 18 ans', t.moins_18, '#a78bfa'], ['18-25 ans', t.annees_18_25, '#3b82f6'],
-                  ['26-29 ans', t.annees_26_29, '#10b981'], ['> 29 ans', t.plus_29, '#ef4444'],
-                ] as [string, number, string][]).map(([lbl, val, color]) => {
-                  const pct = tot > 0 ? Math.round(val / tot * 100) : 0;
-                  return (
-                    <div key={lbl} style={{ marginBottom: 5 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
-                        <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val} ({pct}%)</span>
-                      </div>
-                      <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-          {(nationalData.par_diplome ?? []).length > 0 && (() => {
-            const tot = (nationalData.par_diplome ?? []).reduce((s, d) => s + d.count, 0);
-            return (
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Diplômes préparés</div>
-                {(nationalData.par_diplome ?? []).slice(0, 7).map(d => {
-                  const pct = tot > 0 ? Math.round(d.count / tot * 100) : 0;
-                  return (
-                    <div key={d.code} style={{ marginBottom: 5 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
-                        <span>{d.label}</span><span style={{ fontWeight: 600 }}>{d.count} ({pct}%)</span>
-                      </div>
-                      <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#3b82f6', borderRadius: 2 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-          {(nationalData.problematiques_top5 ?? []).length > 0 && (() => {
-            const tot = (nationalData.problematiques_top5 ?? []).reduce((s, d) => s + d.count, 0);
-            return (
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10, marginTop: 10 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Top 5 problématiques</div>
-                {(nationalData.problematiques_top5 ?? []).map((d, i) => {
-                  const pct = tot > 0 ? Math.round(d.count / tot * 100) : 0;
+                {nd.problematiques_top5!.map((p, i) => {
+                  const pct = maxC > 0 ? Math.round(p.count / maxC * 100) : 0;
                   return (
-                    <div key={d.code} style={{ marginBottom: 5 }}>
+                    <div key={p.code} style={{ marginBottom: 5 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
-                        <span>{PROBLEMATIQUES_LABELS[d.code] ?? d.code}</span><span style={{ fontWeight: 600 }}>{d.count} ({pct}%)</span>
+                        <span>{i + 1}. {PROBLEMATIQUES_LABELS[p.code] ?? p.code}</span>
+                        <span style={{ fontWeight: 600 }}>{p.count}</span>
                       </div>
                       <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: PROB_COLORS[i] ?? '#94a3b8', borderRadius: 2 }} />
+                        <div style={{ height: '100%', width: `${pct}%`, background: colors[i] ?? '#94a3b8', borderRadius: 2 }} />
                       </div>
                     </div>
                   );
@@ -1213,49 +1798,39 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
             );
           })()}
         </div>
-      </>}
+      )}
 
-      {has('financements') && (nationalData.financements_national ?? []).length > 0 && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Financements</h2>
-        <BarChart width={660} height={Math.max(80, (nationalData.financements_national ?? []).length * 32)}
-          layout="vertical" data={nationalData.financements_national} margin={{ left: 8, right: 52 }}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} />
-          <YAxis type="category" dataKey="financement__nom" width={150} tick={{ fontSize: 10 }} />
-          <Tooltip formatter={(v) => [`${v} mentorat(s)`]} />
-          <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-            {(nationalData.financements_national ?? []).map((f, i) => (
-              <Cell key={i} fill={f.financement__type === 'national' ? '#7c3aed' : '#06b6d4'} />
-            ))}
-          </Bar>
-        </BarChart>
-      </>}
-
-      {has('poles') && (nationalData.par_pole ?? []).length > 0 && <>
-        <h2 style={{ fontSize: 13, fontWeight: 'bold', margin: '16px 0 8px' }}>Comparaison par pôle</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-          <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              {['Pôle', 'Demandes', 'Actifs', 'Mentors', 'Réussite', 'Alertes', 'Attente'].map(h => (
-                <th key={h} style={{ padding: '4px 8px', textAlign: 'left', fontWeight: 'bold', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {nationalData.par_pole.map(p => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '4px 8px' }}>{p.name}</td>
-                <td style={{ padding: '4px 8px' }}>{p.total_demandes}</td>
-                <td style={{ padding: '4px 8px' }}>{p.mentorats_actifs}</td>
-                <td style={{ padding: '4px 8px' }}>{p.mentors_total}</td>
-                <td style={{ padding: '4px 8px' }}>{p.taux_reussite}%</td>
-                <td style={{ padding: '4px 8px' }}>{p.alertes_rouges}</td>
-                <td style={{ padding: '4px 8px' }}>{p.demandes_en_attente}</td>
+      {/* Section 5 : Comparaison inter-pôles */}
+      {has('nat-poles') && (nd.par_pole ?? []).length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5,
+            color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+            Comparaison inter-pôles
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+            <thead>
+              <tr style={{ background: '#f8fafc' }}>
+                {['Pôle', 'Demandes', 'Actifs', 'Mentors', 'Réussite', 'Alertes', 'Attente'].map(h => (
+                  <th key={h} style={{ padding: '4px 8px', textAlign: 'left', fontWeight: 'bold', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </>}
+            </thead>
+            <tbody>
+              {nd.par_pole.map(p => (
+                <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '4px 8px', fontWeight: 600 }}>{p.name}</td>
+                  <td style={{ padding: '4px 8px' }}>{p.total_demandes}</td>
+                  <td style={{ padding: '4px 8px' }}>{p.mentorats_actifs}</td>
+                  <td style={{ padding: '4px 8px' }}>{p.mentors_total}</td>
+                  <td style={{ padding: '4px 8px', color: p.taux_reussite >= 70 ? '#16a34a' : p.taux_reussite >= 50 ? '#d97706' : '#dc2626', fontWeight: 600 }}>{p.taux_reussite}%</td>
+                  <td style={{ padding: '4px 8px', color: p.alertes_rouges > 0 ? '#dc2626' : '#94a3b8' }}>{p.alertes_rouges > 0 ? `${p.alertes_rouges} ⚠` : '—'}</td>
+                  <td style={{ padding: '4px 8px' }}>{p.demandes_en_attente}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -1419,7 +1994,7 @@ export function NationalKPIs() {
           <p className="text-sm text-red-700">{error}</p>
         </div>
       ) : selectedPoleId && poleData ? (
-        <PoleDetailView data={poleData} poleName={selectedPoleName} />
+        <PoleDetailView data={poleData} nationalData={nationalData} poleName={selectedPoleName} period={period} />
       ) : nationalData ? (
         <NationalView data={nationalData} period={period} onSelectPole={handleSelectPoleFromTable} />
       ) : null}

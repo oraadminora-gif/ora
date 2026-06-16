@@ -376,17 +376,43 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
       {/* Section 5 : Résultats jeunes */}
       {includedSections.has('kpi-section-jeunes') && (
         <PSection title={`Résultats jeunes — ${PERIOD_LABELS[period]} (${PERIOD_DESC[period]})`}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+          {/* Ligne 1 : Genre | Tranches d'âge | Diplôme par niveau RNCP */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+
+            {/* Genre */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 6, color: '#475569' }}>Genre des bénéficiaires</div>
+              {genderData.length === 0 ? (
+                <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>
+              ) : (
+                <>
+                  <PieChart width={150} height={90}>
+                    <Pie data={genderData} cx={75} cy={45} innerRadius={26} outerRadius={40} paddingAngle={3} dataKey="value">
+                      {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                    </Pie>
+                  </PieChart>
+                  <div style={{ marginTop: 5 }}>
+                    {genderData.map(e => (
+                      <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: e.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: 9, color: '#475569' }}>{e.name}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', marginLeft: 'auto' }}>{e.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Tranches d'âge */}
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
               <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Tranches d'âge</div>
               {poleData.tranches_age && poleData.total_demandes > 0 ? (
                 (([
-                  ['< 18 ans',    poleData.tranches_age.moins_18,       '#a78bfa'],
-                  ['18 – 25 ans', poleData.tranches_age.annees_18_25,  '#3b82f6'],
-                  ['26 – 29 ans', poleData.tranches_age.annees_26_29,  '#10b981'],
-                  ['> 29 ans',    poleData.tranches_age.plus_29,        '#ef4444'],
+                  ['< 18 ans',    poleData.tranches_age.moins_18,      '#a78bfa'],
+                  ['18 – 25 ans', poleData.tranches_age.annees_18_25, '#3b82f6'],
+                  ['26 – 29 ans', poleData.tranches_age.annees_26_29, '#10b981'],
+                  ['> 29 ans',    poleData.tranches_age.plus_29,       '#ef4444'],
                   ...(poleData.tranches_age.inconnu > 0
                     ? [['Non renseigné', poleData.tranches_age.inconnu, '#cbd5e1']]
                     : []),
@@ -440,7 +466,10 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
                 <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune donnée</div>
               )}
             </div>
+          </div>
 
+          {/* Ligne 2 : Situation | Top 5 Problématiques */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
             {/* Situation */}
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
               <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Situation</div>
@@ -475,6 +504,35 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
               })()}
             </div>
 
+            {/* Top 5 Problématiques */}
+            {(poleData.problematiques_top5 ?? []).length > 0 ? (
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Top 5 problématiques</div>
+                {(() => {
+                  const maxC   = poleData.problematiques_top5![0].count;
+                  const colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'];
+                  return poleData.problematiques_top5!.map((p, i) => {
+                    const pct = maxC > 0 ? Math.round(p.count / maxC * 100) : 0;
+                    return (
+                      <div key={p.code} style={{ marginBottom: 6 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
+                          <span>{i + 1}. {p.label ?? p.code}</span>
+                          <span style={{ fontWeight: 600 }}>{p.count}</span>
+                        </div>
+                        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: colors[i] ?? '#94a3b8', borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            ) : (
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 7, color: '#475569' }}>Top 5 problématiques</div>
+                <div style={{ fontSize: 9, color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>Aucune problématique renseignée</div>
+              </div>
+            )}
           </div>
         </PSection>
       )}

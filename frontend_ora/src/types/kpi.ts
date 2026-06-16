@@ -117,12 +117,16 @@ export interface PoleSummaryKPI {
 export interface NationalKPIDetailed extends NationalKPI {
   mentorats_pending:       number;
   mentorats_abandonnes:    number;
+  mentorats_crees?:        number;
   mentors_satures:         number;
   mentors_inactifs?:       number;
+  mentors_sans_mentorat?:  number;
+  moyen_par_mentor?:       number;
   taux_abandon:            number;
   demandes_en_attente:     number;
   urgences_non_traitees:   number;
   alertes_rouges_actives:  number;
+  total_demandes?:         number;
   par_pole:                PoleSummaryKPI[];
   // Performance globale
   duree_moyenne?:          number;
@@ -134,6 +138,8 @@ export interface NationalKPIDetailed extends NationalKPI {
   heures_moy_par_mentorat?:     number;
   rencontres_moy_par_mentorat?: number;
   pct_presentiel?:              number;
+  pct_distanciel?:              number;
+  financement_pct?:             { national: number; local: number; sans: number };
   cloture_par_sentiment?:       { positif: number; nul: number; negatif: number };
   max_par_mentor?:              number;
   pct_diplome_moins5?:          number;
@@ -148,4 +154,7 @@ export interface NationalKPIDetailed extends NationalKPI {
   financements_national?:  FinancementKPI[];
   // Capacité disponible nationale
   capacite_totale_nationale?: number;
+  // Mentors par association (national)
+  mentors_par_association?: { association__name: string; count: number }[];
+  capacite_par_association?: { association__name: string | null; capacite: number }[];
 }
