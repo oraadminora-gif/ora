@@ -5,8 +5,6 @@ import api from '../../../services/api';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { MentorProfileCard } from '../../../components/mentor/MentorProfileCard';
 import { MentorAvailabilityCard } from '../../../components/mentor/MentorAvailabilityCard';
-import { ActiveMentorshipsCard } from '../../../components/mentor/ActiveMentorshipsCard';
-import { MentorshipHistoryCard } from '../../../components/mentor/MentorshipHistoryCard';
 
 export interface Department {
   id: number; code: string; name: string;
@@ -90,7 +88,7 @@ export interface MentoratHistorique {
   evaluation: EvaluationRecu | null;
 }
 
-interface DashboardData {
+export interface DashboardData {
   mentor: MentorInfo;
   mentorats: { actifs: MentoratActif[]; historique: MentoratHistorique[] };
 }
@@ -134,18 +132,9 @@ export function MentorDashboard() {
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Mon Espace Mentor</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MentorProfileCard mentor={data.mentor} onUpdate={handleProfileUpdate} />
-        <MentorAvailabilityCard capacite={data.mentor.capacite} onUpdate={handleCapaciteUpdate} />
-      </div>
-      <ActiveMentorshipsCard
-        mentorats={data.mentorats.actifs}
-        mentorName={`${data.mentor.first_name} ${data.mentor.last_name}`}
-        onClosed={fetchDashboard}
-      />
-      <MentorshipHistoryCard mentorats={data.mentorats.historique} />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <MentorProfileCard mentor={data.mentor} onUpdate={handleProfileUpdate} />
+      <MentorAvailabilityCard capacite={data.mentor.capacite} onUpdate={handleCapaciteUpdate} />
     </div>
   );
 }

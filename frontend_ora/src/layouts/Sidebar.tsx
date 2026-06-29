@@ -159,13 +159,13 @@ const ROLE_HOME: Record<UserRole, string> = {
   MENTOR: '/member/mentor/dashboard',
   AP:     '/member/ap/dashboard',
   ACP:    '/member/acp/dashboard',
-  CN:     '/member/cn/dashboard',
+  CN:     '/member/cn/kpis',
 };
 
 const menuItems: MenuItem[] = [
   { label: 'Accueil',        path: '/member',                  roles: ['MENTOR'], icon: <Home size={18} /> },
   // MENTOR
-  { label: 'Mes mentorats',  path: '/member/mentor/dashboard', roles: ['MENTOR'],                 icon: <HandHeart size={18} />, scrollTo: 'mentorats-en-cours' },
+  { label: 'Mes mentorats',  path: '/member/mentor/mentorats', roles: ['MENTOR'], icon: <HandHeart size={18} /> },
   // AP
   { label: 'Tableau de bord',  path: '/member/ap/dashboard',     roles: ['AP'], icon: <LayoutDashboard size={18} /> },
   { label: 'Suivi mentors',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
@@ -184,14 +184,13 @@ const menuItems: MenuItem[] = [
   { label: 'Implantations',      path: '/member/cn/implantations', roles: ['ACP'],     icon: <Globe size={18} /> },
   { label: 'KPIs Nationaux',     path: '/member/cn/kpis',          roles: ['ACP'],     icon: <BarChart2 size={18} /> },
   // CN
-  { label: 'Vue nationale',       path: '/member/cn/dashboard',    roles: ['CN'], icon: <Globe size={18} /> },
-  { label: 'Gestion mentors',     path: '/member/cn/mentors',      roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
-  { label: 'Gestion pôles',       path: '/member/cn/poles',        roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
-  { label: 'Gestion animateurs',  path: '/member/cn/animateurs',   roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
-  { label: 'Annuaire ORA',        path: '/member/cn/annuaire',     roles: ['CN'], icon: <BookOpen size={18} /> },
-  { label: 'Implantations',       path: '/member/cn/implantations',roles: ['CN'], icon: <MapPin size={18} /> },
-  { label: 'KPIs Nationaux',      path: '/member/cn/kpis',         roles: ['CN'], icon: <BarChart2 size={18} /> },
-  { label: 'Configuration',       path: '/member/cn/configuration',roles: ['CN'], icon: <Settings size={18} />, requiresFullAccess: true },
+  { label: 'KPIs Nationaux',      path: '/member/cn/kpis',          roles: ['CN'], icon: <BarChart2 size={18} /> },
+  { label: 'Gestion mentors',     path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Gestion pôles',       path: '/member/cn/poles',         roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
+  { label: 'Gestion animateurs',  path: '/member/cn/animateurs',    roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Annuaire ORA',        path: '/member/cn/annuaire',      roles: ['CN'], icon: <BookOpen size={18} /> },
+  { label: 'Implantations',       path: '/member/cn/implantations', roles: ['CN'], icon: <MapPin size={18} /> },
+  { label: 'Configuration',       path: '/member/cn/configuration', roles: ['CN'], icon: <Settings size={18} />, requiresFullAccess: true },
 ];
 
 // ─────────────────────────────────────────────────────────────

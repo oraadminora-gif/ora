@@ -1,7 +1,7 @@
 // src/layouts/HeaderCN.tsx
 import { useState, useRef, useEffect } from 'react';
 import {
-  LogOut, Bell, Globe, Users, BarChart3, Settings, Shield,
+  LogOut, Bell, Users, BarChart3, Settings, Shield,
   BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown, GraduationCap,
   Mail,
 } from 'lucide-react';
@@ -70,12 +70,6 @@ export function HeaderCN() {
 
         {/* Centre — Navigation CN */}
         <nav className="hidden md:flex items-center gap-1">
-          <NavLink
-            to="/member/cn/dashboard"
-            icon={<Globe className="w-4 h-4" />}
-            label="Accueil"
-            active={location.pathname === '/member/cn/dashboard'}
-          />
           <NavLink
             to="/member/cn/annuaire"
             icon={<BookOpen className="w-4 h-4" />}

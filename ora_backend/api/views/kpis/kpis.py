@@ -604,23 +604,62 @@ class NationalKPIsView(APIView):
             if date_to:
                 p_m_created = p_m_created.filter(created_at__date__lte=date_to)
             p_actifs = p_m_created.filter(status='ACTIVE').count()
-            p_closed = p_m.filter(status__in=['CLOSED', 'ABORTED'])
+            p_clos_qs = p_m.filter(status='CLOSED')
+            if date_from:
+                p_clos_qs = p_clos_qs.filter(closed_at__gte=date_from)
+            if date_to:
+                p_clos_qs = p_clos_qs.filter(closed_at__lte=date_to)
+            p_closed   = p_m.filter(status__in=['CLOSED', 'ABORTED'])
             if date_from:
                 p_closed = p_closed.filter(closed_at__gte=date_from)
             if date_to:
                 p_closed = p_closed.filter(closed_at__lte=date_to)
-            p_closes   = p_closed.filter(status='CLOSED').count()
+            p_closes   = p_clos_qs.count()
             p_termines = p_closed.count()
+
+            # Mentorats réussis (objectif atteint)
+            p_reussis = p_clos_qs.filter(closure_reason_code='OBJECTIVE_REACHED').count()
+
+            # Mentors sans mentorat + moyenne (réutilise nb_filter_nat)
+            p_mentors_qs = Mentor.objects.filter(pole=p, is_active=True)
+            p_m_counts   = list(p_mentors_qs.annotate(nb=Count('mentorats', filter=nb_filter_nat)).values_list('nb', flat=True))
+            moyen_par_mentor_p = round(sum(p_m_counts) / len(p_m_counts), 1) if p_m_counts else 0
+            mentors_sans_mentorat_p = (
+                p_mentors_qs.filter(disponibilite_reelle__gt=0)
+                .annotate(nb=Count('mentorats', filter=nb_filter_nat))
+                .filter(nb=0)
+                .count()
+            )
+
+            # Rencontres moyennes (sur mentorats clos de la période)
+            rencontres_moy_p = round(float(p_clos_qs.aggregate(moy=Avg('nb_rencontres'))['moy'] or 0), 1)
+
+            # Durée moyenne en mois (mentorats créés dans la période)
+            p_dates = list(p_m_created.filter(assigned_at__isnull=False).values('assigned_at', 'closed_at', 'status'))
+            p_durees = []
+            for m in p_dates:
+                end = m['closed_at'] or (today if m['status'] == 'ACTIVE' else None)
+                if end and m['assigned_at']:
+                    p_durees.append(max(0, (end - m['assigned_at']).days) / 30.0)
+            duree_moyenne_p = round(sum(p_durees) / len(p_durees), 1) if p_durees else 0
+
             par_pole.append({
-                "id":                  p.id,
-                "name":                p.name,
-                "code":                p.code,
-                "total_demandes":      p_req.count(),
-                "mentorats_actifs":    p_actifs,
-                "mentors_total":       Mentor.objects.filter(pole=p, is_active=True).count(),
-                "alertes_rouges":      p_m_created.filter(status='ACTIVE', alerte_rouge=True).count(),
-                "taux_reussite":       round(p_closes / p_termines * 100, 1) if p_termines else 0,
-                "demandes_en_attente": p_req.filter(status__in=['NEW', 'PENDING']).count(),
+                "id":                        p.id,
+                "name":                      p.name,
+                "code":                      p.code,
+                "total_demandes":            p_req.count(),
+                "mentors_total":             p_mentors_qs.count(),
+                "mentorats_crees":           p_m_created.count(),
+                "mentorats_actifs":          p_actifs,
+                "mentorats_reussis":         p_reussis,
+                "mentors_sans_mentorat":     mentors_sans_mentorat_p,
+                "moyen_par_mentor":          moyen_par_mentor_p,
+                "rencontres_moy_par_mentorat": rencontres_moy_p,
+                "duree_moyenne":             duree_moyenne_p,
+                # kept for legacy compatibility
+                "alertes_rouges":            p_m_created.filter(status='ACTIVE', alerte_rouge=True).count(),
+                "taux_reussite":             round(p_closes / p_termines * 100, 1) if p_termines else 0,
+                "demandes_en_attente":       p_req.filter(status__in=['NEW', 'PENDING']).count(),
             })
 
         return Response({

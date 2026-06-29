@@ -1,5 +1,5 @@
 // src/layouts/HeaderMentor.tsx
-import { LogOut, Bell, HandHeart } from 'lucide-react';
+import { LogOut, Bell, Home, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -34,9 +34,15 @@ export function HeaderMentor() {
         <nav className="hidden md:flex items-center gap-1">
           <NavLink
             to="/member/mentor/dashboard"
-            icon={<HandHeart className="w-4 h-4" />}
+            icon={<Home className="w-4 h-4" />}
+            label="Accueil"
+            active={location.pathname === '/member/mentor/dashboard'}
+          />
+          <NavLink
+            to="/member/mentor/mentorats"
+            icon={<BookOpen className="w-4 h-4" />}
             label="Mes mentorats"
-            active={location.pathname.startsWith('/member/mentor')}
+            active={location.pathname === '/member/mentor/mentorats'}
           />
         </nav>
 

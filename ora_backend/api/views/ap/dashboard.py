@@ -1205,9 +1205,31 @@ class APUpdateJeuneView(APIView):
                 req.nom_etablissement = ''
             else:
                 req.etablissement_id = None
+                if 'nom_etablissement' in data:
+                    nom = str(data['nom_etablissement']).strip()
+                    if nom:
+                        etab = Etablissement.objects.filter(
+                            nom__iexact=nom, pole_id=mentorat.pole_id
+                        ).first() or Etablissement.objects.create(
+                            nom=nom, pole_id=mentorat.pole_id, code_postal='', is_active=True
+                        )
+                        req.etablissement_id = etab.id
+                        req.nom_etablissement = ''
+                    else:
+                        req.nom_etablissement = ''
         elif 'nom_etablissement' in data:
-            req.nom_etablissement = str(data['nom_etablissement']).strip()
-            req.etablissement_id = None
+            nom = str(data['nom_etablissement']).strip()
+            if nom:
+                etab = Etablissement.objects.filter(
+                    nom__iexact=nom, pole_id=mentorat.pole_id
+                ).first() or Etablissement.objects.create(
+                    nom=nom, pole_id=mentorat.pole_id, code_postal='', is_active=True
+                )
+                req.etablissement_id = etab.id
+                req.nom_etablissement = ''
+            else:
+                req.etablissement_id = None
+                req.nom_etablissement = ''
 
         req.save()
 

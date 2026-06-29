@@ -29,6 +29,7 @@ import { CharteGraphique }         from './pages/CharteGraphique';
 
 // ── Dashboards membres — lazy (lourds, chargés seulement après login) ──
 const MentorDashboard           = lazy(() => import('./pages/member/mentor/MentorDashboard').then(m => ({ default: m.MentorDashboard })));
+const MentorMentorats           = lazy(() => import('./pages/member/mentor/MentorMentorats').then(m => ({ default: m.MentorMentorats })));
 const PoleDashboard             = lazy(() => import('./pages/member/pole/PoleDashboard').then(m => ({ default: m.PoleDashboard })));
 const MatchingBoard             = lazy(() => import('./pages/member/pole/MatchingBoard').then(m => ({ default: m.MatchingBoard })));
 const PoleKPIs                  = lazy(() => import('./pages/member/pole/PoleKPIs').then(m => ({ default: m.PoleKPIs })));
@@ -107,7 +108,8 @@ function App() {
               <Route index element={<MemberIndexRedirect />} />
 
               <Route element={<ProtectedRoute allowedRoles={['MENTOR']} />}>
-                <Route path="mentor/dashboard" element={<Suspense fallback={<DashboardLoader />}><MentorDashboard /></Suspense>} />
+                <Route path="mentor/dashboard"  element={<Suspense fallback={<DashboardLoader />}><MentorDashboard /></Suspense>} />
+                <Route path="mentor/mentorats"  element={<Suspense fallback={<DashboardLoader />}><MentorMentorats /></Suspense>} />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['AP', 'ACP', 'CN']} />}>

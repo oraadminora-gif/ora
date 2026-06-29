@@ -616,44 +616,50 @@ function NationalView({
       <section id="nat-section-poles">
         <SectionTitle>Comparaison inter-pôles</SectionTitle>
         <p className="text-xs text-slate-400 mb-3">Cliquez sur une ligne pour voir les KPIs détaillés du pôle.</p>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
+          <table className="w-full text-sm min-w-[1000px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <Th k="name"                label="Pôle" />
-                <Th k="total_demandes"      label="Demandes" />
-                <Th k="mentorats_actifs"    label="Actifs" />
-                <Th k="mentors_total"       label="Mentors" />
-                <Th k="taux_reussite"       label="Réussite" />
-                <Th k="alertes_rouges"      label="Alertes" />
-                <Th k="demandes_en_attente" label="En attente" />
+                <Th k="name"                        label="Pôle" />
+                <Th k="total_demandes"              label="Demandes reçues" />
+                <Th k="mentors_total"               label="Mentors" />
+                <Th k="mentorats_crees"             label="Mentorats créés" />
+                <Th k="mentorats_actifs"            label="En cours" />
+                <Th k="mentorats_reussis"           label="Réussis" />
+                <Th k="mentors_sans_mentorat"       label="Sans mentorat" />
+                <Th k="moyen_par_mentor"            label="Moy./mentor" />
+                <Th k="rencontres_moy_par_mentorat" label="Rencontres moy." />
+                <Th k="duree_moyenne"               label="Durée moy. (mois)" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {sortedPoles.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-10 text-slate-400 text-sm">Aucun pôle</td></tr>
+                <tr><td colSpan={10} className="text-center py-10 text-slate-400 text-sm">Aucun pôle</td></tr>
               ) : sortedPoles.map(p => (
                 <tr key={p.id}
                   onClick={() => onSelectPole(p)}
                   className="hover:bg-violet-50/40 cursor-pointer transition-colors">
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded mr-2">{p.code}</span>
                     <span className="font-medium text-slate-800">{p.name}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-700">{p.total_demandes}</td>
-                  <td className="px-4 py-3 text-emerald-700 font-medium">{p.mentorats_actifs}</td>
-                  <td className="px-4 py-3 text-slate-700">{p.mentors_total}</td>
-                  <td className="px-4 py-3">
-                    <span className={`font-bold ${p.taux_reussite >= 70 ? 'text-emerald-700' : p.taux_reussite >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                      {p.taux_reussite}%
+                  <td className="px-4 py-3 text-center text-slate-700">{p.total_demandes}</td>
+                  <td className="px-4 py-3 text-center text-slate-700">{p.mentors_total}</td>
+                  <td className="px-4 py-3 text-center text-slate-700">{p.mentorats_crees ?? 0}</td>
+                  <td className="px-4 py-3 text-center text-emerald-700 font-medium">{p.mentorats_actifs}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`font-bold ${(p.mentorats_reussis ?? 0) > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>
+                      {p.mentorats_reussis ?? 0}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    {p.alertes_rouges > 0
-                      ? <span className="text-red-600 font-bold">{p.alertes_rouges} ⚠</span>
+                  <td className="px-4 py-3 text-center">
+                    {(p.mentors_sans_mentorat ?? 0) > 0
+                      ? <span className="text-amber-600 font-semibold">{p.mentors_sans_mentorat}</span>
                       : <span className="text-slate-400">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-slate-700">{p.demandes_en_attente}</td>
+                  <td className="px-4 py-3 text-center text-slate-700">{p.moyen_par_mentor ?? 0}</td>
+                  <td className="px-4 py-3 text-center text-slate-700">{p.rencontres_moy_par_mentorat ?? 0}</td>
+                  <td className="px-4 py-3 text-center text-slate-700">{p.duree_moyenne ?? 0}</td>
                 </tr>
               ))}
             </tbody>
@@ -1807,24 +1813,38 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
             color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
             Comparaison inter-pôles
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 8 }}>
             <thead>
               <tr style={{ background: '#f8fafc' }}>
-                {['Pôle', 'Demandes', 'Actifs', 'Mentors', 'Réussite', 'Alertes', 'Attente'].map(h => (
-                  <th key={h} style={{ padding: '4px 8px', textAlign: 'left', fontWeight: 'bold', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{h}</th>
+                {[
+                  'Pôle', 'Dem. reçues', 'Mentors', 'Créés', 'En cours',
+                  'Réussis', 'Sans mentorat', 'Moy./mentor', 'Rencontres moy.', 'Durée moy. (mois)',
+                ].map(h => (
+                  <th key={h} style={{ padding: '4px 5px', textAlign: 'left', fontWeight: 'bold',
+                    color: '#64748b', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {nd.par_pole.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '4px 8px', fontWeight: 600 }}>{p.name}</td>
-                  <td style={{ padding: '4px 8px' }}>{p.total_demandes}</td>
-                  <td style={{ padding: '4px 8px' }}>{p.mentorats_actifs}</td>
-                  <td style={{ padding: '4px 8px' }}>{p.mentors_total}</td>
-                  <td style={{ padding: '4px 8px', color: p.taux_reussite >= 70 ? '#16a34a' : p.taux_reussite >= 50 ? '#d97706' : '#dc2626', fontWeight: 600 }}>{p.taux_reussite}%</td>
-                  <td style={{ padding: '4px 8px', color: p.alertes_rouges > 0 ? '#dc2626' : '#94a3b8' }}>{p.alertes_rouges > 0 ? `${p.alertes_rouges} ⚠` : '—'}</td>
-                  <td style={{ padding: '4px 8px' }}>{p.demandes_en_attente}</td>
+                  <td style={{ padding: '4px 5px', fontWeight: 600 }}>
+                    <span style={{ fontSize: 7, background: '#f1f5f9', color: '#64748b', padding: '1px 4px', borderRadius: 3, marginRight: 4 }}>{p.code}</span>
+                    {p.name}
+                  </td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.total_demandes}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.mentors_total}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.mentorats_crees ?? 0}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center', color: '#047857', fontWeight: 600 }}>{p.mentorats_actifs}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center', color: (p.mentorats_reussis ?? 0) > 0 ? '#047857' : '#94a3b8', fontWeight: 600 }}>
+                    {p.mentorats_reussis ?? 0}
+                  </td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center', color: (p.mentors_sans_mentorat ?? 0) > 0 ? '#d97706' : '#94a3b8' }}>
+                    {(p.mentors_sans_mentorat ?? 0) > 0 ? p.mentors_sans_mentorat : '—'}
+                  </td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.moyen_par_mentor ?? 0}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.rencontres_moy_par_mentorat ?? 0}</td>
+                  <td style={{ padding: '4px 5px', textAlign: 'center' }}>{p.duree_moyenne ?? 0}</td>
                 </tr>
               ))}
             </tbody>
@@ -1857,7 +1877,7 @@ export function NationalKPIs() {
     contentRef: printRef,
     documentTitle: `kpis-national-${period}-${new Date().toISOString().slice(0, 10)}`,
     pageStyle: `
-      @page { size: A4 portrait; margin: 15mm; }
+      @page { size: A4 landscape; margin: 12mm; }
       @media print {
         body { font-size: 11px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .no-print { display: none !important; }

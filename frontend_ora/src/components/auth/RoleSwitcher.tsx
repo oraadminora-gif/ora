@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { UserRole } from '../../contexts/AuthContext';
 
 const ROLE_ROUTES: Record<UserRole, string> = {
-  CN:     '/member/cn/dashboard',
+  CN:     '/member/cn/kpis',
   ACP:    '/member/pole/dashboard',  // ACP voit le dashboard pôle
   AP:     '/member/ap/dashboard',     // AP voit son association
   MENTOR: '/member/mentor/dashboard',

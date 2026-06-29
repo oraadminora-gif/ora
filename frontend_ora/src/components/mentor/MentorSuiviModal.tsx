@@ -19,46 +19,80 @@ interface Props {
 
 const INPUT = 'w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue transition-all';
 
-// ── Section Jeune (lecture + édition situation/établissement) ─────────────────
+const DIPLOME_CHOICES = [
+  { value: 'CAP',       label: 'Niveau 3 — CAP' },
+  { value: 'BEP',       label: 'Niveau 3 — BEP' },
+  { value: 'BAC_PRO',   label: 'Niveau 4 — Bac Pro' },
+  { value: 'BAC_AUTRE', label: 'Niveau 4 — Bac autres' },
+  { value: 'BP',        label: 'Niveau 4 — BP' },
+  { value: 'BTS',       label: 'Niveau 5 — BTS' },
+  { value: 'DUT',       label: 'Niveau 5 — DUT' },
+  { value: 'LIC_PRO',   label: 'Niveau 6 — Licence Pro' },
+  { value: 'BUT',       label: 'Niveau 6 — BUT' },
+  { value: 'MASTER',    label: 'Niveau 7 — Master' },
+  { value: 'DEA',       label: 'Niveau 7 — DEA' },
+  { value: 'DES',       label: "Niveau 7 — Diplôme d'études spécialisées" },
+  { value: 'ING',       label: 'Niveau 7 — Ingénieur' },
+];
+
+// ── Section Jeune (lecture + édition diplôme / situation / établissement) ──────
 function JeuneSection({ mentoratId, jeune }: {
   mentoratId: number;
   jeune: MentoratActif['jeune'];
 }) {
-  const [editing, setEditing]           = useState(false);
-  const [situation, setSituation]       = useState(jeune.situation);
+  const [editing, setEditing]               = useState(false);
+  const [diplome, setDiplome]               = useState(jeune.diplome_prepare);
+  const [diplomeLabel, setDiplomeLabel]     = useState(jeune.diplome_label);
+  const [situation, setSituation]           = useState(jeune.situation);
   const [situationLabel, setSituationLabel] = useState(jeune.situation_label);
-  const [etabId, setEtabId]             = useState<number | null>(jeune.etablissement_id);
-  const [displayNom, setDisplayNom]     = useState(jeune.nom_etablissement);
-  const [autreNom, setAutreNom]         = useState(jeune.etablissement_id ? '' : jeune.nom_etablissement);
-  const [etabs, setEtabs]               = useState<EtabOption[]>([]);
-  const [saving, setSaving]             = useState(false);
-  const [err, setErr]                   = useState('');
+  const [etabId, setEtabId]                 = useState<number | null>(jeune.etablissement_id);
+  const [displayNom, setDisplayNom]         = useState(jeune.nom_etablissement);
+  // etabSelectVal tracks what's selected in the dropdown independently of displayNom
+  const [etabSelectVal, setEtabSelectVal]   = useState<string>(
+    jeune.etablissement_id ? String(jeune.etablissement_id)
+      : (jeune.nom_etablissement && !jeune.etablissement_id ? 'autre' : '')
+  );
+  const [autreNom, setAutreNom]             = useState(jeune.etablissement_id ? '' : jeune.nom_etablissement);
+  const [etabs, setEtabs]                   = useState<EtabOption[]>([]);
+  const [saving, setSaving]                 = useState(false);
+  const [err, setErr]                       = useState('');
 
   useEffect(() => {
     if (!editing) return;
     api.get<EtabOption[]>('/mentor/etablissements/').then(r => setEtabs(r.data)).catch(() => {});
   }, [editing]);
 
-  const selectValue = etabId ? String(etabId) : (displayNom ? 'autre' : '');
-
   const handleSave = async () => {
     setSaving(true); setErr('');
-    const payload: Record<string, unknown> = { situation };
-    if (etabId) {
-      payload.etablissement_id = etabId;
+    const payload: Record<string, unknown> = { diplome_prepare: diplome, situation };
+    if (situation === 'apprentissage') {
+      if (etabSelectVal === 'autre' || etabSelectVal === '') {
+        payload.etablissement_id  = null;
+        payload.nom_etablissement = autreNom.trim();
+      } else {
+        payload.etablissement_id = Number(etabSelectVal);
+      }
     } else {
-      payload.etablissement_id = null;
-      payload.nom_etablissement = autreNom.trim();
+      // En recherche : effacer établissement
+      payload.etablissement_id  = null;
+      payload.nom_etablissement = '';
     }
     try {
       const res = await api.patch<{
+        diplome_prepare: string; diplome_label: string;
         situation: string; situation_label: string;
         etablissement_id: number | null; nom_etablissement: string;
       }>(`/mentor/mentorats/${mentoratId}/jeune/`, payload);
+      setDiplome(res.data.diplome_prepare);
+      setDiplomeLabel(res.data.diplome_label);
       setSituationLabel(res.data.situation_label);
       setEtabId(res.data.etablissement_id);
       setDisplayNom(res.data.nom_etablissement);
       setAutreNom(res.data.etablissement_id ? '' : res.data.nom_etablissement);
+      setEtabSelectVal(
+        res.data.etablissement_id ? String(res.data.etablissement_id)
+          : (res.data.nom_etablissement ? 'autre' : '')
+      );
       setEditing(false);
     } catch (e: unknown) {
       const er = e as ApiError;
@@ -93,21 +127,21 @@ function JeuneSection({ mentoratId, jeune }: {
             {jeune.gender_label ? ` · ${jeune.gender_label}` : ''}
           </div>
         )}
-        {jeune.diplome_label && (
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <GraduationCap className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            {jeune.diplome_label}
-          </div>
-        )}
         {jeune.needs_description && (
           <p className="text-sm text-slate-500 italic leading-relaxed pt-1">{jeune.needs_description}</p>
         )}
       </div>
 
-      {/* Situation + établissement éditable */}
+      {/* Bloc éditable : diplôme + situation + établissement */}
       {!editing ? (
         <div className="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
           <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+            {diplomeLabel && (
+              <span className="flex items-center gap-1 text-slate-500">
+                <GraduationCap className="w-3 h-3" />{diplomeLabel}
+              </span>
+            )}
+            {diplomeLabel && situationLabel && <span className="text-slate-300">·</span>}
             {situationLabel
               ? <span className="font-semibold text-ora-blue">{situationLabel}</span>
               : <span className="text-slate-400 italic">Situation non renseignée</span>
@@ -124,6 +158,15 @@ function JeuneSection({ mentoratId, jeune }: {
       ) : (
         <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
           {err && <p className="text-[10px] text-red-600">{err}</p>}
+
+          {/* Diplôme */}
+          <select value={diplome} onChange={e => setDiplome(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40">
+            <option value="">— Niveau d'études —</option>
+            {DIPLOME_CHOICES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
+
+          {/* Situation */}
           <div className="flex gap-2">
             {([['apprentissage', 'En apprentissage'], ['recherche', 'En recherche']] as [string, string][]).map(([val, lbl]) => (
               <button key={val} type="button" onClick={() => setSituation(val)}
@@ -132,27 +175,31 @@ function JeuneSection({ mentoratId, jeune }: {
                 }`}>{lbl}</button>
             ))}
           </div>
+
+          {/* Établissement — uniquement en apprentissage */}
           {situation === 'apprentissage' && (
             <>
-              <select value={selectValue}
+              <select value={etabSelectVal}
                 onChange={e => {
                   const v = e.target.value;
-                  if (v === 'autre') setEtabId(null);
+                  setEtabSelectVal(v);
+                  if (v === 'autre') { setEtabId(null); }
                   else if (v === '') { setEtabId(null); setAutreNom(''); }
-                  else setEtabId(Number(v));
+                  else { setEtabId(Number(v)); setAutreNom(''); }
                 }}
                 className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40">
                 <option value="">— Établissement / CFA —</option>
                 {etabs.map(e => <option key={e.id} value={String(e.id)}>{e.nom}{e.code_postal ? ` (${e.code_postal})` : ''}</option>)}
                 <option value="autre">Autre…</option>
               </select>
-              {selectValue === 'autre' && (
+              {etabSelectVal === 'autre' && (
                 <input type="text" value={autreNom} onChange={e => setAutreNom(e.target.value)}
                   placeholder="Nom de l'établissement…"
                   className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40" />
               )}
             </>
           )}
+
           <div className="flex gap-2">
             <button type="button" onClick={() => setEditing(false)}
               className="flex-1 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-white">

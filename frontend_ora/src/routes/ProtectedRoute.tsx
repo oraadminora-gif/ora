@@ -47,7 +47,7 @@ export function ProtectedCNAdminRoute() {
 
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
   if (activeRole !== 'CN') return <Navigate to="/member" replace />;
-  if (!user?.cn_acces_complet) return <Navigate to="/member/cn/dashboard" replace />;
+  if (!user?.cn_acces_complet) return <Navigate to="/member/cn/kpis" replace />;
 
   return <Outlet />;
 }

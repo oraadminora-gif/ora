@@ -67,12 +67,19 @@ const INPUT = 'w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-wh
 
 // ── Diplômes disponibles ──────────────────────────────────────────────────────
 const DIPLOMES = [
-  { value: 'CAP', label: 'CAP' }, { value: 'BEP', label: 'BEP' },
-  { value: 'BAC_PRO', label: 'Bac Professionnel' }, { value: 'BAC_AUTRE', label: 'Bac (autre)' },
-  { value: 'BP', label: 'Brevet Professionnel' }, { value: 'BTS', label: 'BTS' },
-  { value: 'DUT', label: 'DUT' }, { value: 'LIC_PRO', label: 'Licence Pro' },
-  { value: 'BUT', label: 'BUT' }, { value: 'MASTER', label: 'Master' },
-  { value: 'ING', label: 'Ingénieur' }, { value: 'DEA', label: 'DEA' },
+  { value: 'CAP',       label: 'Niveau 3 — CAP' },
+  { value: 'BEP',       label: 'Niveau 3 — BEP' },
+  { value: 'BAC_PRO',   label: 'Niveau 4 — Bac Pro' },
+  { value: 'BAC_AUTRE', label: 'Niveau 4 — Bac autres' },
+  { value: 'BP',        label: 'Niveau 4 — BP' },
+  { value: 'BTS',       label: 'Niveau 5 — BTS' },
+  { value: 'DUT',       label: 'Niveau 5 — DUT' },
+  { value: 'LIC_PRO',   label: 'Niveau 6 — Licence Pro' },
+  { value: 'BUT',       label: 'Niveau 6 — BUT' },
+  { value: 'MASTER',    label: 'Niveau 7 — Master' },
+  { value: 'DEA',       label: 'Niveau 7 — DEA' },
+  { value: 'DES',       label: "Niveau 7 — Diplôme d'études spécialisées" },
+  { value: 'ING',       label: 'Niveau 7 — Ingénieur' },
 ];
 
 // ── Éditeur complet du jeune ──────────────────────────────────────────────────
@@ -86,15 +93,30 @@ interface JeuneData {
   needs_description: string;
 }
 
+interface EtabOption { id: number; nom: string; code_postal: string }
+
 function JeuneEditor({ mentoratId, initial, onUpdate }: {
   mentoratId: number;
   initial: JeuneData;
   onUpdate: (updated: JeuneData) => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [form, setForm]       = useState<JeuneData>(initial);
-  const [saving, setSaving]   = useState(false);
-  const [err, setErr]         = useState('');
+  const [editing, setEditing]             = useState(false);
+  const [form, setForm]                   = useState<JeuneData>(initial);
+  const [saving, setSaving]               = useState(false);
+  const [err, setErr]                     = useState('');
+  const [etabs, setEtabs]                 = useState<EtabOption[]>([]);
+  const [etabSelectVal, setEtabSelectVal] = useState<string>(
+    initial.etablissement_id ? String(initial.etablissement_id)
+      : (initial.nom_etablissement ? 'autre' : '')
+  );
+  const [autreNom, setAutreNom]           = useState(
+    initial.etablissement_id ? '' : initial.nom_etablissement
+  );
+
+  useEffect(() => {
+    if (!editing) return;
+    api.get<EtabOption[]>('/ap/etablissements/').then(r => setEtabs(r.data)).catch(() => {});
+  }, [editing]);
 
   const set = (field: keyof JeuneData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -102,20 +124,35 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
 
   const handleSave = async () => {
     setSaving(true); setErr('');
+    const payload: Record<string, unknown> = {
+      first_name: form.first_name, last_name: form.last_name,
+      email: form.email, phone: form.phone,
+      birth_date: form.birth_date || null,
+      gender: form.gender,
+      commune: form.commune, code_postal: form.code_postal, city: form.commune,
+      diplome_prepare: form.diplome_prepare,
+      situation: form.situation,
+      needs_description: form.needs_description,
+    };
+    if (form.situation === 'apprentissage') {
+      if (etabSelectVal && etabSelectVal !== 'autre') {
+        payload.etablissement_id = Number(etabSelectVal);
+      } else {
+        payload.etablissement_id  = null;
+        payload.nom_etablissement = autreNom.trim();
+      }
+    } else {
+      payload.etablissement_id  = null;
+      payload.nom_etablissement = '';
+    }
     try {
-      const res = await api.patch<JeuneData>(`/ap/mentorats/${mentoratId}/jeune/`, {
-        first_name: form.first_name, last_name: form.last_name,
-        email: form.email, phone: form.phone,
-        birth_date: form.birth_date || null,
-        gender: form.gender,
-        commune: form.commune, code_postal: form.code_postal, city: form.commune,
-        diplome_prepare: form.diplome_prepare,
-        situation: form.situation,
-        etablissement_id: null,
-        nom_etablissement: form.nom_etablissement,
-        needs_description: form.needs_description,
-      });
+      const res = await api.patch<JeuneData>(`/ap/mentorats/${mentoratId}/jeune/`, payload);
       setForm(res.data);
+      setEtabSelectVal(
+        res.data.etablissement_id ? String(res.data.etablissement_id)
+          : (res.data.nom_etablissement ? 'autre' : '')
+      );
+      setAutreNom(res.data.etablissement_id ? '' : res.data.nom_etablissement);
       onUpdate(res.data);
       setEditing(false);
     } catch { setErr('Erreur de sauvegarde.'); }
@@ -215,10 +252,29 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
       </div>
 
       {form.situation === 'apprentissage' && (
-        <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Établissement / CFA</label>
-          <input value={form.nom_etablissement} onChange={set('nom_etablissement')}
-            placeholder="Nom de l'établissement" className={INPUT} />
+        <div className="space-y-2">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Établissement / CFA</label>
+          <select value={etabSelectVal}
+            onChange={e => {
+              const v = e.target.value;
+              setEtabSelectVal(v);
+              if (v === 'autre') { setForm(prev => ({ ...prev, etablissement_id: null })); }
+              else if (v === '') { setForm(prev => ({ ...prev, etablissement_id: null })); setAutreNom(''); }
+              else { setForm(prev => ({ ...prev, etablissement_id: Number(v) })); setAutreNom(''); }
+            }}
+            className={INPUT}>
+            <option value="">— Sélectionner un CFA —</option>
+            {etabs.map(e => (
+              <option key={e.id} value={String(e.id)}>
+                {e.nom}{e.code_postal ? ` (${e.code_postal})` : ''}
+              </option>
+            ))}
+            <option value="autre">Autre…</option>
+          </select>
+          {etabSelectVal === 'autre' && (
+            <input type="text" value={autreNom} onChange={e => setAutreNom(e.target.value)}
+              placeholder="Nom de l'établissement…" className={INPUT} />
+          )}
         </div>
       )}
 

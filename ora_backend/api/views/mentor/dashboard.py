@@ -426,6 +426,15 @@ class MentorUpdateJeuneView(APIView):
         req = mentorat.young_request
         updated = []
 
+        if 'diplome_prepare' in request.data:
+            from core.models.young_request import YoungRequest as YR
+            val = request.data['diplome_prepare']
+            valid_codes = [v for v, _ in YR.DIPLOME_CHOICES]
+            if val not in valid_codes and val != '':
+                return Response({"error": "Diplôme invalide."}, status=status.HTTP_400_BAD_REQUEST)
+            req.diplome_prepare = val
+            updated.append('diplome_prepare')
+
         if 'situation' in request.data:
             val = request.data['situation']
             if val not in ('apprentissage', 'recherche', ''):
@@ -444,15 +453,42 @@ class MentorUpdateJeuneView(APIView):
             else:
                 req.etablissement_id = None
                 updated.append('etablissement_id')
+                if 'nom_etablissement' in request.data:
+                    nom = str(request.data['nom_etablissement']).strip()
+                    if nom:
+                        etab = Etablissement.objects.filter(
+                            nom__iexact=nom, pole_id=mentorat.pole_id
+                        ).first() or Etablissement.objects.create(
+                            nom=nom, pole_id=mentorat.pole_id, code_postal='', is_active=True
+                        )
+                        req.etablissement_id = etab.id
+                        req.nom_etablissement = ''
+                        updated.extend(['etablissement_id', 'nom_etablissement'])
+                    else:
+                        req.nom_etablissement = ''
+                        updated.append('nom_etablissement')
         elif 'nom_etablissement' in request.data:
-            req.nom_etablissement = str(request.data['nom_etablissement']).strip()
-            req.etablissement_id = None
-            updated.extend(['nom_etablissement', 'etablissement_id'])
+            nom = str(request.data['nom_etablissement']).strip()
+            if nom:
+                etab = Etablissement.objects.filter(
+                    nom__iexact=nom, pole_id=mentorat.pole_id
+                ).first() or Etablissement.objects.create(
+                    nom=nom, pole_id=mentorat.pole_id, code_postal='', is_active=True
+                )
+                req.etablissement_id = etab.id
+                req.nom_etablissement = ''
+                updated.extend(['etablissement_id', 'nom_etablissement'])
+            else:
+                req.nom_etablissement = ''
+                req.etablissement_id = None
+                updated.extend(['nom_etablissement', 'etablissement_id'])
 
         if updated:
             req.save(update_fields=list(set(updated)))
 
         return Response({
+            "diplome_prepare":  req.diplome_prepare or '',
+            "diplome_label":    req.get_diplome_prepare_display() if req.diplome_prepare else '',
             "situation":        req.situation or '',
             "situation_label":  req.get_situation_display() if req.situation else '',
             "etablissement_id": req.etablissement_id,

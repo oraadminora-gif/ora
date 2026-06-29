@@ -103,15 +103,22 @@ export interface NationalKPI {
 }
 
 export interface PoleSummaryKPI {
-  id:                  number;
-  name:                string;
-  code:                string;
-  total_demandes:      number;
-  mentorats_actifs:    number;
-  mentors_total:       number;
-  alertes_rouges:      number;
-  taux_reussite:       number;
-  demandes_en_attente: number;
+  id:                          number;
+  name:                        string;
+  code:                        string;
+  total_demandes:              number;
+  mentors_total:               number;
+  mentorats_crees:             number;
+  mentorats_actifs:            number;
+  mentorats_reussis:           number;
+  mentors_sans_mentorat:       number;
+  moyen_par_mentor:            number;
+  rencontres_moy_par_mentorat: number;
+  duree_moyenne:               number;
+  // legacy
+  alertes_rouges:              number;
+  taux_reussite:               number;
+  demandes_en_attente:         number;
 }
 
 export interface NationalKPIDetailed extends NationalKPI {

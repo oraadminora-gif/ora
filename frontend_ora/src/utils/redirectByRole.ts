@@ -13,7 +13,7 @@ export function redirectByRole(role: UserRole): string {
       return '/member/acp/dashboard';
 
     case 'CN':
-      return '/member/cn/dashboard';
+      return '/member/cn/kpis';
 
     default:
       return '/member';
