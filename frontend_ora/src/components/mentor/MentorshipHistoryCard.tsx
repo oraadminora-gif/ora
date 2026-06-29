@@ -1,5 +1,5 @@
 // src/components/mentor/MentorshipHistoryCard.tsx
-import { History, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Mail, Award, AlertTriangle, Star } from 'lucide-react';
+import { History, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Mail, Award, AlertTriangle, Star, Target, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import type { MentoratHistorique } from '../../pages/member/mentor/MentorDashboard';
 
@@ -28,7 +28,7 @@ function StarRating({ rating }: { rating: number }) {
 function HistoriqueRow({ m }: { m: MentoratHistorique }) {
   const [open, setOpen] = useState(false);
   const isSuccess = m.statut_final === 'CLOSED';
-  const hasBilan = !!m.message_cloture || !!m.evaluation;
+  const hasBilan = !!m.message_cloture || !!m.evaluation || !!m.objectif_mentor || !!m.bilan_suivi;
 
   return (
     <div className={`rounded-xl border transition-all overflow-hidden ${
@@ -93,6 +93,29 @@ function HistoriqueRow({ m }: { m: MentoratHistorique }) {
       {/* Bilan dépliable */}
       {hasBilan && open && (
         <div className="border-t border-slate-100 p-4 bg-white space-y-3">
+
+          {/* Objectif du mentor */}
+          {m.objectif_mentor && (
+            <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Target className="w-3.5 h-3.5 text-ora-blue" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Objectif du mentor</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{m.objectif_mentor}</p>
+            </div>
+          )}
+
+          {/* Bilan sommaire */}
+          {m.bilan_suivi && (
+            <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-violet-500" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bilan sommaire</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{m.bilan_suivi}</p>
+            </div>
+          )}
+
           {/* Message de clôture */}
           {m.message_cloture && (
             <div className={`rounded-2xl overflow-hidden shadow-sm ${

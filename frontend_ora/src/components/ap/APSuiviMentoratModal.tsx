@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   X, Loader2, Save, Lock, Mail, Phone, MapPin,
   GraduationCap, Building2, User, Calendar, AlertCircle, CheckCircle,
+  Bell,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -28,6 +29,10 @@ interface SuiviDetail {
   type_mentorat_label: string;
   closure_reason_choices: Choice[];
   problematiques_choices: Choice[];
+  cloture_en_attente: boolean;
+  cloture_action_demandee: string;
+  cloture_reason_demandee: string;
+  cloture_message_demandee: string;
   mentor: {
     first_name: string; last_name: string; email: string; phone: string;
     city: string; code_postal: string; department: string;
@@ -417,6 +422,22 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
     } finally { setSaving(false); }
   };
 
+  const [confirmSaving, setConfirmSaving] = useState(false);
+  const [confirmError,  setConfirmError]  = useState('');
+
+  const handleConfirmerCloture = async (action: 'confirm' | 'reject') => {
+    if (!data) return;
+    setConfirmSaving(true); setConfirmError('');
+    try {
+      await api.post(`/ap/mentorats/${data.id}/confirmer-cloture/`, { action });
+      onSaved?.();
+      onClose();
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setConfirmError(err.response?.data?.error ?? 'Erreur');
+    } finally { setConfirmSaving(false); }
+  };
+
   const canCloturer = closureCode && closedAt && data?.status === 'ACTIVE';
 
   const handleCloturer = async () => {
@@ -616,6 +637,47 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Financeur</h3>
                 <FinanceurSection mentoratId={data.id} />
               </section>
+
+              {/* ── Clôture demandée par le mentor ── */}
+              {data.cloture_en_attente && !isClosed && (
+                <section className="border-2 border-amber-300 rounded-xl p-4 space-y-3 bg-amber-50">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-400 flex items-center justify-center shrink-0">
+                      <Bell className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-amber-800">Le mentor demande la clôture</h3>
+                      {data.cloture_reason_demandee && (
+                        <p className="text-xs text-amber-700 mt-0.5">
+                          Raison : {
+                            data.closure_reason_choices.find(c => c.value === data.cloture_reason_demandee)?.label
+                            ?? data.cloture_reason_demandee
+                          }
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {data.cloture_message_demandee && (
+                    <div className="bg-white border border-amber-200 rounded-lg px-3 py-2 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">
+                      {data.cloture_message_demandee}
+                    </div>
+                  )}
+                  {confirmError && (
+                    <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{confirmError}</p>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={() => handleConfirmerCloture('confirm')} disabled={confirmSaving}
+                      className="flex-1 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all">
+                      {confirmSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                      Confirmer la clôture
+                    </button>
+                    <button onClick={() => handleConfirmerCloture('reject')} disabled={confirmSaving}
+                      className="flex-1 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all">
+                      <X className="w-4 h-4" /> Rejeter
+                    </button>
+                  </div>
+                </section>
+              )}
 
               {/* Clôture */}
               {!isClosed && (

@@ -13,6 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
+from core.models.mentorat import CLOSURE_REASON_CHOICES
 from api.permissions import IsAP, IsACP, IsCN
 
 # ─────────────────────────────────────────────────────────────
@@ -632,7 +633,7 @@ class APMentorDetailView(APIView):
                     'jeune':          f"{m.young_request.first_name} {m.young_request.last_name}" if m.young_request else '—',
                     'statut_final':   m.status,
                     'date_fin':       m.closed_at,
-                    'closure_reason': m.closure_reason,
+                    'closure_reason': dict(CLOSURE_REASON_CHOICES).get(m.closure_reason, m.closure_reason),
                     'suivi_stats':    hist_suivi_map.get(m.id),
                 }
                 for m in historique
@@ -813,18 +814,21 @@ class APConfirmerClotureView(APIView):
 
         # ── Confirmer la clôture ──────────────────────────────
         statut_final  = mentorat.cloture_action_demandee or 'CLOSED'
-        reason        = mentorat.cloture_reason_demandee
+        reason_code   = mentorat.cloture_reason_demandee
+        reason        = dict(CLOSURE_REASON_CHOICES).get(reason_code, reason_code)   # code → libellé
         # L'AP peut passer un message personnalisé ; sinon on prend celui du mentor
         message_jeune = request.data.get('message', mentorat.cloture_message_demandee)
 
-        # Effacer les flags avant la clôture pour éviter les conflits
+        # Effacer les flags + stocker le code de raison avant la clôture
         mentorat.cloture_en_attente = False
         mentorat.cloture_action_demandee = ''
         mentorat.cloture_reason_demandee = ''
         mentorat.cloture_message_demandee = ''
+        mentorat.closure_reason_code = reason_code
         mentorat.save(update_fields=[
             'cloture_en_attente', 'cloture_action_demandee',
             'cloture_reason_demandee', 'cloture_message_demandee',
+            'closure_reason_code',
         ])
 
         # Clôture effective (libère slot mentor + ferme demande)
@@ -1520,7 +1524,7 @@ class APMentoratSuiviDetailView(APIView):
         return m, animateur, None
 
     def _serialize(self, m):
-        from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES
+        from core.models.mentorat import PROBLEMATIQUES_CHOICES
         jr = m.young_request
         mentor = m.mentor
         ap = m.ap_responsable
@@ -1539,6 +1543,12 @@ class APMentoratSuiviDetailView(APIView):
             'closure_reason_code':  m.closure_reason_code,
             'closure_reason_label': m.get_closure_reason_code_display() if m.closure_reason_code else '',
             'closure_reason':       m.closure_reason,
+
+            # Demande de clôture par le mentor (en attente AP)
+            'cloture_en_attente':        m.cloture_en_attente,
+            'cloture_action_demandee':   m.cloture_action_demandee,
+            'cloture_reason_demandee':   m.cloture_reason_demandee or '',
+            'cloture_message_demandee':  m.cloture_message_demandee or '',
 
             # Suivi
             'nb_rencontres':   m.nb_rencontres,
@@ -1650,7 +1660,6 @@ class APMentoratSuiviDetailView(APIView):
 
             # Clôture directe
             if data.get('cloturer'):
-                from core.models.mentorat import CLOSURE_REASON_CHOICES
                 code = (data.get('closure_reason_code') or '').strip()
                 closed_at_val = (data.get('closed_at') or '').strip()
                 if not code:
@@ -1660,9 +1669,10 @@ class APMentoratSuiviDetailView(APIView):
                 valid_codes = [v for v, _ in CLOSURE_REASON_CHOICES]
                 if code not in valid_codes:
                     return Response({'error': 'Code de raison invalide.'}, status=400)
+                reason_label = dict(CLOSURE_REASON_CHOICES).get(code, code)
                 m.closure_reason_code = code
                 m.save()
-                m.cloturer(reason=code, statut='CLOSED')
+                m.cloturer(reason=reason_label, statut='CLOSED')
                 # Respecte la date choisie par l'AP
                 Mentorat.objects.filter(pk=m.pk).update(closed_at=closed_at_val)
                 m.refresh_from_db()

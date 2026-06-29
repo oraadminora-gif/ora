@@ -6,7 +6,7 @@ import type { MentorInfo, Department } from '../../pages/member/mentor/MentorDas
 
 interface ApiError { response?: { data?: { error?: string } } }
 interface MentorProfileCardProps { mentor: MentorInfo; onUpdate: (updated: Partial<MentorInfo>) => void }
-interface FormState { first_name: string; last_name: string; email: string; phone: string; city: string; code_postal: string; department_id: number | '' }
+interface FormState { first_name: string; last_name: string; email: string; phone: string; city: string; code_postal: string; department_id: number | ''; observations: string }
 
 export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -22,10 +22,11 @@ export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) 
     email: mentor.email, phone: mentor.phone, city: mentor.city,
     code_postal: mentor.code_postal ?? '',
     department_id: mentor.department?.id ?? '',
+    observations: mentor.observations ?? '',
   });
 
   const openModal = async () => {
-    setForm({ first_name: mentor.first_name, last_name: mentor.last_name, email: mentor.email, phone: mentor.phone, city: mentor.city, code_postal: mentor.code_postal ?? '', department_id: mentor.department?.id ?? '' });
+    setForm({ first_name: mentor.first_name, last_name: mentor.last_name, email: mentor.email, phone: mentor.phone, city: mentor.city, code_postal: mentor.code_postal ?? '', department_id: mentor.department?.id ?? '', observations: mentor.observations ?? '' });
     setError(null); setSuccess(false); setIsOpen(true);
     if (departments.length === 0) {
       setLoadingDepts(true);
@@ -59,6 +60,7 @@ export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) 
     { icon: MapPin,   label: 'Département',  value: deptLabel },
     { icon: Building2,label: 'Pôle',         value: mentor.pole ?? '—' },
     { icon: Building2,label: 'Association',  value: mentor.association ?? '—' },
+    ...(mentor.observations ? [{ icon: Building2, label: 'Particularité', value: mentor.observations }] : []),
   ];
 
   return (
@@ -172,6 +174,15 @@ export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) 
                   />
                 </div>
               ))}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Particularité pour l'affectation</label>
+                <textarea name="observations" value={form.observations}
+                  onChange={e => setForm(prev => ({ ...prev, observations: e.target.value }))}
+                  rows={3} placeholder="Contraintes géographiques, disponibilités particulières…"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue transition-all resize-none"
+                />
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Département</label>

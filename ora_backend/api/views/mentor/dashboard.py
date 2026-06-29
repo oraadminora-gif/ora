@@ -7,6 +7,7 @@ from django.db.models import Sum, Count
 from datetime import date  # ✅ AJOUTÉ pour validation date
 
 from core.models import Mentorat, Department, SuiviMentorat, Etablissement
+from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES
 from api.permissions import IsMentor
 
 
@@ -67,6 +68,7 @@ class MentorDashboardView(APIView):
                 "pole":        mentor.pole.name if mentor.pole else None,
                 "association": mentor.association.name if mentor.association else None,
                 "is_trained":  mentor.is_trained,
+                "observations": mentor.observations or '',
                 "capacite": {
                     "max":       mentor.max_capacity,
                     "disponible": disponible_reel,
@@ -80,14 +82,21 @@ class MentorDashboardView(APIView):
                         "jeune": {
                             "id":                m.young_request.id,
                             "name":              f"{m.young_request.first_name} {m.young_request.last_name}",
+                            "first_name":        m.young_request.first_name,
+                            "last_name":         m.young_request.last_name,
                             "email":             m.young_request.email,
                             "phone":             m.young_request.phone,
                             "ville":             m.young_request.city,
+                            "commune":           getattr(m.young_request, 'commune', m.young_request.city) or '',
+                            "code_postal":       getattr(m.young_request, 'code_postal', '') or '',
                             "department":        m.young_request.department.name if m.young_request.department else None,
-                            "gender":            m.young_request.get_gender_display(),
-                            "birth_date":        m.young_request.birth_date,
+                            "gender":            m.young_request.gender or '',
+                            "gender_label":      {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}.get(m.young_request.gender, ''),
+                            "birth_date":        str(m.young_request.birth_date) if m.young_request.birth_date else '',
+                            "diplome_prepare":   m.young_request.diplome_prepare or '',
+                            "diplome_label":     m.young_request.get_diplome_prepare_display() if m.young_request.diplome_prepare else '',
                             "needs_description": m.young_request.needs_description,
-                            "request_date":      m.young_request.request_date,
+                            "request_date":      str(m.young_request.request_date) if m.young_request.request_date else '',
                             "situation":         m.young_request.situation or '',
                             "situation_label":   m.young_request.get_situation_display() if m.young_request.situation else '',
                             "etablissement_id":  m.young_request.etablissement_id,
@@ -97,16 +106,31 @@ class MentorDashboardView(APIView):
                                 else m.young_request.nom_etablissement
                             ) or '',
                         },
-                        "date_debut":    m.assigned_at,
-                        "ap_referent":   m.ap_responsable.full_name if m.ap_responsable else "Non assigné",
-                        "alerte_rouge":  m.alerte_rouge,
-                        "notes_suivi":   m.notes_suivi or '',
-                        "problematiques": m.problematiques if isinstance(m.problematiques, list) else [],
-                        "duree_mois":    m.get_duree_mois(),
+                        "date_debut":          m.assigned_at,
+                        "expected_end_date":   m.expected_end_date,
+                        "ap_referent":         m.ap_responsable.full_name if m.ap_responsable else "Non assigné",
+                        "alerte_rouge":        m.alerte_rouge,
+                        "notes_suivi":         m.notes_suivi or '',
+                        "problematiques":      m.problematiques if isinstance(m.problematiques, list) else [],
+                        "duree_mois":          m.get_duree_mois(),
+                        # Champs de bilan (suivi)
+                        "nb_rencontres":       m.nb_rencontres or 0,
+                        "nb_heures":           float(m.nb_heures or 0),
+                        "type_mentorat":       m.type_mentorat or '',
+                        "objectif_mentor":     m.objectif_mentor or '',
+                        "bilan_suivi":         m.notes_suivi or '',
+                        # Clôture
+                        "closure_reason_choices": [
+                            {"value": v, "label": l} for v, l in CLOSURE_REASON_CHOICES
+                        ],
+                        "problematiques_choices": [
+                            {"value": v, "label": l} for v, l in PROBLEMATIQUES_CHOICES
+                        ],
                         # Demande de clôture en attente
-                        "cloture_en_attente":      m.cloture_en_attente,
-                        "cloture_action_demandee": m.cloture_action_demandee,
-                        # Suivis inline
+                        "cloture_en_attente":       m.cloture_en_attente,
+                        "cloture_action_demandee":  m.cloture_action_demandee,
+                        "cloture_reason_demandee":  m.cloture_reason_demandee or '',
+                        # Suivis inline (conservé pour compatibilité)
                         "suivis":        [serialize_suivi(s) for s in m.suivis.all()],
                         "suivi_stats":   get_suivi_stats(m),
                     }
@@ -118,8 +142,10 @@ class MentorDashboardView(APIView):
                         "jeune":           f"{m.young_request.first_name} {m.young_request.last_name}",
                         "statut_final":    m.status,
                         "date_fin":        m.closed_at,
-                        "closure_reason":  m.closure_reason,
+                        "closure_reason":  dict(CLOSURE_REASON_CHOICES).get(m.closure_reason, m.closure_reason),
                         "message_cloture": m.message_cloture or '',
+                        "objectif_mentor": m.objectif_mentor or '',
+                        "bilan_suivi":     m.notes_suivi or '',
                         "suivi_stats":     get_suivi_stats(m),
                         "evaluation": (
                             {
@@ -144,7 +170,7 @@ class MentorUpdateProfileView(APIView):
         mentor = request.user.mentor
         data   = request.data
 
-        for field in ['first_name', 'last_name', 'email', 'phone', 'city', 'code_postal']:
+        for field in ['first_name', 'last_name', 'email', 'phone', 'city', 'code_postal', 'observations']:
             if field in data:
                 setattr(mentor, field, data[field])
 
@@ -171,6 +197,7 @@ class MentorUpdateProfileView(APIView):
                 "code": mentor.department.code,
                 "name": mentor.department.name,
             } if mentor.department else None,
+            "observations": mentor.observations or '',
         })
 
 
@@ -351,18 +378,19 @@ class MentorCloturerMentoratView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        action        = request.data.get('action', 'CLOSED')
-        message_jeune = request.data.get('message', '')
-        reason        = request.data.get('reason', '')
+        closure_reason_code = request.data.get('closure_reason_code', '')
+        message_jeune       = request.data.get('message', '')
+        reason_text         = request.data.get('reason', closure_reason_code)
 
-        if action not in ['CLOSED', 'ABORTED']:
-            return Response({"error": "Action invalide."}, status=status.HTTP_400_BAD_REQUEST)
+        # Dériver l'action depuis le code de raison
+        POSITIVE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
+        action = 'CLOSED' if closure_reason_code in POSITIVE_REASONS else 'ABORTED'
 
         # Enregistrer la demande — la clôture effective sera faite par l'AP
-        mentorat.cloture_en_attente = True
-        mentorat.cloture_action_demandee = action
-        mentorat.cloture_reason_demandee = reason
-        mentorat.cloture_message_demandee = message_jeune
+        mentorat.cloture_en_attente          = True
+        mentorat.cloture_action_demandee     = action
+        mentorat.cloture_reason_demandee     = closure_reason_code or reason_text
+        mentorat.cloture_message_demandee    = message_jeune
         if message_jeune:
             mentorat.message_cloture = message_jeune
         mentorat.save(update_fields=[
@@ -431,6 +459,85 @@ class MentorUpdateJeuneView(APIView):
             "nom_etablissement": (
                 req.etablissement.nom if req.etablissement_id else req.nom_etablissement
             ) or '',
+        })
+
+
+class MentorUpdateSuiviView(APIView):
+    """
+    PATCH /mentor/mentorats/{id}/suivi/
+    Le mentor met à jour les champs de bilan : nb_rencontres, nb_heures, type_mentorat,
+    problematiques, objectif_mentor, bilan_suivi.
+    """
+    permission_classes = [IsAuthenticated, IsMentor]
+
+    def patch(self, request, mentorat_id):
+        mentor = request.user.mentor
+        try:
+            mentorat = Mentorat.objects.get(id=mentorat_id, mentor=mentor, status='ACTIVE')
+        except Mentorat.DoesNotExist:
+            return Response({"error": "Mentorat introuvable ou non actif."}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data
+        update_fields = []
+
+        if 'nb_rencontres' in data:
+            try:
+                mentorat.nb_rencontres = max(0, int(data['nb_rencontres']))
+                update_fields.append('nb_rencontres')
+            except (ValueError, TypeError):
+                pass
+
+        if 'nb_heures' in data:
+            try:
+                mentorat.nb_heures = max(0.0, float(data['nb_heures']))
+                update_fields.append('nb_heures')
+            except (ValueError, TypeError):
+                pass
+
+        if 'type_mentorat' in data:
+            val = data['type_mentorat']
+            if val in ('', 'presentiel', 'distanciel'):
+                mentorat.type_mentorat = val
+                update_fields.append('type_mentorat')
+
+        if 'problematiques' in data:
+            probs = data['problematiques']
+            if isinstance(probs, list):
+                mentorat.problematiques = probs
+                update_fields.append('problematiques')
+
+        if 'objectif_mentor' in data:
+            mentorat.objectif_mentor = str(data['objectif_mentor'])
+            update_fields.append('objectif_mentor')
+
+        if 'bilan_suivi' in data:
+            mentorat.notes_suivi = str(data['bilan_suivi'])
+            update_fields.append('notes_suivi')
+
+        if 'expected_end_date' in data:
+            val = data['expected_end_date']
+            if val:
+                try:
+                    from datetime import datetime as dt
+                    dt.strptime(str(val), '%Y-%m-%d')
+                    mentorat.expected_end_date = val
+                except ValueError:
+                    return Response({"error": "Format de date invalide."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                mentorat.expected_end_date = None
+            update_fields.append('expected_end_date')
+
+        if update_fields:
+            mentorat.save(update_fields=update_fields)
+
+        return Response({
+            "nb_rencontres":    mentorat.nb_rencontres or 0,
+            "nb_heures":        float(mentorat.nb_heures or 0),
+            "type_mentorat":    mentorat.type_mentorat or '',
+            "objectif_mentor":  mentorat.objectif_mentor or '',
+            "bilan_suivi":      mentorat.notes_suivi or '',
+            "expected_end_date": mentorat.expected_end_date,
+            "problematiques":   mentorat.problematiques if isinstance(mentorat.problematiques, list) else [],
         })
 
 

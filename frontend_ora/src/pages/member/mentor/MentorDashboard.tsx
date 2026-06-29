@@ -18,6 +18,7 @@ export interface MentorInfo {
   department: Department | null;
   pole: string | null; association: string | null;
   is_trained: boolean;
+  observations: string;
   capacite: { max: number; disponible: number; utilisee: number };
 }
 
@@ -41,13 +42,18 @@ export interface SuiviStats {
 export interface MentoratActif {
   id: number;
   jeune: {
-    id: number; name: string; email: string; phone: string;
-    ville: string; department: string | null; gender: string;
-    birth_date: string | null; needs_description: string;
+    id: number; name: string; first_name: string; last_name: string;
+    email: string; phone: string;
+    ville: string; commune: string; code_postal: string;
+    department: string | null; gender: string; gender_label: string;
+    birth_date: string; needs_description: string;
     request_date: string;
-    situation: string; situation_label: string; etablissement_id: number | null; nom_etablissement: string;
+    diplome_prepare: string; diplome_label: string;
+    situation: string; situation_label: string;
+    etablissement_id: number | null; nom_etablissement: string;
   };
   date_debut: string;
+  expected_end_date: string | null;
   ap_referent: string;
   alerte_rouge: boolean;
   notes_suivi: string;
@@ -55,6 +61,14 @@ export interface MentoratActif {
   duree_mois: number;
   cloture_en_attente: boolean;
   cloture_action_demandee: 'CLOSED' | 'ABORTED' | '';
+  cloture_reason_demandee: string;
+  closure_reason_choices: Array<{ value: string; label: string }>;
+  problematiques_choices: Array<{ value: string; label: string }>;
+  nb_rencontres: number;
+  nb_heures: number;
+  type_mentorat: string;
+  objectif_mentor: string;
+  bilan_suivi: string;
   suivis: SuiviRencontre[];
   suivi_stats: SuiviStats;
 }
@@ -70,6 +84,8 @@ export interface MentoratHistorique {
   statut_final: 'CLOSED' | 'ABORTED';
   date_fin: string | null; closure_reason: string;
   message_cloture: string;
+  objectif_mentor: string;
+  bilan_suivi: string;
   suivi_stats: SuiviStats;
   evaluation: EvaluationRecu | null;
 }

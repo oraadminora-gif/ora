@@ -8,6 +8,7 @@ from .dashboard import (
     MentorSuiviDetailView,
     MentorCloturerMentoratView,
     MentorUpdateJeuneView,
+    MentorUpdateSuiviView,
     MentorEtablissementsView,
     DepartmentListView,
 )
@@ -20,6 +21,7 @@ urlpatterns = [
     path('mentorats/<int:mentorat_id>/suivis/<int:suivi_id>/',  MentorSuiviDetailView.as_view(),       name='mentor-suivi-detail'),
     path('mentorats/<int:mentorat_id>/cloturer/',               MentorCloturerMentoratView.as_view(),  name='mentor-cloturer'),
     path('mentorats/<int:mentorat_id>/jeune/',                 MentorUpdateJeuneView.as_view(),       name='mentor-update-jeune'),
+    path('mentorats/<int:mentorat_id>/suivi/',                MentorUpdateSuiviView.as_view(),       name='mentor-update-suivi'),
     path('etablissements/',                                     MentorEtablissementsView.as_view(),    name='mentor-etablissements'),
     path('departments/',                                        DepartmentListView.as_view(),          name='mentor-departments'),
 ]
