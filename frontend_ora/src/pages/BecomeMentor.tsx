@@ -44,7 +44,7 @@ export function BecomeMentor() {
               <div className="w-14 h-14 bg-ora-green rounded-xl flex items-center justify-center mb-4">
                 <Heart className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Enrichissement</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Expérience humaine</h3>
               <p className="text-slate-700">
                 Vivez une expérience humaine enrichissante et valorisante. Mettez en avant vos valeurs de bienveillance et d'écoute auprès d'un jeune.
               </p>

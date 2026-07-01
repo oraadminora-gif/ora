@@ -94,7 +94,7 @@ export function ApprenticeInfo() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Ces conditions d'engagements te permettront de mettre toutes les chances de ton côté pour ta réussite</h4>
-                   <h4> Le Mentor de son côté s'engage à tes côtés et son bénévolat témoignage déjà de son engagement. Respecte-le et vous réussirez ensemble ... C'est la clé de ta réussite</h4>
+                   <h4> Le Mentor de son côté s'engage à tes côtés et son bénévolat témoigne déjà de son engagement. Respecte-le et vous réussirez ensemble ... C'est la clé de ta réussite</h4>
                   </div>
                   
                   
@@ -155,7 +155,7 @@ export function ApprenticeInfo() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Combien de temps dure l'accompagnement ?</h4>
-                    <p className="text-slate-600">En général, l'accompagnement plusieurs jours : il s'adapte à tes besoins pendant ta formation.</p>
+                    <p className="text-slate-600">En général, l'accompagnement dure plusieurs mois : il s'adapte à tes besoins pendant ta formation.</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">À quelle fréquence vais-je voir mon mentor ?</h4>
@@ -175,7 +175,7 @@ export function ApprenticeInfo() {
               to="/apprentis/inscription"
               className="inline-flex items-center gap-2 px-8 py-4 bg-ora-blue text-white rounded-lg font-semibold hover:bg-ora-dark transition-colors text-lg"
             >
-              Je veux être accompagné(e)
+              Tu veux être accompagné(e)
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

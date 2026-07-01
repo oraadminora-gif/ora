@@ -189,13 +189,13 @@ export function Testimonials() {
                 to="/apprentis/inscription"
                 className="inline-block px-6 py-3 bg-white text-ora-blue rounded-lg font-semibold hover:bg-slate-100 transition-colors"
               >
-                Je suis apprenti(e)
+                Tu es apprenti(e)
               </Link>
               <Link
                 to="/mentors/inscription"
                 className="inline-block px-6 py-3 bg-ora-dark text-white border-2 border-white rounded-lg font-semibold hover:bg-ora-blue transition-colors"
               >
-                Je veux devenir mentor
+                Tu veux devenir mentor
               </Link>
             </div>
           </div>

@@ -142,7 +142,7 @@ export function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-500">
-            <p>L'accès au mentor pour l'instant n'est pas autorisé.</p>
+            <p>Sous réserve, l'accès au mentor.</p>
           </div>
         </div>
       </div>

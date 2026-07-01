@@ -94,7 +94,7 @@ export function Home() {
             </h1>
 
             <p className="text-xl md:text-2xl font-light text-white/50 mb-6 tracking-wide">
-              À toi de décider...
+              À toi d'en décider.
             </p>
 
             <p className="text-base text-white/70 leading-relaxed max-w-lg mb-2">
@@ -217,7 +217,7 @@ export function Home() {
                 <span className="text-slate-500 text-sm uppercase tracking-widest font-medium">France métropolitaine</span>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                Où que tu sois, un coordonateur est disponible pour te mettre en relation
+                Où que tu sois, un coordinateur est disponible pour te mettre en relation
                 avec le mentor adapté à ta situation.
               </p>
               <Link
@@ -263,7 +263,7 @@ export function Home() {
                 <GraduationCap className="w-8 h-8 text-ora-orange" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">
-                Réussite en vue
+                en vue
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 la formule du mentorat a prouvé son efficacité car ton mentor apprend à te connaitre
@@ -371,10 +371,10 @@ export function Home() {
                 des jeunes apprentis.
               </p>
               <Link
-                to="/soutiens"
+                to="/partenaires"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full font-semibold text-xs hover:bg-emerald-700 transition-colors self-start"
               >
-                Voir ceux qui nous soutiennent
+                Voir notre réseau associatif
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

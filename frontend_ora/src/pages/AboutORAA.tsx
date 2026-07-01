@@ -44,7 +44,7 @@ export function AboutORA() {
                 Le mentorat ORA, c'est un <strong>accompagnement intergénérationnel</strong> qui te met en relation avec un mentor bénévole, senior expérimenté, qui va t'écouter, te conseiller et t'accompagner tout au long de ton parcours d'apprentissage.
               </p>
               <p>
-                Cet accompagnement est <strong>gratuit</strong>, basé sur la <strong>confiance mutuelle</strong> et s'inscrit dans la <strong>durée</strong> (en moyenne 3 à 9 mois).
+                Cet accompagnement est <strong>gratuit</strong>, basé sur la <strong>confiance mutuelle</strong> et s'inscrit dans la <strong>durée</strong> (en moyenne 6 mois à 1 an).
               </p>
             </div>
           </div>
@@ -98,7 +98,7 @@ export function AboutORA() {
               <div className="w-14 h-14 bg-ora-blue/20 rounded-xl flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-ora-blue" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3"> Engagement simple</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3"> engagement simple</h3>
               <p className="text-slate-700">
                 Tu es libre d'arrêter quand tu veux. Aucune obligation, tu décides du rythme et de la durée.
               </p>
@@ -121,7 +121,7 @@ export function AboutORA() {
             </h2>
             <div className="space-y-4 text-slate-700">
               <p className="text-lg">
-                <strong>ORA est né en 2020 par la volonté des Pouvoirs Publics de voir se développer l'apprentissage : "Passerelle vers l'Emploi".</strong> Prenant conscience des risques d'échec d'apprentis, des acteurs associatifs ont été sollicités pour les réduire.
+                <strong>ORA est né en 2020 par la volonté des Pouvoirs Publics de voir se développer l'apprentissage : "Passerelle vers l'Emploi".</strong> Rapidement, ils ont pris conscience des risques d'échec et ont mobilisés des acteurs associatifs pour les réduire.
               </p>
               <p className="text-lg">
                 En effet, <strong>27% des contrats d'apprentissage sont rompus avant leur terme</strong> (source IGAS). Les raisons sont multiples : difficultés d'adaptation, problèmes relationnels en entreprise, manque de confiance, questions d'orientation...

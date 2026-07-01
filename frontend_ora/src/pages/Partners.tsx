@@ -19,24 +19,6 @@ const partners = [
   }
 ];
 
-const associations = [
-  {
-    name: 'AGIRabcd',
-    description: 'Association Générale des Intervenants Retraités'
-  },
-  {
-    name: 'ECTI',
-    description: 'Entreprises, Collectivités Territoriales et Initiatives'
-  },
-  {
-    name: 'EGEE',
-    description: 'Entente des Générations pour l\'Emploi et l\'Entreprise'
-  },
-  {
-    name: 'OTECI',
-    description: 'Organisation Technique Européenne pour la Coopération Internationale'
-  }
-];
 
 export function Partners() {
   return (
@@ -83,10 +65,18 @@ export function Partners() {
             </p>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              {associations.map((assoc, index) => (
-                <div key={index} className="bg-white rounded-lg p-4 border-2 border-slate-200">
-                  <h4 className="font-bold text-slate-900 mb-1">{assoc.name}</h4>
-                  <p className="text-sm text-slate-600">{assoc.description}</p>
+              {[
+                { name: 'AGIRabcd', description: 'Association Générale des Intervenants Retraités', logo: '/AGIR.png' },
+                { name: 'ECTI',     description: 'Entreprises, Collectivités Territoriales et Initiatives', logo: '/ECTI.png' },
+                { name: 'EGEE',     description: "Entente des Générations pour l'Emploi et l'Entreprise", logo: '/EGEE.png' },
+                { name: 'OTECI',    description: 'Organisation Technique Européenne pour la Coopération Internationale', logo: '/OTECI.png' },
+              ].map((assoc, index) => (
+                <div key={index} className="bg-white rounded-lg p-4 border-2 border-slate-200 flex items-center gap-4">
+                  <img src={assoc.logo} alt={assoc.name} className="w-16 h-16 object-contain shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1">{assoc.name}</h4>
+                    <p className="text-sm text-slate-600">{assoc.description}</p>
+                  </div>
                 </div>
               ))}
             </div>

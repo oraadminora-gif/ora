@@ -14,7 +14,7 @@ const mentorshipFAQs: FAQItem[] = [
   },
   {
     question: "Combien de temps dure l'accompagnement ?",
-    answer: "En moyenne, l'accompagnement dure entre 6 mois et 1 an. Mais c'est toi qui décides ! Tu peux arrêter quand tu veux, sans engagement. L'important est que cet accompagnement te soit utile."
+    answer: "En moyenne, l'accompagnement dure entre 3 et 9 mois. Mais c'est toi qui décides ! Tu peux arrêter quand tu veux, sans engagement. L'important est que cet accompagnement te soit utile."
   },
   {
     question: "À quelle fréquence vais-je voir mon mentor ?",
