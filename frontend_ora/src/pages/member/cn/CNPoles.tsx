@@ -70,8 +70,7 @@ export function CNPoles() {
       const res = await api.get('/poles/');
       const data = res.data.results ?? res.data;
       setPoles(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching poles:', error);
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -82,8 +81,7 @@ export function CNPoles() {
     try {
       await api.delete(`/poles/${id}/`);
       fetchPoles();
-    } catch (error) {
-      console.error('Error deleting pole:', error);
+    } catch {
     }
   };
 

@@ -32,7 +32,7 @@ export function Partners() {
             </h1>
           </div>
           <p className="text-xl text-white/90">
-            ORA s'apppuie sur un réseau  d'acteurs engagés pour la réussite des jeunes
+            ORA s'appuie sur un réseau d'acteurs engagés pour la réussite des jeunes
           </p>
         </div>
       </section>

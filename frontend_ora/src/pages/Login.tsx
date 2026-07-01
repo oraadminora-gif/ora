@@ -46,8 +46,7 @@ export function Login() {
       const redirectPath = redirectByRole(role);
       navigate(redirectPath, { replace: true });
       
-    } catch (err) {
-      console.error('🔴 Unexpected error:', err);
+    } catch {
       setError('Une erreur est survenue. Veuillez réessayer.');
       setIsSubmitting(false);
     }

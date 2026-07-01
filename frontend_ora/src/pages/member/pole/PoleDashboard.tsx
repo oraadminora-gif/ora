@@ -45,8 +45,7 @@ export function PoleDashboard() {
     try {
       const res = await api.get(`/poles/${user?.pole_id}/dashboard/`);
       setPoleData(res.data);
-    } catch (error) {
-      console.error('Error fetching pole data:', error);
+    } catch {
     } finally {
       setLoading(false);
     }

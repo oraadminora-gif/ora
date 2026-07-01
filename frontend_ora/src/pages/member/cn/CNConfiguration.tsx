@@ -329,8 +329,7 @@ function MembresTab({ currentUserId }: { currentUserId: number }) {
     try {
       const res = await api.get('/cn/membres/');
       setMembres(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -342,8 +341,7 @@ function MembresTab({ currentUserId }: { currentUserId: number }) {
     try {
       await api.patch(`/cn/membres/${m.id}/`, { is_active: !m.is_active });
       setMembres(prev => prev.map(x => x.id === m.id ? { ...x, is_active: !x.is_active } : x));
-    } catch (err) {
-      console.error(err);
+    } catch {
     } finally {
       setTogglingId(null);
     }
@@ -355,8 +353,7 @@ function MembresTab({ currentUserId }: { currentUserId: number }) {
     try {
       await api.patch(`/cn/membres/${m.id}/`, { cn_acces_complet: !m.cn_acces_complet });
       setMembres(prev => prev.map(x => x.id === m.id ? { ...x, cn_acces_complet: !x.cn_acces_complet } : x));
-    } catch (err) {
-      console.error(err);
+    } catch {
     } finally {
       setTogglingAccesId(null);
     }
@@ -594,7 +591,7 @@ function ProfilTab() {
           map.set(a.association_id, { id: a.association_id, name: a.association_name, code: '' });
       });
       setAssocs(Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name)));
-    }).catch(err => console.error(err))
+    }).catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

@@ -18,6 +18,7 @@ import { FAQ }                     from './pages/FAQ';
 import { Testimonials }            from './pages/Testimonials';
 import { Partners }                from './pages/Partners';
 import { Supporters }             from './pages/Supporters';
+import { CFAPartners }            from './pages/CFAPartners';
 import { Implantations }           from './pages/Implantations';
 import { Contact }                 from './pages/Contact';
 import { MentionsLegales }         from './pages/MentionsLegales';
@@ -93,6 +94,7 @@ function App() {
             <Route path="/temoignages"               element={<Testimonials />} />
             <Route path="/partenaires"               element={<Partners />} />
             <Route path="/soutiens"                  element={<Supporters />} />
+            <Route path="/cfa-partenaires"           element={<CFAPartners />} />
             <Route path="/implantations"             element={<Implantations />} />
             <Route path="/contact"                   element={<Contact />} />
             <Route path="/mentions-legales"          element={<MentionsLegales />} />

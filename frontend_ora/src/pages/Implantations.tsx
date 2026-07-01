@@ -8,7 +8,7 @@ import {
 } from '@vnedyalk0v/react19-simple-maps';
 import api from '../services/api';
 import {
-  Loader2, AlertCircle, MapPin, Mail, Phone, X, ChevronRight, ArrowRight, HandHeart,
+  Loader2, AlertCircle, MapPin, Mail, Phone, X, ChevronRight, HandHeart,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -387,42 +387,21 @@ export function Implantations() {
 
       {/* ── CTA ────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-6 pb-20">
-        <div className="grid sm:grid-cols-2 gap-4">
-          {/* Couvert */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl px-7 py-8 flex flex-col gap-4">
-            <div>
-              <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-2">Ton département est couvert</p>
-              <h2 className="text-lg font-bold text-white mb-1">Un mentor t'attend</h2>
-              <p className="text-blue-100 text-sm">
-                Clique sur ta zone sur la carte ou inscris-toi directement.
-              </p>
-            </div>
-            <Link
-              to="/apprentis/inscription"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-blue-700 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors shadow-sm self-start"
-            >
-              <HandHeart className="w-4 h-4" />
-              Pour trouver un mentor, clic ici
-            </Link>
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl px-7 py-8 flex flex-col gap-4">
+          <div>
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-2">Ton département est couvert</p>
+            <h2 className="text-lg font-bold text-white mb-1">Un mentor t'attend</h2>
+            <p className="text-blue-100 text-sm">
+              Clique sur ta zone sur la carte ou inscris-toi directement.
+            </p>
           </div>
-
-          {/* Non couvert */}
-          <div className="bg-slate-800 rounded-2xl px-7 py-8 flex flex-col gap-4">
-            <div>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Ton département n'est pas couvert</p>
-              <h2 className="text-lg font-bold text-white mb-1">ORA continue de s'étendre</h2>
-              <p className="text-slate-400 text-sm">
-                Contacte-nous pour ouvrir un pôle près de chez toi.
-              </p>
-            </div>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors shadow-sm self-start"
-            >
-              Nous contacter
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          <Link
+            to="/apprentis/inscription"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white text-blue-700 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors shadow-sm self-start"
+          >
+            <HandHeart className="w-4 h-4" />
+            Pour trouver un mentor, clic ici
+          </Link>
         </div>
       </section>
 

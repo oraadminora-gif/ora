@@ -37,6 +37,9 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-slate-400">
               <li><Link to="/partenaires" className="hover:text-white transition-colors">Notre réseau associatif</Link></li>
               <li><Link to="/implantations" className="hover:text-white transition-colors">Nos implantations</Link></li>
+              <li><Link to="/soutiens" className="hover:text-white transition-colors">Ceux qui nous soutiennent</Link></li>
+              <li><Link to="/cfa-partenaires" className="hover:text-white transition-colors">Nos CFA partenaires</Link></li>
+              <li><Link to="/temoignages" className="hover:text-white transition-colors">Témoignages</Link></li>
               <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -56,7 +59,7 @@ export function Footer() {
           <p>© 2026 ORA - Joashams</p>
           <p className="mt-1">Pour Talents Seniors Bénévoles</p>
           <Link to="/charte" className="inline-block mt-3 text-[11px] text-slate-600 hover:text-slate-400 transition-colors">
-            Charte grahique
+            Charte graphique
           </Link>
         </div>
       </div>

@@ -474,7 +474,6 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
         ?? (err.response?.status ? `Erreur ${err.response.status}` : err.message)
         ?? 'Erreur lors de la sauvegarde.';
       setError(msg);
-      console.error('Suivi save error:', err.response?.data ?? e);
     } finally { setSaving(false); }
   };
 

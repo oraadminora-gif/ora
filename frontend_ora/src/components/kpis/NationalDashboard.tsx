@@ -22,8 +22,7 @@ const NationalDashboard: React.FC = () => {
       try {
         const result = await fetchNationalKPIs();
         setData(result);
-      } catch (error) {
-        console.error('Erreur KPIs Nationaux', error);
+      } catch {
       } finally {
         setLoading(false);
       }

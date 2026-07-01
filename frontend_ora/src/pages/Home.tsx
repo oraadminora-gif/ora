@@ -390,7 +390,7 @@ export function Home() {
                 jeunes de leurs établissements.
               </p>
               <Link
-                to="/partenaires"
+                to="/cfa-partenaires"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-ora-blue text-white rounded-full font-semibold text-xs hover:bg-ora-dark transition-colors self-start"
               >
                 Voir nos CFA partenaires

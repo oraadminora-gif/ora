@@ -29,8 +29,7 @@ const CNDashboard: React.FC = () => {
       try {
         const res = await api.get('/kpi/national/');
         setData(res.data);
-      } catch (e) {
-        console.error('Erreur KPIs CN', e);
+      } catch {
       } finally {
         setLoading(false);
       }

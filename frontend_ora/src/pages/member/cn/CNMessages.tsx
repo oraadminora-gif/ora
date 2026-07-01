@@ -57,8 +57,7 @@ export function CNMessages() {
       const res = await api.get('/cn/messages/', { params });
       setMessages(res.data.messages ?? []);
       setUnreadCount(res.data.unread_count ?? 0);
-    } catch (e) {
-      console.error(e);
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -73,8 +72,7 @@ export function CNMessages() {
       setMessages(prev => prev.map(m => m.id === msg.id ? updated : m));
       if (selected?.id === msg.id) setSelected(updated);
       setUnreadCount(prev => prev + (isRead ? -1 : 1));
-    } catch (e) {
-      console.error(e);
+    } catch {
     }
   };
 
@@ -90,8 +88,7 @@ export function CNMessages() {
       await api.delete(`/cn/messages/${id}/`);
       setMessages(prev => prev.filter(m => m.id !== id));
       if (selected?.id === id) setSelected(null);
-    } catch (e) {
-      console.error(e);
+    } catch {
     } finally {
       setDeleting(null);
     }

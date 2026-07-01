@@ -647,7 +647,6 @@ export function PoleKPIs() {
       setPoleData(pole);
       setNationalData(national);
     } catch (e: unknown) {
-      console.error('KPI load error:', e);
       const err = e as { response?: { data?: { error?: string } }; message?: string };
       const msg = err?.response?.data?.error ?? err?.message ?? 'Erreur inconnue';
       setError(msg);

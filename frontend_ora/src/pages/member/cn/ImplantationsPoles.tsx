@@ -560,7 +560,6 @@ export function ImplantationsPoles() {
 
   const allRef        = useRef<HTMLDivElement>(null);
   const mapSectionRef = useRef<HTMLDivElement>(null);
-  const cityRef       = useRef<HTMLDivElement>(null);
   const exportBtnRef  = useRef<HTMLDivElement>(null);
 
   const docDate = new Date().toISOString().slice(0, 10);
@@ -573,11 +572,6 @@ export function ImplantationsPoles() {
   const handlePrintMap = useReactToPrint({
     contentRef: mapSectionRef,
     documentTitle: `carte-departements-ora-${docDate}`,
-    pageStyle: `@page { size: A4 landscape; margin: 10mm; } ${PRINT_BASE}`,
-  });
-  const handlePrintCities = useReactToPrint({
-    contentRef: cityRef,
-    documentTitle: `carte-villes-ora-${docDate}`,
     pageStyle: `@page { size: A4 landscape; margin: 10mm; } ${PRINT_BASE}`,
   });
 
@@ -651,7 +645,6 @@ export function ImplantationsPoles() {
 
   const EXPORT_OPTIONS = [
     { label: 'Carte des pôles',  desc: 'Carte départementale',      fn: () => { handlePrintMap();    setShowExport(false); } },
-    { label: 'Carte des villes', desc: 'Carte politique des villes', fn: () => { handlePrintCities(); setShowExport(false); } },
     { label: 'Les deux cartes',  desc: 'Document complet',           fn: () => { handlePrintAll();    setShowExport(false); } },
   ];
 
@@ -813,11 +806,6 @@ export function ImplantationsPoles() {
             </>
           )}
         </div>
-      </div>
-
-      {/* ── CARTE VILLES (pleine largeur) ─────────────────── */}
-      <div ref={cityRef}>
-        <VillesMapCard poles={data.poles} geoData={geoData} />
       </div>
 
       {/* Tooltip département */}

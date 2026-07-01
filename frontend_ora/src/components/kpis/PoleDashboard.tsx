@@ -22,8 +22,7 @@ const PoleDashboard: React.FC = () => {
       try {
         const result = await fetchPoleKPIs();
         setData(result);
-      } catch (error) {
-        console.error('Erreur KPIs Pôle', error);
+      } catch {
       } finally {
         setLoading(false);
       }

@@ -22,7 +22,7 @@ export function CNDashboard() {
   useEffect(() => {
     fetchNationalKPIsDetailed('year')
       .then(data => setKpis(data))
-      .catch(err => console.error('Error fetching CN data:', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
