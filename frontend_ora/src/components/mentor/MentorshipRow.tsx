@@ -1,6 +1,10 @@
 // src/components/mentor/MentorshipRow.tsx
 import { Mail, Calendar, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
-import type { Mentorship } from '../../pages/member/mentor/MentorDashboard';
+interface Mentorship {
+  apprentice_name: string; apprentice_email: string;
+  objectives_progress: number; start_date: string;
+  total_meetings: number; next_meeting?: string | null;
+}
 
 interface MentorshipRowProps {
   mentorship: Mentorship;

@@ -1,6 +1,6 @@
 // src/components/dashboard/CNDashboard.tsx
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';
 import api from '../../services/api';
 
 interface CNDashboardData {
@@ -70,8 +70,8 @@ const CNDashboard: React.FC = () => {
         <h2 className="font-semibold mb-2">Répartition filles/garçons</h2>
         <PieChart width={200} height={200}>
           <Pie data={sexData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
-            {sexData.map((entry, index) => (
-              <cell key={index} fill={COLORS[index]} />
+            {sexData.map((_entry, index) => (
+              <Cell key={index} fill={COLORS[index]} />
             ))}
           </Pie>
           <Tooltip />

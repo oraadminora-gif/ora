@@ -106,6 +106,7 @@ function svgXY(lon: number, lat: number): [number, number] {
 }
 
 const MR = 5;   // rayon marqueur
+const MG = 4;   // gap entre marqueur et label
 const CW = 6.0; // largeur approx par caractère (8.5px bold)
 const LH = 11;  // hauteur ligne
 
