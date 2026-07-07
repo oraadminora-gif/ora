@@ -1,0 +1,22 @@
+# Systemd service — ORA Gunicorn
+# À placer sur le VPS : /etc/systemd/system/ora.service
+
+[Unit]
+Description=ORA Mentorat — Gunicorn WSGI
+After=network.target postgresql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/ora/ora_backend
+EnvironmentFile=/var/www/ora/.env
+ExecStart=/var/www/ora/.venv/bin/gunicorn \
+    --config /var/www/ora/gunicorn.conf.py \
+    ora_backend.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+RuntimeDirectory=ora
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

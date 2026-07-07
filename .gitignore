@@ -39,6 +39,9 @@ ENV/
 
 # ── Sauvegardes base de données ──────────────────────
 backups/
+backup_*.json
+backup_*.sql
+deploy/.env.production
 
 # ── Frontend React / Vite ────────────────────────────
 node_modules/
