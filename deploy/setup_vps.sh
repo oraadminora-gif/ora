@@ -19,7 +19,7 @@ set -e
 DOMAIN="objectifreussirapprentissage.eu"
 ADMIN_EMAIL="admin@objectifreussirapprentissage.eu"
 REPO_URL="https://github.com/oraadminora-gif/ora.git"
-DB_PASSWORD=4x!9XmPOFRauC6qAbkZ#  # même valeur que dans .env.production
+DB_PASSWORD='4x!9XmPOFRauC6qAbkZ#'   # même valeur que dans .env.production
 PROJECT_DIR="/var/www/ora"
 # ─────────────────────────────────────────────────────────────
 
