@@ -233,15 +233,19 @@ function MentoratCard({ mentorat, onSuivi }: {
           <div className="flex items-center gap-3 text-[10px] text-slate-400 flex-wrap pt-1">
             {mentorat.status === 'ACTIVE' && mentorat.inactivite.jours !== null && (
               <span className={
-                mentorat.inactivite.level === 'alert' ? 'text-red-500 font-semibold'
-                : mentorat.inactivite.level === 'warn' ? 'text-orange-500 font-semibold'
-                : ''
+                mentorat.inactivite.level === 'alert'
+                  ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-700 border border-red-300'
+                  : mentorat.inactivite.level === 'warn'
+                  ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700 border border-orange-300'
+                  : 'text-slate-400'
               }>
+                {mentorat.inactivite.level === 'alert' && <AlertTriangle className="w-3 h-3" />}
+                {mentorat.inactivite.level === 'warn' && <Clock className="w-3 h-3" />}
                 {mentorat.inactivite.jours}j sans contact
               </span>
             )}
             {mentorat.assigned_at && (
-              <span>depuis le {new Date(mentorat.assigned_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <span>affectation depuis le {new Date(mentorat.assigned_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             )}
           </div>
         </div>

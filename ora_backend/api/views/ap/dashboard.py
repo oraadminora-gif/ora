@@ -1573,6 +1573,7 @@ class APMentoratSuiviDetailView(APIView):
             'cloture_message_demandee':  m.cloture_message_demandee or '',
 
             # Suivi
+            'dernier_contact': str(m.dernier_contact) if m.dernier_contact else '',
             'nb_rencontres':   m.nb_rencontres,
             'nb_heures':       float(m.nb_heures),
             'objectif_mentor': m.objectif_mentor,
@@ -1679,6 +1680,9 @@ class APMentoratSuiviDetailView(APIView):
                 val = (data['type_mentorat'] or '').strip()
                 if val in ('presentiel', 'distanciel', ''):
                     m.type_mentorat = val
+
+            if 'dernier_contact' in data:
+                m.dernier_contact = data['dernier_contact'] or None
 
             # Clôture directe
             if data.get('cloturer'):

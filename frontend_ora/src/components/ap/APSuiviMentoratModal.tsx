@@ -17,6 +17,7 @@ interface SuiviDetail {
   closed_at: string | null;
   request_date: string | null;
   alerte_rouge: boolean;
+  dernier_contact: string;
   closure_reason_code: string;
   closure_reason_label: string;
   closure_reason: string;
@@ -415,8 +416,11 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
 
+  const today = new Date().toISOString().split('T')[0];
+
   // Champs éditables
   const [expectedEnd, setExpectedEnd]         = useState('');
+  const [dernierContact, setDernierContact]   = useState(today);
   const [nbRencontres, setNbRencontres]       = useState('0');
   const [nbHeures, setNbHeures]               = useState('0');
   const [objectif, setObjectif]               = useState('');
@@ -432,6 +436,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
       const d = r.data;
       setData(d);
       setExpectedEnd(d.expected_end_date ?? '');
+      setDernierContact(d.dernier_contact || today);
       setNbRencontres(String(d.nb_rencontres));
       setNbHeures(String(d.nb_heures));
       setObjectif(d.objectif_mentor);
@@ -451,6 +456,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
 
   const buildPayload = () => ({
     expected_end_date: expectedEnd || null,
+    dernier_contact:   dernierContact || null,
     nb_rencontres:     Number(nbRencontres) || 0,
     nb_heures:         Number(nbHeures) || 0,
     objectif_mentor:   objectif,
@@ -564,10 +570,17 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
                   <InfoRow label="Date d'affectation" value={data.assigned_at ? new Date(data.assigned_at).toLocaleDateString('fr-FR') : ''} />
                   {data.closed_at && <InfoRow label="Date de clôture" value={new Date(data.closed_at).toLocaleDateString('fr-FR')} />}
                 </div>
-                <div className="mt-3">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Date prévisionnelle de fin</label>
-                  <input type="date" value={expectedEnd} onChange={e => setExpectedEnd(e.target.value)}
-                    disabled={isClosed} className={INPUT} />
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Date prévisionnelle de fin</label>
+                    <input type="date" value={expectedEnd} onChange={e => setExpectedEnd(e.target.value)}
+                      disabled={isClosed} className={INPUT} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Dernier contact</label>
+                    <input type="date" value={dernierContact} onChange={e => setDernierContact(e.target.value)}
+                      disabled={isClosed} max={new Date().toISOString().split('T')[0]} className={INPUT} />
+                  </div>
                 </div>
               </section>
 
