@@ -83,7 +83,9 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
     if yr.phone:
         champs.append(f"Téléphone : {yr.phone}")
     if yr.birth_date:
-        champs.append(f"Date de naissance : {yr.birth_date.strftime('%d/%m/%Y')}")
+        bd = yr.birth_date
+        bd_str = bd.strftime('%d/%m/%Y') if hasattr(bd, 'strftime') else str(bd)
+        champs.append(f"Date de naissance : {bd_str}")
     if yr.gender:
         champs.append(f"Genre : {_GENDER_LABELS.get(yr.gender, yr.gender)}")
     if yr.commune:
