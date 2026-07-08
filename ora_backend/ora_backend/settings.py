@@ -153,7 +153,7 @@ CORS_ALLOWED_ORIGINS = env(
 CORS_ALLOW_CREDENTIALS = True
 
 # ==================== EMAIL ====================
-# Brevo (ex-Sendinblue) — SMTP, 300 emails/jour gratuits
+# Brevo (ex-Sendinblue) SMTP — 300 emails/jour gratuits
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp-relay.brevo.com'
 EMAIL_PORT          = 587
