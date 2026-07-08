@@ -1599,7 +1599,7 @@ class APMentoratSuiviDetailView(APIView):
                 'phone':       mentor.phone,
                 'city':        mentor.city,
                 'code_postal': mentor.code_postal,
-                'department':  mentor.department.label if mentor.department_id else '',
+                'department':  mentor.department.name if mentor.department_id else '',
                 'association': mentor.association.name,
                 'is_trained':  mentor.is_trained,
                 'training_date': str(mentor.training_date) if mentor.training_date else '',
