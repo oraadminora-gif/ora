@@ -1,7 +1,8 @@
+import logging
 import threading
 from django.db import transaction, IntegrityError
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -13,95 +14,137 @@ from core.models import YoungRequest, Mentor, Mentorat, MatchingDecision, Animat
 from core.services.matching import get_mentor_suggestions
 from api.permissions import IsACP, CanMatchRequest
 
+logger = logging.getLogger(__name__)
 
-def _send_mentorat_emails(mentorat_id: int):
-    """Envoie les emails de notification au mentor et à l'AP (thread non bloquant)."""
+_GENDER_LABELS = {'M': 'Garçon', 'F': 'Fille', 'O': 'Autre'}
+
+RECOMMANDATIONS = """
+_______________________________________________________
+
+Recommandations Importantes
+
+1/ Vous établirez le premier contact avec l'apprenti, par téléphone dès que cela vous sera possible. Ce premier contact est essentiel pour bien comprendre quelle est la problématique pour laquelle l'apprenti demande un soutien. À l'occasion de ce premier contact, vous pourrez convenir des modalités de vos échanges ultérieurs, en particulier la première rencontre « de visu » en terrain neutre (recommandé !)
+
+1bis/ N'oubliez pas que votre Animateur d'association du Pôle est à votre disposition pour vous conseiller et vous soutenir dans votre démarche !
+
+2/ Si, à la suite de ce premier contact, vous décidiez de ne pas prendre en charge ce mentorat (et ce quelle qu'en soit la raison), vous devez le signaler à votre Animateur d'association du Pôle, par mail, et en documentant les informations que vous aurez pu collecter (en particulier la problématique de l'apprenti, et ses éventuelles contraintes horaires ou géographiques…). Ceci afin que nous puissions trouver un autre mentor au vu de ces éléments.
+
+3/ Si l'apprenti ne répond pas à votre appel téléphonique, laissez un message vocal, et accompagnez par un SMS lui demandant de vous rappeler. Si, après quelques tentatives (laissez passer 3 jours entre chaque tentative, et espacez ensuite d'une ou deux semaines), l'apprenti n'a envoyé aucune réponse, merci de le signaler à votre Animateur d'association du Pôle, par mail. Selon vos éléments, nous clôturerons sa demande comme n'ayant pas aboutie (sans contact).
+
+4/ Si l'apprenti ne semble pas bien comprendre pourquoi vous le contactez (cela peut arriver en particulier si sa demande remonte à quelques mois ou si l'inscription a été faite à l'initiative d'un formateur de son CFA ou d'un tiers), essayez quand même de le faire parler pour vous faire une idée plus précise de la situation ; puis remontez ces informations à votre Animateur d'association du Pôle.
+
+En cas de difficulté, n'hésitez pas à contacter votre Animateur d'association du Pôle !
+"""
+
+
+def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None):
+    """Email d'affectation au mentor (To) + AP suivi (Cc) avec liens accept/refuse."""
     try:
-        from core.models import Mentorat as M
+        from core.models import AcceptanceMentorat, Animateur as Anim, Mentorat as M
         m = M.objects.select_related(
-            'mentor', 'mentor__association',
+            'mentor', 'pole',
             'young_request',
-            'ap_responsable', 'ap_responsable__association',
+            'ap_responsable',
         ).get(id=mentorat_id)
 
         mentor = m.mentor
         jeune  = m.young_request
         ap     = m.ap_responsable
+        pole_code = m.pole.code or m.pole.name
 
+        acp = None
+        if acp_animateur_id:
+            try:
+                acp = Anim.objects.get(id=acp_animateur_id)
+            except Anim.DoesNotExist:
+                pass
+
+        # Créer le token d'acceptation
+        acceptance = AcceptanceMentorat.create_for_mentorat(m, assigned_by=acp)
+        accept_url = f"{settings.FRONTEND_URL}/accepter-mentorat/{acceptance.token}?action=accept"
+        refuse_url = f"{settings.FRONTEND_URL}/accepter-mentorat/{acceptance.token}?action=refuse"
+
+        # ── Résumé des infos du jeune ────────────────────────────
         diplome   = jeune.get_diplome_prepare_display() if jeune.diplome_prepare else ''
         situation = jeune.get_situation_display() if jeune.situation else ''
-        etab      = jeune.nom_etablissement or ''
+        bd = jeune.birth_date
+        bd_str = bd.strftime('%d/%m/%Y') if hasattr(bd, 'strftime') else str(bd) if bd else ''
 
-        # ── Email au mentor ──────────────────────────────────────
+        champs = []
+        champs.append(f"Prénom : {jeune.first_name}")
+        champs.append(f"Nom : {jeune.last_name}")
+        if jeune.email:
+            champs.append(f"Email : {jeune.email}")
+        if jeune.phone:
+            champs.append(f"Téléphone : {jeune.phone}")
+        if bd_str:
+            champs.append(f"Date de naissance : {bd_str}")
+        if jeune.gender:
+            champs.append(f"Genre : {_GENDER_LABELS.get(jeune.gender, jeune.gender)}")
+        if jeune.commune:
+            champs.append(f"Commune : {jeune.commune}")
+        if jeune.code_postal:
+            champs.append(f"Code postal : {jeune.code_postal}")
+        if situation:
+            champs.append(f"Situation : {situation}")
+        if diplome:
+            champs.append(f"Diplôme préparé : {diplome}")
+        if jeune.nom_etablissement:
+            champs.append(f"Établissement / CFA : {jeune.nom_etablissement}")
+        if jeune.needs_description:
+            champs.append(f"Demande / besoin :\n  {jeune.needs_description}")
+
+        champs_texte = "\n· ".join(champs)
+
+        ap_info = ""
+        if ap:
+            ap_info = (
+                f"\nVotre Animateur de Pôle chargé du suivi de ce mentorat :\n"
+                f"  {ap.first_name} {ap.last_name}"
+                f"{' — ' + ap.email if ap.email else ''}"
+                f"{' — ' + ap.phone if ap.phone else ''}\n"
+            )
+
+        corps_mentor = (
+            f"Bonjour {mentor.first_name} {mentor.last_name},\n\n"
+            f"Voici une demande d'un jeune et les informations qu'il a laissées à l'inscription :\n\n"
+            f"· {champs_texte}\n\n"
+            f"Je te l'affecte aujourd'hui par ce message. Je te remercie d'en prendre connaissance "
+            f"et de bien vouloir en accuser bonne réception.\n\n"
+            f"Ce présent mail et ta réponse constituent à partir d'aujourd'hui ton contrat de mission "
+            f"pour réaliser ce mentorat dans le respect de la charte ORA et conformément à ta formation Mentor.\n\n"
+            f"👉 J'ACCEPTE ce mentorat : {accept_url}\n\n"
+            f"👉 Je REFUSE ce mentorat : {refuse_url}\n"
+            f"{ap_info}\n"
+            f"Bien sûr ton Animateur de Pôle reste à ta disposition pour toute difficulté ou question.\n\n"
+            f"Merci pour ton engagement, bon mentorat !\n\n"
+            f"Cordialement,\n"
+            f"ORA {pole_code}\n"
+            f"OPORA\nobjectifreussirapprentissage.eu"
+            f"{RECOMMANDATIONS}"
+        )
+
         if mentor.email:
-            sujet_mentor = f"ORA Mentorat – Nouveau mentorat avec {jeune.first_name} {jeune.last_name}"
-            corps_mentor = f"""Bonjour {mentor.first_name} {mentor.last_name},
+            reply_to = []
+            if acp and acp.email:
+                reply_to = [acp.email]
+            elif ap and ap.email:
+                reply_to = [ap.email]
 
-Nous vous remercions chaleureusement pour votre engagement en tant que mentor au sein d'ORA Mentorat.
+            cc_emails = [ap.email] if (ap and ap.email) else []
 
-Un nouveau mentorat vient de vous être assigné. Voici les informations sur le/la jeune que vous allez accompagner :
-
-Nom : {jeune.first_name} {jeune.last_name}
-Email : {jeune.email or '—'}
-Téléphone : {jeune.phone or '—'}
-Commune : {jeune.city or '—'}
-{f"Diplôme préparé : {diplome}" if diplome else ""}
-{f"Situation : {situation}" if situation else ""}
-{f"Établissement / CFA : {etab}" if etab else ""}
-
-Description de sa demande :
-{jeune.needs_description}
-
-Votre animateur de suivi est : {ap.first_name} {ap.last_name} ({ap.email})
-
-Merci encore pour votre implication. N'hésitez pas à contacter votre animateur pour toute question.
-
-L'équipe ORA Mentorat
-"""
-            send_mail(
-                subject=sujet_mentor,
-                message=corps_mentor,
+            msg = EmailMessage(
+                subject=f"{pole_code} Attention ! Affectation d'un nouveau mentorat !",
+                body=corps_mentor,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[mentor.email],
-                fail_silently=True,
+                to=[mentor.email],
+                cc=cc_emails,
+                reply_to=reply_to or [settings.DEFAULT_FROM_EMAIL],
             )
+            msg.send(fail_silently=False)
 
-        # ── Email à l'AP ─────────────────────────────────────────
-        if ap and ap.email:
-            sujet_ap = f"ORA – Nouveau mentorat à suivre : {mentor.first_name} {mentor.last_name} / {jeune.first_name} {jeune.last_name}"
-            corps_ap = f"""Bonjour {ap.first_name} {ap.last_name},
-
-Un nouveau mentorat vient d'être créé dans votre association {ap.association.name}. Vous en assurez le suivi.
-
-Mentor
-  Nom : {mentor.first_name} {mentor.last_name}
-  Email : {mentor.email or '—'}
-  Téléphone : {mentor.phone or '—'}
-
-Jeune accompagné(e)
-  Nom : {jeune.first_name} {jeune.last_name}
-  Email : {jeune.email or '—'}
-  Téléphone : {jeune.phone or '—'}
-  Commune : {jeune.city or '—'}
-  {f"Diplôme : {diplome}" if diplome else ""}
-  {f"Situation : {situation}" if situation else ""}
-
-Demande :
-{jeune.needs_description}
-
-Merci de prendre contact avec le mentor pour démarrer le suivi.
-
-L'équipe ORA Mentorat
-"""
-            send_mail(
-                subject=sujet_ap,
-                message=corps_ap,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[ap.email],
-                fail_silently=True,
-            )
-    except Exception:
-        pass  # Non bloquant — l'affectation reste valide même si l'email échoue
+    except Exception as e:
+        logger.error("Email affectation mentorat failed (mentorat=%s): %s", mentorat_id, e)
 
 
 class MatchingSuggestionsView(APIView):
@@ -282,9 +325,10 @@ class AssignMentorView(APIView):
         young_request.save()
 
         # ── Emails de notification (non bloquants) ───────────────
+        acp_animateur = getattr(request.user, 'animateur', None)
         threading.Thread(
             target=_send_mentorat_emails,
-            args=(mentorat.id,),
+            args=(mentorat.id, acp_animateur.id if acp_animateur else None),
             daemon=True,
         ).start()
 

@@ -27,6 +27,7 @@ import { CGV }                     from './pages/CGV';
 import { Login }                   from './pages/Login';
 import { NotFound }                from './pages/NotFound';
 import { EvaluationPage }          from './pages/EvaluationPage';
+import { AccepterMentorat }        from './pages/public/AccepterMentorat';
 import { CharteGraphique }         from './pages/CharteGraphique';
 
 // ── Dashboards membres — lazy (lourds, chargés seulement après login) ──
@@ -103,6 +104,7 @@ function App() {
             <Route path="/charte"                    element={<CharteGraphique />} />
             <Route path="/login"                     element={<Login />} />
             <Route path="/evaluer-mentor/:token"     element={<EvaluationPage />} />
+            <Route path="/accepter-mentorat/:token"  element={<AccepterMentorat />} />
           </Route>
 
           {/* ── ROUTES MEMBRES — Suspense sur la zone contenu uniquement ── */}

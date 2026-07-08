@@ -12,6 +12,7 @@ from .suivi_mentorat import SuiviMentorat
 from .cn_member import CNMember
 from .matching_audit import MatchingDecision
 from .evaluation_mentor import EvaluationMentor
+from .acceptance_mentorat import AcceptanceMentorat
 from .candidature_mentor import CandidatureMentor
 from .contact_message import ContactMessage
 
@@ -31,6 +32,7 @@ __all__ = [
     'CNMember',
     'MatchingDecision',
     'EvaluationMentor',
+    'AcceptanceMentorat',
     'CandidatureMentor',
     'ContactMessage',
 ]
