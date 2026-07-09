@@ -142,6 +142,11 @@ function MentoratActifRow({
             className="flex items-center gap-1 text-[10px] font-semibold text-violet-600 hover:text-violet-800 transition-colors">
             <ClipboardList className="w-3 h-3" /> Modifier le suivi
           </button>
+          {cloture_en_attente && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full animate-pulse shrink-0">
+              <Clock className="w-2.5 h-2.5" /> Demande de clôture
+            </span>
+          )}
           <button
             onClick={() => setShowSuivis(v => !v)}
             className="flex items-center gap-1 text-[10px] font-semibold text-ora-blue hover:text-ora-dark transition-colors"
