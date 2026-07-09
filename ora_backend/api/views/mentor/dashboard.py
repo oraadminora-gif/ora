@@ -359,6 +359,68 @@ class MentorSuiviDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+def _notify_ap_cloture_demandee(mentorat_id: int, mentor_id: int, reason_code: str, message_jeune: str):
+    """Envoie un email à l'AP responsable + ACP du pôle quand un mentor demande la clôture."""
+    import logging
+    from django.core.mail import EmailMessage
+    from django.conf import settings
+    from core.models import Mentorat, Animateur
+
+    logger = logging.getLogger(__name__)
+    try:
+        mentorat = Mentorat.objects.select_related(
+            'mentor', 'young_request', 'ap_responsable', 'pole'
+        ).get(id=mentorat_id)
+    except Mentorat.DoesNotExist:
+        return
+
+    mentor   = mentorat.mentor
+    jeune    = mentorat.young_request
+    pole     = mentorat.pole
+    pole_code = (pole.code or pole.name) if pole else 'ORA'
+
+    reason_labels = dict(CLOSURE_REASON_CHOICES)
+    reason_label  = reason_labels.get(reason_code, reason_code) if reason_code else 'Non précisée'
+
+    mentor_name = f"{mentor.first_name} {mentor.last_name}" if mentor else 'Le mentor'
+    jeune_name  = f"{jeune.first_name} {jeune.last_name}"  if jeune  else 'le jeune'
+
+    # Destinataires : AP responsable + ACP du pôle
+    recipients = []
+    ap = mentorat.ap_responsable
+    if ap and ap.email:
+        recipients.append(ap.email)
+
+    acp = Animateur.objects.filter(pole=pole, is_acp=True, is_active=True).first() if pole else None
+    if acp and acp.email and acp.email not in recipients:
+        recipients.append(acp.email)
+
+    if not recipients:
+        return
+
+    complement = f"\n\nMessage du mentor :\n{message_jeune}" if message_jeune else ''
+
+    corps = (
+        f"Bonjour,\n\n"
+        f"Le mentor {mentor_name} a soumis une demande de clôture pour le mentorat avec {jeune_name}.\n\n"
+        f"Raison : {reason_label}{complement}\n\n"
+        f"Merci de vous connecter à l'espace ORA pour confirmer ou rejeter cette demande.\n\n"
+        f"Cordialement,\n"
+        f"Le système ORA — Pôle {pole_code}"
+    )
+
+    try:
+        msg = EmailMessage(
+            subject=f"[ORA {pole_code}] Demande de clôture de mentorat — {mentor_name}",
+            body=corps,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=recipients,
+        )
+        msg.send(fail_silently=False)
+    except Exception as e:
+        logger.error("Email demande clôture AP/ACP failed (mentorat=%s): %s", mentorat_id, e)
+
+
 class MentorCloturerMentoratView(APIView):
     """
     Le mentor demande la clôture ou l'arrêt d'un mentorat.
@@ -401,6 +463,14 @@ class MentorCloturerMentoratView(APIView):
             'cloture_reason_demandee', 'cloture_message_demandee',
             'message_cloture',
         ])
+
+        # Email AP + ACP en arrière-plan
+        import threading
+        threading.Thread(
+            target=_notify_ap_cloture_demandee,
+            args=(mentorat.id, mentor.id, closure_reason_code, message_jeune),
+            daemon=True,
+        ).start()
 
         return Response({
             "success": True,
