@@ -149,9 +149,11 @@ class MentorDashboardView(APIView):
                         "suivi_stats":     get_suivi_stats(m),
                         "evaluation": (
                             {
-                                "rating":       m.evaluation.rating,
-                                "comment":      m.evaluation.comment,
-                                "submitted_at": m.evaluation.submitted_at,
+                                "rating_objectifs":      m.evaluation.rating_objectifs,
+                                "rating_accompagnement": m.evaluation.rating_accompagnement,
+                                "rating_recommandation": m.evaluation.rating_recommandation,
+                                "comment":               m.evaluation.comment,
+                                "submitted_at":          m.evaluation.submitted_at,
                             }
                             if hasattr(m, 'evaluation') and m.evaluation.submitted_at
                             else None

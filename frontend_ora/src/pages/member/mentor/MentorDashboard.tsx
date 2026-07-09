@@ -72,7 +72,9 @@ export interface MentoratActif {
 }
 
 export interface EvaluationRecu {
-  rating: number;
+  rating_objectifs: number | null;
+  rating_accompagnement: number | null;
+  rating_recommandation: number | null;
   comment: string;
   submitted_at: string;
 }

@@ -73,7 +73,7 @@ function HistoriqueRow({ m }: { m: MentoratHistorique }) {
               {isSuccess ? 'Succès' : 'Arrêté'}
             </span>
             {m.evaluation ? (
-              <StarRating rating={m.evaluation.rating} />
+              <StarRating rating={Math.round(((m.evaluation.rating_objectifs ?? 0) + (m.evaluation.rating_accompagnement ?? 0) + (m.evaluation.rating_recommandation ?? 0)) / 3)} />
             ) : (
               <span className="text-[10px] text-slate-400 font-medium">
                 {m.date_fin ? new Date(m.date_fin).toLocaleDateString('fr-FR') : '—'}
@@ -158,22 +158,25 @@ function HistoriqueRow({ m }: { m: MentoratHistorique }) {
           {/* Évaluation du jeune */}
           {m.evaluation && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50/40 overflow-hidden">
-              <div className="px-5 py-3 bg-amber-400 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Star className="w-3.5 h-3.5 text-white/80 fill-white/80" />
-                  <span className="text-[10px] font-bold text-white uppercase tracking-widest">Évaluation du jeune</span>
-                </div>
-                <StarRating rating={m.evaluation.rating} />
+              <div className="px-5 py-3 bg-amber-400 flex items-center gap-2">
+                <Star className="w-3.5 h-3.5 text-white/80 fill-white/80" />
+                <span className="text-[10px] font-bold text-white uppercase tracking-widest">Évaluation du jeune</span>
               </div>
-              <div className="px-5 py-4 bg-white border-x border-b border-amber-200 rounded-b-2xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl font-black text-amber-500">{m.evaluation.rating}/5</span>
-                  <StarRating rating={m.evaluation.rating} />
-                </div>
+              <div className="px-5 py-4 bg-white border-x border-b border-amber-200 rounded-b-2xl space-y-2">
+                {([
+                  ['Objectifs atteints',     m.evaluation.rating_objectifs],
+                  ['Qualité accompagnement', m.evaluation.rating_accompagnement],
+                  ['Recommanderait ORA',     m.evaluation.rating_recommandation],
+                ] as [string, number | null][]).map(([label, val]) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-xs text-slate-500">{label}</span>
+                    <StarRating rating={val ?? 0} />
+                  </div>
+                ))}
                 {m.evaluation.comment && (
-                  <p className="text-sm text-slate-700 leading-relaxed italic whitespace-pre-wrap">"{m.evaluation.comment}"</p>
+                  <p className="text-sm text-slate-700 leading-relaxed italic whitespace-pre-wrap pt-1">"{m.evaluation.comment}"</p>
                 )}
-                <p className="text-[10px] text-slate-400 mt-2">
+                <p className="text-[10px] text-slate-400 pt-1">
                   Soumis le {new Date(m.evaluation.submitted_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
