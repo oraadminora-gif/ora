@@ -52,6 +52,7 @@ export interface MentoratActif {
   };
   date_debut: string;
   expected_end_date: string | null;
+  dernier_contact: string | null;
   ap_referent: string;
   alerte_rouge: boolean;
   notes_suivi: string;

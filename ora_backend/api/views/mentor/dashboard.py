@@ -108,6 +108,7 @@ class MentorDashboardView(APIView):
                         },
                         "date_debut":          m.assigned_at,
                         "expected_end_date":   m.expected_end_date,
+                        "dernier_contact":     str(m.dernier_contact) if m.dernier_contact else None,
                         "ap_referent":         m.ap_responsable.full_name if m.ap_responsable else "Non assigné",
                         "alerte_rouge":        m.alerte_rouge,
                         "notes_suivi":         m.notes_suivi or '',
@@ -565,6 +566,21 @@ class MentorUpdateSuiviView(APIView):
                 mentorat.expected_end_date = None
             update_fields.append('expected_end_date')
 
+        if 'dernier_contact' in data:
+            val = data['dernier_contact']
+            if val:
+                try:
+                    from datetime import datetime as dt, date as ddate
+                    parsed = dt.strptime(str(val), '%Y-%m-%d').date()
+                    if parsed > ddate.today():
+                        return Response({"error": "La date du dernier contact ne peut pas être dans le futur."}, status=status.HTTP_400_BAD_REQUEST)
+                    mentorat.dernier_contact = parsed
+                except ValueError:
+                    return Response({"error": "Format de date invalide pour dernier_contact."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                mentorat.dernier_contact = None
+            update_fields.append('dernier_contact')
+
         if update_fields:
             mentorat.save(update_fields=update_fields)
 
@@ -575,6 +591,7 @@ class MentorUpdateSuiviView(APIView):
             "objectif_mentor":  mentorat.objectif_mentor or '',
             "bilan_suivi":      mentorat.notes_suivi or '',
             "expected_end_date": mentorat.expected_end_date,
+            "dernier_contact":  str(mentorat.dernier_contact) if mentorat.dernier_contact else None,
             "problematiques":   mentorat.problematiques if isinstance(mentorat.problematiques, list) else [],
         })
 

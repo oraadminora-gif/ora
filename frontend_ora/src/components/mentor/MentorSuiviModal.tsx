@@ -221,8 +221,9 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
   const j = mentorat.jeune;
 
   // Suivi form
-  const [expectedEnd,   setExpectedEnd]   = useState(mentorat.expected_end_date ?? '');
-  const [nbRencontres,  setNbRencontres]  = useState(String(mentorat.nb_rencontres));
+  const [expectedEnd,    setExpectedEnd]    = useState(mentorat.expected_end_date ?? '');
+  const [dernierContact, setDernierContact] = useState(mentorat.dernier_contact ?? '');
+  const [nbRencontres,  setNbRencontres]   = useState(String(mentorat.nb_rencontres));
   const [nbHeures,      setNbHeures]      = useState(String(mentorat.nb_heures));
   const [typeMentorat,  setTypeMentorat]  = useState(mentorat.type_mentorat);
   const [problematiques, setProblematiques] = useState<string[]>([...mentorat.problematiques]);
@@ -250,13 +251,14 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
     setSaving(true); setError(''); setSuccess('');
     try {
       await api.patch(`/mentor/mentorats/${mentorat.id}/suivi/`, {
-        nb_rencontres:   Number(nbRencontres) || 0,
-        nb_heures:       parseFloat(nbHeures) || 0,
-        type_mentorat:   typeMentorat,
+        nb_rencontres:    Number(nbRencontres) || 0,
+        nb_heures:        parseFloat(nbHeures) || 0,
+        type_mentorat:    typeMentorat,
         problematiques,
-        objectif_mentor: objectif,
-        bilan_suivi:     bilan,
+        objectif_mentor:  objectif,
+        bilan_suivi:      bilan,
         expected_end_date: expectedEnd || null,
+        dernier_contact:  dernierContact || null,
       });
       setSuccess('Suivi enregistré.');
       onSaved();
@@ -330,9 +332,16 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
                   </div>
                 )}
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Date prévisionnelle de fin</label>
-                <input type="date" value={expectedEnd} onChange={e => setExpectedEnd(e.target.value)} className={INPUT} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Date prévisionnelle de fin</label>
+                  <input type="date" value={expectedEnd} onChange={e => setExpectedEnd(e.target.value)} className={INPUT} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Date du dernier contact</label>
+                  <input type="date" value={dernierContact} onChange={e => setDernierContact(e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)} className={INPUT} />
+                </div>
               </div>
             </section>
 

@@ -741,11 +741,20 @@ class APMentoratNotesView(APIView):
 # ─────────────────────────────────────────────────────────────
 # Helper : email clôture + évaluation (un seul message au jeune)
 # ─────────────────────────────────────────────────────────────
+_CLOSURE_REASON_LABELS = {
+    'NO_CONTACT':        'Aucun vrai contact établi',
+    'LOST_CONTACT':      'Perte définitive du contact',
+    'DIPLOMA_FAIL':      'Échec diplôme',
+    'MENTEE_STOP':       'Arrêt souhaité par le mentoré',
+    'OBJECTIVE_REACHED': 'Objectif atteint',
+}
+
+
 def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
     """
-    Envoie UN email au jeune contenant :
-    - la notification de clôture
-    - le lien vers l'évaluation (3 questions)
+    Envoie UN email au jeune.
+    - Si raison = OBJECTIVE_REACHED : email complet + lien évaluation (3 questions)
+    - Sinon : email d'encouragement simple mentionnant la raison, sans évaluation.
     Reply-To = ACP du pôle.
     """
     jeune = mentorat.young_request
@@ -753,50 +762,72 @@ def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
         return
 
     from core.models import Animateur as Anim
-    pole = mentorat.pole
+    pole      = mentorat.pole
     pole_code = pole.code or pole.name if pole else 'ORA'
-    mentor = mentorat.mentor
 
     acp = Anim.objects.filter(pole=pole, is_acp=True, is_active=True).first()
     reply_to = [acp.email] if acp and acp.email else [settings.DEFAULT_FROM_EMAIL]
 
-    # Créer le token d'évaluation
-    evaluation = EvaluationMentor.create_for_mentorat(mentorat)
-    eval_link  = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/evaluer-mentor/{evaluation.token}"
-
     closed_date  = mentorat.closed_at.strftime('%d/%m/%Y') if mentorat.closed_at else '—'
     request_date = jeune.request_date.strftime('%d/%m/%Y') if jeune.request_date else '—'
+    reason_code  = getattr(mentorat, 'closure_reason_code', '') or ''
 
     complement = (
         f"\nMessage de ton animateur de Pôle :\n{message_supplementaire}\n"
         if message_supplementaire else ''
     )
 
-    corps = (
-        f"Bonjour {jeune.first_name},\n\n"
-        f"Ton mentor nous a informé récemment que votre mentorat s'est achevé le {closed_date}.\n\n"
-        f"Tu nous avais adressé ta demande pour bénéficier d'un Mentor à travers notre Programme : "
-        f"Objectif Réussir l'Apprentissage le {request_date}.\n\n"
-        f"Tout au long de ce chemin parcouru entre vous, nous espérons que ton projet a pu se réaliser "
-        f"et qu'aujourd'hui tu te sens plus confiant pour les prochaines étapes de ta vie personnelle "
-        f"et professionnelle.{complement}\n"
-        f"Pour améliorer nos services vis-à-vis d'autres jeunes demain, accepterais-tu de répondre "
-        f"à ces 3 questions et exprimer ton point de vue ?\n\n"
-        f"→ Accède à l'évaluation : {eval_link}\n\n"
-        f"En nombre d'étoiles (1 à 5) :\n"
-        f"  • Tes objectifs personnels ont-ils été atteints ?\n"
-        f"  • As-tu apprécié la qualité de l'accompagnement par le Mentor ?\n"
-        f"  • Recommanderais-tu ORA à un copain ?\n"
-        f"  • Champ libre…\n\n"
-        f"Au nom du Programme ORA, merci de ton retour et bonne suite à toi !\n\n"
-        f"Cordialement,\n"
-        f"Le pôle {pole_code}\n"
-        f"OPORA\nobjectifreussirapprentissage.eu"
-    )
+    if reason_code == 'OBJECTIVE_REACHED':
+        # ── Email complet avec lien évaluation ───────────────────
+        evaluation = EvaluationMentor.create_for_mentorat(mentorat)
+        eval_link  = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/evaluer-mentor/{evaluation.token}"
+
+        sujet = "ORA clôture et fin de ton mentorat : ton avis nous intéresse"
+        corps = (
+            f"Bonjour {jeune.first_name},\n\n"
+            f"Ton mentor nous a informé récemment que votre mentorat s'est achevé le {closed_date}.\n\n"
+            f"Tu nous avais adressé ta demande pour bénéficier d'un Mentor à travers notre Programme : "
+            f"Objectif Réussir l'Apprentissage le {request_date}.\n\n"
+            f"Tout au long de ce chemin parcouru entre vous, nous espérons que ton projet a pu se réaliser "
+            f"et qu'aujourd'hui tu te sens plus confiant pour les prochaines étapes de ta vie personnelle "
+            f"et professionnelle.{complement}\n"
+            f"Pour améliorer nos services vis-à-vis d'autres jeunes demain, accepterais-tu de répondre "
+            f"à ces 3 questions et exprimer ton point de vue ?\n\n"
+            f"→ Accède à l'évaluation : {eval_link}\n\n"
+            f"En nombre d'étoiles (1 à 5) :\n"
+            f"  • Tes objectifs personnels ont-ils été atteints ?\n"
+            f"  • As-tu apprécié la qualité de l'accompagnement par le Mentor ?\n"
+            f"  • Recommanderais-tu ORA à un copain ?\n"
+            f"  • Champ libre…\n\n"
+            f"Au nom du Programme ORA, merci de ton retour et bonne suite à toi !\n\n"
+            f"Cordialement,\n"
+            f"Le pôle {pole_code}\n"
+            f"OPORA\nobjectifreussirapprentissage.eu"
+        )
+    else:
+        # ── Email simple d'encouragement ─────────────────────────
+        reason_label = _CLOSURE_REASON_LABELS.get(reason_code, 'arrêt du mentorat')
+        sujet = "ORA — Fin de ton mentorat"
+        corps = (
+            f"Bonjour {jeune.first_name},\n\n"
+            f"Nous t'informons que ton mentorat, débuté suite à ta demande du {request_date}, "
+            f"s'est malheureusement arrêté le {closed_date}.\n\n"
+            f"Raison : {reason_label}.{complement}\n"
+            f"Nous sommes désolés que ce mentorat n'ait pas pu aller à son terme. "
+            f"Ne te décourage pas ! Chaque expérience est une étape dans ton parcours, "
+            f"et nous te souhaitons toute la réussite possible pour la suite de ta vie "
+            f"personnelle et professionnelle.\n\n"
+            f"Si tu souhaites renouveler une demande de mentorat à l'avenir, "
+            f"n'hésite pas à revenir vers nous sur objectifreussirapprentissage.eu.\n\n"
+            f"Courage et bonne continuation !\n\n"
+            f"Cordialement,\n"
+            f"Le pôle {pole_code}\n"
+            f"OPORA\nobjectifreussirapprentissage.eu"
+        )
 
     try:
         msg = EmailMessage(
-            subject="ORA clôture et fin de ton mentorat : ton avis nous intéresse",
+            subject=sujet,
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[jeune.email],
@@ -804,7 +835,7 @@ def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
         )
         msg.send(fail_silently=False)
     except Exception as e:
-        logger.error("Email clôture+eval jeune failed (mentorat=%s): %s", mentorat.id, e)
+        logger.error("Email clôture jeune failed (mentorat=%s): %s", mentorat.id, e)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -957,12 +988,18 @@ class APCloturerDirectView(APIView):
             )
 
         reason        = request.data.get('reason', '')
+        reason_code   = request.data.get('reason_code', '')
         message_jeune = request.data.get('message', '')
+
+        # Stocker le code de raison structuré si fourni
+        if reason_code and reason_code in dict(CLOSURE_REASON_CHOICES):
+            mentorat.closure_reason_code = reason_code
+            mentorat.save(update_fields=['closure_reason_code'])
 
         # Clôture effective
         mentorat.cloturer(reason=reason, statut=action)
 
-        # Email unique : clôture + lien évaluation
+        # Email au jeune : évaluation si objectif atteint, encouragement sinon
         import threading
         threading.Thread(
             target=_send_cloture_eval_email,
@@ -1700,6 +1737,12 @@ class APMentoratSuiviDetailView(APIView):
                 # Respecte la date choisie par l'AP
                 Mentorat.objects.filter(pk=m.pk).update(closed_at=closed_at_val)
                 m.refresh_from_db()
+                import threading
+                threading.Thread(
+                    target=_send_cloture_eval_email,
+                    args=(m,),
+                    daemon=True,
+                ).start()
                 return Response(self._serialize(m))
 
             m.save()
