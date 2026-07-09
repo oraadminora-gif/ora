@@ -16,10 +16,18 @@ class EvaluationMentor(models.Model):
         unique=True,
         help_text="Token secret envoyé par email au jeune",
     )
-    # Réponse du jeune (null tant que non soumise)
-    rating = models.IntegerField(
+    # Réponses du jeune (null tant que non soumises)
+    rating_objectifs = models.IntegerField(
         null=True, blank=True,
-        help_text="Note de 1 à 5",
+        help_text="Tes objectifs personnels ont-ils été atteints ? (1-5)",
+    )
+    rating_accompagnement = models.IntegerField(
+        null=True, blank=True,
+        help_text="As-tu apprécié la qualité de l'accompagnement par le Mentor ? (1-5)",
+    )
+    rating_recommandation = models.IntegerField(
+        null=True, blank=True,
+        help_text="Recommanderais-tu ORA à un copain ? (1-5)",
     )
     comment = models.TextField(blank=True, help_text="Commentaire libre")
     submitted_at = models.DateTimeField(
