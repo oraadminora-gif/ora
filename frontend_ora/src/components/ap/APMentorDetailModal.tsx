@@ -82,12 +82,14 @@ function MentoratActifRow({
   onNotesOpen: (m: APMentoratActif) => void;
   onClotureDone: () => void;
 }) {
-  const { jeune, inactivite, alerte_rouge, suivi_stats } = mentorat;
+  const { jeune, inactivite, alerte_rouge, suivi_stats, cloture_en_attente } = mentorat;
   const [showSuivis, setShowSuivis]           = useState(false);
   const [showSuiviModal, setShowSuiviModal]   = useState(false);
   const [showCloture, setShowCloture]         = useState(false);
 
-  const borderClass = alerte_rouge
+  const borderClass = cloture_en_attente
+    ? 'border-amber-200 bg-amber-50/30'
+    : alerte_rouge
     ? 'border-red-200 bg-red-50/30'
     : inactivite.level === 'warn'
     ? 'border-orange-100 bg-orange-50/10'
@@ -99,12 +101,17 @@ function MentoratActifRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-bold text-slate-800">{jeune?.name ?? '—'}</p>
+            {cloture_en_attente && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                <Clock className="w-2.5 h-2.5" /> Demande de clôture
+              </span>
+            )}
             {alerte_rouge && (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-100 border border-red-200 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 <AlertTriangle className="w-2.5 h-2.5" /> Alerte
               </span>
             )}
-            <InactiviteBadge jours={inactivite.jours} level={inactivite.level} />
+            {!cloture_en_attente && <InactiviteBadge jours={inactivite.jours} level={inactivite.level} />}
           </div>
           <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
             {jeune?.city && <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{jeune.city}</span>}
@@ -141,13 +148,19 @@ function MentoratActifRow({
           >
             {showSuivis ? <><ChevronUp className="w-3 h-3" /> Masquer</> : <><ChevronDown className="w-3 h-3" /> Rencontres</>}
           </button>
-          <button
-            onClick={() => setShowCloture(true)}
-            className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors"
-            title="Clôturer ou arrêter ce mentorat"
-          >
-            <Lock className="w-3 h-3" /> Clôturer
-          </button>
+          {cloture_en_attente ? (
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+              <Clock className="w-3 h-3" /> En attente
+            </span>
+          ) : (
+            <button
+              onClick={() => setShowCloture(true)}
+              className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors"
+              title="Clôturer ou arrêter ce mentorat"
+            >
+              <Lock className="w-3 h-3" /> Clôturer
+            </button>
+          )}
         </div>
       </div>
       {showSuivis && (

@@ -1,5 +1,5 @@
 // src/components/ap/APMentorCard.tsx
-import { AlertTriangle, Clock, Users, ChevronRight, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Clock, Users, ChevronRight, CheckCircle, Hourglass } from 'lucide-react';
 import type { APMentor } from '../../pages/member/ap/APDashboard.types';
 
 interface Props {
@@ -132,7 +132,9 @@ export function APMentorCard({ mentor, onClick }: Props) {
           <div className="space-y-1.5">
             {mentor.mentorats_actifs.slice(0, 2).map(m => (
               <div key={m.id} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[11px] ${
-                m.alerte_rouge
+                m.cloture_en_attente
+                  ? 'bg-amber-50 border-amber-200'
+                  : m.alerte_rouge
                   ? 'bg-red-50 border-red-100'
                   : m.inactivite.level !== 'ok'
                   ? 'bg-orange-50 border-orange-100'
@@ -142,10 +144,16 @@ export function APMentorCard({ mentor, onClick }: Props) {
                 <span className="font-semibold text-slate-700 truncate flex-1">
                   {m.jeune?.name ?? '—'}
                 </span>
-                <span className="text-slate-400 shrink-0">
-                  {m.suivi_stats.nb_rencontres} rencontre{m.suivi_stats.nb_rencontres !== 1 ? 's' : ''}
-                </span>
-                {m.alerte_rouge && (
+                {m.cloture_en_attente ? (
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-600 shrink-0">
+                    <Hourglass className="w-2.5 h-2.5" /> Clôture en attente
+                  </span>
+                ) : (
+                  <span className="text-slate-400 shrink-0">
+                    {m.suivi_stats.nb_rencontres} rencontre{m.suivi_stats.nb_rencontres !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {m.alerte_rouge && !m.cloture_en_attente && (
                   <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
                 )}
               </div>
