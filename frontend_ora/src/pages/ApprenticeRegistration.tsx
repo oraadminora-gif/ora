@@ -278,7 +278,7 @@ export function ApprenticeRegistration() {
                   <p className="text-sm font-semibold text-amber-800">Désolé, aucun pôle ne couvre ton département.</p>
                   <p className="text-xs text-amber-700 mt-1">
                     Écris-nous à{' '}
-                    <a href="mailto:ora@ora.fr" className="font-bold underline hover:text-amber-900">ora@ora.fr</a>
+                    <a href="mailto:ora-france@outlook.com" className="font-bold underline hover:text-amber-900">ora-france@outlook.com</a>
                     {' '}ou{' '}
                     <Link to="/contact" className="font-bold underline hover:text-amber-900">via notre formulaire</Link>.
                   </p>

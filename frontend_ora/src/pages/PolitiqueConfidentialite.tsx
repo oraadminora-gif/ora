@@ -25,7 +25,7 @@ export function PolitiqueConfidentialite() {
           <p className="text-sm leading-relaxed">
             Le responsable du traitement des données est l'association <strong>Talents Seniors Bénévoles</strong>,
             éditrice du programme ORA — Objectif Réussir l'Apprentissage.
-            Contact : <a href="mailto:ora@ora.fr" className="text-ora-blue hover:underline">ora@ora.fr</a>
+            Contact : <a href="mailto:ora-france@outlook.com" className="text-ora-blue hover:underline">ora-france@outlook.com</a>
           </p>
         </article>
 
@@ -87,7 +87,7 @@ export function PolitiqueConfidentialite() {
             <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Droit d'<strong>opposition</strong> au traitement</span></li>
           </ul>
           <p className="text-sm text-slate-600 mt-3">
-            Pour exercer ces droits : <a href="mailto:ora@ora.fr" className="text-ora-blue hover:underline">ora@ora.fr</a>.
+            Pour exercer ces droits : <a href="mailto:ora-france@outlook.com" className="text-ora-blue hover:underline">ora-france@outlook.com</a>.
             En cas de réponse insatisfaisante, vous pouvez saisir la{' '}
             <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-ora-blue hover:underline">CNIL</a>.
           </p>

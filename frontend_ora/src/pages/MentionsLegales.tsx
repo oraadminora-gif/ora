@@ -28,7 +28,7 @@ export function MentionsLegales() {
           </p>
           <ul className="mt-3 space-y-1 text-sm text-slate-600">
             <li><span className="font-medium">Siège social :</span> France</li>
-            <li><span className="font-medium">Contact :</span> <a href="mailto:ora@ora.fr" className="text-ora-blue hover:underline">ora@ora.fr</a></li>
+            <li><span className="font-medium">Contact :</span> <a href="mailto:ora-france@outlook.com" className="text-ora-blue hover:underline">ora-france@outlook.com</a></li>
           </ul>
         </article>
 
@@ -43,7 +43,7 @@ export function MentionsLegales() {
           <h2 className="text-xl font-bold text-slate-900 mb-3">3. Hébergement</h2>
           <p className="text-sm leading-relaxed">
             Ce site est hébergé par un prestataire technique. Pour toute question relative à l'hébergement,
-            contactez-nous à <a href="mailto:ora@ora.fr" className="text-ora-blue hover:underline">ora@ora.fr</a>.
+            contactez-nous à <a href="mailto:ora-france@outlook.com" className="text-ora-blue hover:underline">ora-france@outlook.com</a>.
           </p>
         </article>
 

@@ -62,7 +62,7 @@ export function CGV() {
             <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Fournir des informations exactes et sincères lors de l'inscription.</span></li>
             <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Respecter les autres participants (jeunes, mentors, animateurs).</span></li>
             <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Ne pas utiliser le service à des fins commerciales, publicitaires ou illicites.</span></li>
-            <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Signaler tout comportement inapproprié à l'animateur de pôle ou à <a href="mailto:ora@ora.fr" className="text-ora-blue hover:underline">ora@ora.fr</a>.</span></li>
+            <li className="flex items-start gap-2"><span className="text-ora-blue mt-0.5">•</span><span>Signaler tout comportement inapproprié à l'animateur de pôle ou à <a href="mailto:ora-france@outlook.com" className="text-ora-blue hover:underline">ora-france@outlook.com</a>.</span></li>
           </ul>
         </article>
 
