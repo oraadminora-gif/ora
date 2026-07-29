@@ -52,9 +52,9 @@ export function CFAPartners() {
           {/* Intro */}
           <div className="bg-ora-blue/5 border-l-4 border-ora-blue rounded-r-xl p-6 mb-12">
             <p className="text-lg text-slate-700 leading-relaxed">
-              Vous souhaitez rejoindre l'aventure ORA ? Vous êtes acteur de l'apprentissage,
-              responsable pédagogique ou formateur en CFA ? Nous vous proposons de nous contacter
-              pour échanger sur l'apprentissage et un éventuel développement mentorat/mentoré.
+              Nous vous proposons de nous contacter pour échanger sur le mentorat et voir comment
+              un Pôle pourrait rencontrer vos équipes pédagogiques puis ensuite visiter vos classes
+              de jeunes pour les en informer.
             </p>
           </div>
 
@@ -85,10 +85,10 @@ export function CFAPartners() {
       <section className="bg-gradient-to-br from-ora-blue via-ora-dark to-ora-dark py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Vous souhaitez rejoindre nos CFA partenaires ?
+            Vous souhaitez faire connaitre le mentorat ORA à vos apprentis ?
           </h2>
           <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-            Contactez-nous pour échanger sur l'apprentissage et un éventuel partenariat mentorat avec votre établissement.
+            Contactez-nous pour échanger sur le Programme ORA.
           </p>
           <Link
             to="/contact"
