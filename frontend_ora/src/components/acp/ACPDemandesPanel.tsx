@@ -261,7 +261,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
   const [error, setError]     = useState('');
 
   useEffect(() => {
-    api.get('/poles/').then(r => {
+    api.get('/poles/?page_size=100').then(r => {
       const list: PoleOption[] = r.data.results ?? r.data;
       setPoles(list.filter((p: PoleOption) => p.id !== currentPoleId));
     });

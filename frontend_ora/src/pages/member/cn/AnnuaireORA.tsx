@@ -159,7 +159,7 @@ export function AnnuaireORA() {
     try {
       const [annRes, polesRes] = await Promise.all([
         api.get('/cn/annuaire/'),
-        api.get('/poles/'),
+        api.get('/poles/?page_size=100'),
       ]);
       setCnMembers(annRes.data.cn_members ?? []);
       setAnimateurs(annRes.data.animateurs ?? []);

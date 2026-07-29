@@ -1893,7 +1893,7 @@ export function NationalKPIs() {
 
   // Charger les pôles
   useEffect(() => {
-    api.get('/poles/').then(r => {
+    api.get('/poles/?page_size=100').then(r => {
       const list: Pole[] = r.data.results ?? r.data ?? [];
       setPoles(list);
     }).catch(() => {});

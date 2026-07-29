@@ -325,7 +325,7 @@ export function GestionAnimateursNational() {
 
   // ── Chargement des pôles (une seule fois) ─────────────────────────────────
   useEffect(() => {
-    api.get('/poles/').then(res => setPoles(res.data.results ?? res.data ?? [])).catch(() => {});
+    api.get('/poles/?page_size=100').then(res => setPoles(res.data.results ?? res.data ?? [])).catch(() => {});
   }, []);
 
   // ── Fetch paginé ──────────────────────────────────────────────────────────

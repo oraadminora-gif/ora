@@ -67,9 +67,15 @@ export function CNPoles() {
 
   const fetchPoles = async () => {
     try {
-      const res = await api.get('/poles/');
-      const data = res.data.results ?? res.data;
-      setPoles(Array.isArray(data) ? data : []);
+      let all: Pole[] = [];
+      let url: string | null = '/poles/?page_size=100';
+      while (url) {
+        const res = await api.get(url);
+        const data = res.data.results ?? res.data;
+        all = all.concat(Array.isArray(data) ? data : []);
+        url = res.data.next ?? null;
+      }
+      setPoles(all);
     } catch {
     } finally {
       setLoading(false);

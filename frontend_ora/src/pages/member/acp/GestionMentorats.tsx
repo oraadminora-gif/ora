@@ -540,7 +540,7 @@ export function GestionMentorats() {
       const [aRes, mentRes, polesRes] = await Promise.all([
         api.get('/pole/animateurs/'),
         api.get('/pole/mentors/'),
-        api.get('/poles/'),
+        api.get('/poles/?page_size=100'),
       ]);
       const aps = (aRes.data.animateurs ?? []).map((a: {
         id: number; name?: string; first_name?: string; last_name?: string; association: string;

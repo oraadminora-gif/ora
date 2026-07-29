@@ -132,7 +132,7 @@ function AddMemberModal({ onClose, onCreated }: {
   const [error, setError]           = useState('');
 
   useEffect(() => {
-    Promise.all([api.get('/poles/'), api.get('/cn/annuaire/')]).then(([pRes]) => {
+    Promise.all([api.get('/poles/?page_size=100'), api.get('/cn/annuaire/')]).then(([pRes]) => {
       const poleList: PoleOption[] = pRes.data.results ?? pRes.data ?? [];
       setPoles(poleList);
     });
@@ -569,7 +569,7 @@ function ProfilTab() {
   useEffect(() => {
     Promise.all([
       api.get('/cn/membres/me/'),
-      api.get('/poles/'),
+      api.get('/poles/?page_size=100'),
       api.get('/cn/annuaire/'),
     ]).then(([meRes, pRes, annRes]) => {
       const p = meRes.data as MyProfile;

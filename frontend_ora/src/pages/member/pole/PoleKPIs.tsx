@@ -622,7 +622,7 @@ export function PoleKPIs() {
   // CN: fetch poles list on mount
   useEffect(() => {
     if (!isCN) return;
-    api.get<{ id: number; name: string }[]>('/poles/')
+    api.get<{ id: number; name: string }[]>('/poles/?page_size=100')
       .then(res => {
         const data = res.data as { id: number; name: string }[] | { results: { id: number; name: string }[] };
         const list = Array.isArray(data) ? data : data.results ?? [];
