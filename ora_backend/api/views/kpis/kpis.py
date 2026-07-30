@@ -43,6 +43,42 @@ def _date_range(period: str) -> tuple:
     return None, None   # 'all' → pas de filtre
 
 
+def _max_mentorats_simultanes(mentor_ids, date_from=None, date_to=None) -> int:
+    """
+    Calcule, pour un ensemble de mentors, le pic de mentorats réellement
+    simultanés (périodes assigned_at → closed_at/aujourd'hui qui se chevauchent),
+    et retourne le maximum observé — pas le total cumulé sur la période.
+    """
+    today = timezone.now().date()
+
+    mentorats_qs = Mentorat.objects.filter(
+        mentor_id__in=mentor_ids,
+        assigned_at__isnull=False,
+    )
+    if date_from:
+        mentorats_qs = mentorats_qs.filter(Q(closed_at__isnull=True) | Q(closed_at__gte=date_from))
+    if date_to:
+        mentorats_qs = mentorats_qs.filter(assigned_at__lte=date_to)
+
+    by_mentor = {}
+    for m in mentorats_qs.values('mentor_id', 'assigned_at', 'closed_at'):
+        end = m['closed_at'] or today
+        by_mentor.setdefault(m['mentor_id'], []).append((m['assigned_at'], end))
+
+    overall_max = 0
+    for intervals in by_mentor.values():
+        events = []
+        for start, end in intervals:
+            events.append((start, 1))
+            events.append((end + timedelta(days=1), -1))
+        events.sort()
+        running = 0
+        for _, delta in events:
+            running += delta
+            overall_max = max(overall_max, running)
+    return overall_max
+
+
 # ── Helpers profil jeunes ─────────────────────────────────────────────────────
 def _compute_tranches_age(req_qs, today):
     tranches = {
@@ -249,7 +285,7 @@ class PoleKPIsView(APIView):
         )
         _m_counts = list(mentors_qs.annotate(nb=Count('mentorats', filter=nb_filter)).values_list('nb', flat=True))
         moyen_par_mentor = round(sum(_m_counts) / len(_m_counts), 1) if _m_counts else 0
-        max_par_mentor   = max(_m_counts) if _m_counts else 0
+        max_par_mentor   = _max_mentorats_simultanes(mentors_qs.values_list('id', flat=True), date_from, date_to)
 
         # ── Capacité par association ──────────────────────────────────────
         capacite_par_association = list(
@@ -557,7 +593,9 @@ class NationalKPIsView(APIView):
             .annotate(nb=Count('mentorats', filter=nb_filter_nat))
             .values_list('nb', flat=True)
         )
-        max_par_mentor_nat   = max(_nat_m_counts) if _nat_m_counts else 0
+        max_par_mentor_nat   = _max_mentorats_simultanes(
+            Mentor.objects.filter(is_active=True).values_list('id', flat=True), date_from, date_to
+        )
         moyen_par_mentor_nat = round(sum(_nat_m_counts) / len(_nat_m_counts), 1) if _nat_m_counts else 0
         mentors_sans_mentorat_nat = (
             Mentor.objects.filter(is_active=True, disponibilite_reelle__gt=0)
