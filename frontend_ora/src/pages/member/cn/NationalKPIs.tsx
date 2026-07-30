@@ -822,8 +822,7 @@ function PoleDetailView({ data, nationalData, poleName, period }: {
           <StatCard label="Nbre moyen de mentorats / mentor" value={data.moyen_par_mentor ?? 0}
             sub="parmi les mentors actifs"
             icon={<TrendingUp size={20} />} color="purple" />
-          <StatCard label="Nbre max de mentorats / mentor" value={data.max_par_mentor ?? 0}
-            sub="Maximum du nbre de mentorats simultanés affectés à un même mentor sur la période — détecte les écarts excessifs d'affectation."
+          <StatCard label="Max du Nbre de mentorats simultanés / mentor" value={data.max_par_mentor ?? 0}
             icon={<Zap size={20} />} color={(data.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
