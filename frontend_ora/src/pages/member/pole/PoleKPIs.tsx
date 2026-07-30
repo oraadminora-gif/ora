@@ -316,7 +316,7 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
               sub="n'ont eu aucun mentorat" />
             <PStat label="Nbre moyen / mentor" value={poleData.moyen_par_mentor ?? 0}
               sub="mentorats par mentor actif" />
-            <PStat label="Nbre max / mentor" value={poleData.max_par_mentor ?? 0} />
+            <PStat label="Max du Nbre de mentorats simultanés / mentor" value={poleData.max_par_mentor ?? 0} />
           </PGrid>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px' }}>
             <PTauxBar label="Taux de couverture" value={poleData.taux_couverture} color="#10b981" />
@@ -557,7 +557,7 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
                 { label: 'Heures moy. / mentorat',                pole: poleData.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
                 { label: 'Rencontres moy. / mentorat',            pole: poleData.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
                 { label: 'Clôtures positives (objectif atteint)', pole: poleData.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
-                { label: 'Nbre max mentorats / mentor',           pole: poleData.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                { label: 'Max du Nbre de mentorats simultanés / mentor', pole: poleData.max_par_mentor ?? 0,         nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
                 { label: 'Présentiel (mentorats clos)',           pole: poleData.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
                 { label: 'Diplôme niv. < 5 (CAP→BP)',            pole: poleData.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
               ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
@@ -1178,7 +1178,7 @@ export function PoleKPIs() {
                     unit: '%', higherIsBetter: true,
                   },
                   {
-                    label: 'Nbre max de mentorats / mentor',
+                    label: 'Max du Nbre de mentorats simultanés / mentor',
                     pole: poleData.max_par_mentor ?? 0,
                     nat:  nationalData.max_par_mentor ?? 0,
                     unit: '', higherIsBetter: false,

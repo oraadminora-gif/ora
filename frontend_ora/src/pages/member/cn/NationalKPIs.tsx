@@ -337,7 +337,7 @@ function NationalView({
           <StatCard label="Nbre moyen / mentor" value={data.moyen_par_mentor ?? 0}
             sub="parmi les mentors actifs"
             icon={<TrendingUp size={20} />} color="purple" />
-          <StatCard label="Nbre max / mentor" value={data.max_par_mentor ?? 0}
+          <StatCard label="Max du Nbre de mentorats simultanés / mentor" value={data.max_par_mentor ?? 0}
             icon={<Zap size={20} />} color={(data.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
@@ -1106,7 +1106,7 @@ function PoleDetailView({ data, nationalData, poleName, period }: {
                   { label: 'Heures moy. / mentorat',                pole: data.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
                   { label: 'Rencontres moy. / mentorat',            pole: data.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
                   { label: 'Clôtures positives (objectif atteint)', pole: data.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
-                  { label: 'Nbre max de mentorats / mentor',        pole: data.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                  { label: 'Max du Nbre de mentorats simultanés / mentor', pole: data.max_par_mentor ?? 0,         nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
                   { label: 'Type présentiel (mentorats clos)',      pole: data.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
                   { label: 'Diplôme préparé niv. < 5 (CAP→BP)',    pole: data.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
                 ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
@@ -1233,7 +1233,7 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
                 ['Mentorats possibles',       pd.capacite_restante,        'places dispo'],
                 ['Sans mentorat',             pd.mentors_sans_mentorat ?? 0, 'n\'ont eu aucun'],
                 ['Moy. mentorats/mentor',     pd.moyen_par_mentor ?? 0,   'parmi actifs'],
-                ['Max mentorats/mentor',      pd.max_par_mentor ?? 0,     ''],
+                ['Max simultanés/mentor',      pd.max_par_mentor ?? 0,     ''],
               ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
                 <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
@@ -1484,7 +1484,7 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
                   { label: 'Heures moy. / mentorat',                pole: pd.heures_moy_par_mentorat ?? 0,        nat: nationalData.heures_moy_par_mentorat ?? 0,        unit: ' h', higherIsBetter: true },
                   { label: 'Rencontres moy. / mentorat',            pole: pd.rencontres_moy_par_mentorat ?? 0,    nat: nationalData.rencontres_moy_par_mentorat ?? 0,    unit: '',   higherIsBetter: true },
                   { label: 'Clôtures positives (objectif atteint)', pole: pd.cloture_par_sentiment?.positif ?? 0, nat: nationalData.cloture_par_sentiment?.positif ?? 0, unit: '%',  higherIsBetter: true },
-                  { label: 'Nbre max mentorats / mentor',           pole: pd.max_par_mentor ?? 0,                nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
+                  { label: 'Max du Nbre de mentorats simultanés / mentor', pole: pd.max_par_mentor ?? 0,          nat: nationalData.max_par_mentor ?? 0,                unit: '',   higherIsBetter: false },
                   { label: 'Présentiel (mentorats clos)',           pole: pd.pct_presentiel ?? 0,                nat: nationalData.pct_presentiel ?? 0,                unit: '%',  higherIsBetter: true },
                   { label: 'Diplôme niv. < 5 (CAP→BP)',            pole: pd.pct_diplome_moins5 ?? 0,            nat: nationalData.pct_diplome_moins5 ?? 0,            unit: '%',  higherIsBetter: false },
                 ] as { label: string; pole: number; nat: number; unit: string; higherIsBetter: boolean }[]).map(row => {
@@ -1567,7 +1567,7 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
               ['Places disponibles', nd.capacite_totale_nationale ?? 0, 'capacité totale'],
               ['Mentors sans mentorat', nd.mentors_sans_mentorat ?? 0, 'n\'ont eu aucun'],
               ['Nbre moyen / mentor', nd.moyen_par_mentor ?? 0, 'par mentor actif'],
-              ['Nbre max / mentor', nd.max_par_mentor ?? 0, ''],
+              ['Max simultanés/mentor', nd.max_par_mentor ?? 0, ''],
             ] as [string, string|number, string][]).map(([lbl, val, sub]) => (
               <div key={lbl} style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '10px 12px', background: '#f8fafc' }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{val}</div>
