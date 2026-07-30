@@ -17,6 +17,13 @@ import {
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
+interface DepartmentRef {
+  id: number;
+  code: string;
+  name: string;
+  label?: string;
+}
+
 interface Pole {
   id: number;
   code: string;
@@ -27,6 +34,7 @@ interface Pole {
   etat_activite_label: string;
   contact_email?: string;
   contact_phone?: string;
+  departments: DepartmentRef[];
   associations_count: number;
   animateurs_count: number;
   mentors_count: number;
@@ -58,12 +66,18 @@ const ETAT_BADGE: Record<string, string> = {
 // ─────────────────────────────────────────────────────────────
 export function CNPoles() {
   const [poles, setPoles] = useState<Pole[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRef[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingPole, setEditingPole] = useState<Pole | null>(null);
 
-  useEffect(() => { fetchPoles(); }, []);
+  useEffect(() => {
+    fetchPoles();
+    api.get('/pole/departments/')
+      .then(res => setDepartments(res.data.departments ?? []))
+      .catch(() => {});
+  }, []);
 
   const fetchPoles = async () => {
     try {
@@ -171,6 +185,7 @@ export function CNPoles() {
       {showModal && (
         <PoleModal
           pole={editingPole}
+          departments={departments}
           onClose={() => setShowModal(false)}
           onSave={() => { setShowModal(false); fetchPoles(); }}
         />
@@ -237,6 +252,16 @@ function PoleCard({ pole, onEdit, onDelete }: {
               <span className="text-xs text-slate-500">{villes.join(', ')}</span>
             </div>
           )}
+          {/* Départements couverts */}
+          {pole.departments.length > 0 ? (
+            <p className="text-xs text-slate-400 mt-1">
+              {pole.departments.length} département{pole.departments.length > 1 ? 's' : ''} couvert{pole.departments.length > 1 ? 's' : ''}
+            </p>
+          ) : isActive ? (
+            <p className="text-xs text-amber-600 font-medium mt-1">
+              ⚠ Aucun département assigné — absent de la carte d'implantation
+            </p>
+          ) : null}
         </div>
         <div className="flex gap-1 shrink-0">
           <button onClick={onEdit} className="p-2 text-slate-400 hover:text-ora-blue hover:bg-blue-50 rounded-lg">
@@ -290,8 +315,9 @@ function PoleCard({ pole, onEdit, onDelete }: {
 // ─────────────────────────────────────────────────────────────
 // POLE MODAL
 // ─────────────────────────────────────────────────────────────
-function PoleModal({ pole, onClose, onSave }: {
+function PoleModal({ pole, departments, onClose, onSave }: {
   pole: Pole | null;
+  departments: DepartmentRef[];
   onClose: () => void;
   onSave: () => void;
 }) {
@@ -307,7 +333,20 @@ function PoleModal({ pole, onClose, onSave }: {
   const [villes, setVilles] = useState<string[]>(
     pole?.villes?.length ? [...pole.villes] : ['']
   );
+  // Départements couverts (M2M)
+  const [deptIds, setDeptIds] = useState<number[]>(
+    pole?.departments?.map(d => d.id) ?? []
+  );
+  const [deptSearch, setDeptSearch] = useState('');
   const [error, setError] = useState('');
+
+  const toggleDept = (id: number) => {
+    setDeptIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const filteredDepartments = departments.filter(d =>
+    (d.label ?? `${d.code} – ${d.name}`).toLowerCase().includes(deptSearch.toLowerCase())
+  );
 
   const addVille = () => {
     if (villes.length < 5) setVilles([...villes, '']);
@@ -329,6 +368,7 @@ function PoleModal({ pole, onClose, onSave }: {
     const payload = {
       ...formData,
       villes: villes.map(v => v.trim()).filter(Boolean),
+      department_ids: deptIds,
     };
     try {
       if (pole) {
@@ -420,6 +460,42 @@ function PoleModal({ pole, onClose, onSave }: {
                     </button>
                   )}
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Départements couverts */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Départements couverts
+              {deptIds.length > 0 && (
+                <span className="text-slate-400 font-normal"> ({deptIds.length} sélectionné{deptIds.length > 1 ? 's' : ''})</span>
+              )}
+            </label>
+            <p className="text-xs text-slate-500 mb-1.5">
+              Détermine la présence du pôle sur la carte d'implantation publique.
+            </p>
+            <input
+              type="text"
+              value={deptSearch}
+              onChange={(e) => setDeptSearch(e.target.value)}
+              placeholder="Rechercher un département..."
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-ora-blue"
+            />
+            <div className="border border-slate-200 rounded-lg max-h-40 overflow-y-auto p-2 space-y-1">
+              {filteredDepartments.length === 0 && (
+                <p className="text-xs text-slate-400 px-1">Aucun département trouvé</p>
+              )}
+              {filteredDepartments.map(d => (
+                <label key={d.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-slate-50 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={deptIds.includes(d.id)}
+                    onChange={() => toggleDept(d.id)}
+                    className="rounded border-slate-300 text-ora-blue focus:ring-ora-blue"
+                  />
+                  {d.label ?? `${d.code} – ${d.name}`}
+                </label>
               ))}
             </div>
           </div>
