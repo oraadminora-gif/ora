@@ -318,7 +318,7 @@ function PoleListItem({ pole, selected, onClick }: {
           <span className="font-mono text-[9px] text-slate-400 shrink-0">{pole.code}</span>
         </div>
         <p className="text-[10px] text-slate-500 mt-0.5">
-          {pole.departments.length} dépt · {pole.mentors_count} mentors · {pole.mentorats_actifs} actifs
+          {pole.departments.length} dépt · {pole.mentors_count} mentors · {pole.mentorats_actifs} jeune{pole.mentorats_actifs > 1 ? 's' : ''} suivi{pole.mentorats_actifs > 1 ? 's' : ''}
         </p>
       </div>
       <ChevronRight className={`w-3.5 h-3.5 shrink-0 mt-0.5 transition-colors ${selected ? 'text-violet-500' : 'text-slate-200'}`} />
