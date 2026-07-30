@@ -141,7 +141,7 @@ export function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-500">
-            <p>Sous réserve, l'accès au mentor.</p>
+            <p>Accès réservé aux Animateurs, sur autorisation Webmaster National.</p>
           </div>
         </div>
       </div>
