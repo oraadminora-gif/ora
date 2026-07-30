@@ -848,6 +848,7 @@ export function PoleKPIs() {
               sub="parmi les mentors actifs"
               icon={<TrendingUp size={20} />} color="purple" />
             <StatCard label="Nbre max de mentorats / mentor" value={poleData.max_par_mentor ?? 0}
+              sub="Maximum du nbre de mentorats simultanés affectés à un même mentor sur la période — détecte les écarts excessifs d'affectation."
               icon={<Zap size={20} />} color={(poleData.max_par_mentor ?? 0) >= 3 ? 'red' : 'slate'} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
