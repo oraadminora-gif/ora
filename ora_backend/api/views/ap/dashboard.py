@@ -371,8 +371,8 @@ class APDashboardView(APIView):
                 'id':             animateur.id if animateur else None,
                 'first_name':     animateur.first_name if animateur else user.first_name,
                 'last_name':      animateur.last_name if animateur else user.last_name,
-                'role':           ('ACP/AP' if (animateur and animateur.is_acp and animateur.is_ap)
-                                   else ('ACP' if (animateur and animateur.is_acp) else 'AP')),
+                'role':           ('APC/AP' if (animateur and animateur.is_acp and animateur.is_ap)
+                                   else ('APC' if (animateur and animateur.is_acp) else 'AP')),
                 'association': {
                     'id':   association.id,
                     'name': association.name,

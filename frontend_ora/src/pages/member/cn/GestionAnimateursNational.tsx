@@ -242,7 +242,7 @@ function AnimModal({
               <button type="button"
                 onClick={() => setForm(prev => ({ ...prev, is_acp: !prev.is_acp }))}
                 className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold border transition-all ${form.is_acp ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}`}>
-                ACP {form.is_acp && '✓'}
+                APC {form.is_acp && '✓'}
               </button>
             </div>
             {!form.is_ap && !form.is_acp && (

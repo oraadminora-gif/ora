@@ -29,9 +29,9 @@ class AnimateurSerializer(serializers.ModelSerializer):
     
     def get_role(self, obj):
         if obj.is_acp and obj.is_ap:
-            return "ACP/AP"
+            return "APC/AP"
         if obj.is_acp:
-            return "ACP"
+            return "APC"
         if obj.is_ap:
             return "AP"
         return "N/A"

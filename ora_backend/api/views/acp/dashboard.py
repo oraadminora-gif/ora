@@ -302,7 +302,7 @@ class ACPDashboardView(APIView):
                 'id':         animateur.id if animateur else None,
                 'first_name': animateur.first_name if animateur else user.first_name,
                 'last_name':  animateur.last_name if animateur else user.last_name,
-                'role':       'ACP' if (animateur and animateur.is_acp) else 'AP',
+                'role':       'APC' if (animateur and animateur.is_acp) else 'AP',
                 'pole': {
                     'id':   pole.id,
                     'name': pole.name,

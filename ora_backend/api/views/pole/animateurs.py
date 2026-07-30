@@ -34,7 +34,7 @@ def _serialize_ap(ap):
         "is_active":        ap.is_active,
         "is_acp":           ap.is_acp,
         "is_ap":            ap.is_ap,
-        "role_label":       ("ACP/AP" if (ap.is_acp and ap.is_ap) else ("ACP" if ap.is_acp else "AP")),
+        "role_label":       ("APC/AP" if (ap.is_acp and ap.is_ap) else ("APC" if ap.is_acp else "AP")),
     }
 
 

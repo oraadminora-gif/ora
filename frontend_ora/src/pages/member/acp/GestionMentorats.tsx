@@ -452,7 +452,7 @@ function ReopenModal({ mentorat, onClose, onConfirm, loading }: {
           </div>
           <div>
             <h2 className="font-bold text-slate-900">Réouvrir ce mentorat ?</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Action réservée à l'ACP</p>
+            <p className="text-xs text-slate-500 mt-0.5">Action réservée à l'APC</p>
           </div>
           <button onClick={onClose} className="ml-auto text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
@@ -790,7 +790,7 @@ export function GestionMentorats() {
                         {m.status === 'CLOSED' && (
                           <button
                             onClick={() => setReopenTarget(m)}
-                            title="Réouvrir ce mentorat (ACP uniquement)"
+                            title="Réouvrir ce mentorat (APC uniquement)"
                             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-lg text-xs font-semibold border border-amber-200 hover:border-amber-500 transition-all"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />

@@ -270,9 +270,9 @@ class AnimateurAdmin(admin.ModelAdmin):
 
     def role_badge(self, obj):
         if obj.is_acp and obj.is_ap:
-            label, color = 'ACP/AP', '#0f766e'
+            label, color = 'APC/AP', '#0f766e'
         elif obj.is_acp:
-            label, color = 'ACP', '#003DA5'
+            label, color = 'APC', '#003DA5'
         elif obj.is_ap:
             label, color = 'AP', '#8b5cf6'
         else:

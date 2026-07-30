@@ -50,9 +50,9 @@ class Animateur(models.Model):
 
     def __str__(self):
         if self.is_acp and self.is_ap:
-            role = "ACP/AP"
+            role = "APC/AP"
         elif self.is_acp:
-            role = "ACP"
+            role = "APC"
         elif self.is_ap:
             role = "AP"
         else:

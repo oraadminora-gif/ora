@@ -239,7 +239,7 @@ export function AnnuaireORA() {
   const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: 'all', label: 'Tous',       count: cnMembers.length + animateurs.length },
     { key: 'cn',  label: 'Membres CN', count: cnMembers.length },
-    { key: 'acp', label: 'ACPs',       count: animateurs.filter(a => a.is_acp).length },
+    { key: 'acp', label: 'APCs',       count: animateurs.filter(a => a.is_acp).length },
     { key: 'ap',  label: 'APs',        count: animateurs.filter(a => a.is_ap).length },
   ];
 
