@@ -273,8 +273,10 @@ class AnimateurAdmin(admin.ModelAdmin):
             label, color = 'ACP/AP', '#0f766e'
         elif obj.is_acp:
             label, color = 'ACP', '#003DA5'
-        else:
+        elif obj.is_ap:
             label, color = 'AP', '#8b5cf6'
+        else:
+            label, color = 'Sans rôle', '#9ca3af'
         return format_html(
             '<span style="background:{};color:#fff;padding:2px 8px;border-radius:12px;'
             'font-size:0.72rem;font-weight:700;">{}</span>',

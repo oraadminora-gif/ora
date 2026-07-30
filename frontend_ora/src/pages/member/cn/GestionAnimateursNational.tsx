@@ -516,7 +516,7 @@ export function GestionAnimateursNational() {
                   <tr key={a.id} className={`hover:bg-slate-50/50 transition-colors ${!a.is_active ? 'opacity-50' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_acp ? 'bg-blue-500' : 'bg-violet-500'}`}>
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0 ${a.is_acp ? 'bg-blue-500' : a.is_ap ? 'bg-violet-500' : 'bg-slate-400'}`}>
                           {`${a.first_name[0] ?? ''}${a.last_name[0] ?? ''}`.toUpperCase()}
                         </div>
                         <div>
@@ -531,8 +531,8 @@ export function GestionAnimateursNational() {
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-600">{a.association_name}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_acp ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
-                        {(a.is_acp && a.is_ap) ? 'APC/AP' : a.is_acp ? 'APC' : 'AP'}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${a.is_acp ? 'bg-blue-50 text-blue-700 border border-blue-200' : a.is_ap ? 'bg-violet-50 text-violet-700 border border-violet-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                        {(a.is_acp && a.is_ap) ? 'APC/AP' : a.is_acp ? 'APC' : a.is_ap ? 'AP' : 'Sans rôle'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">

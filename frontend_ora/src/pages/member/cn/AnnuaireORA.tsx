@@ -30,6 +30,7 @@ interface Pole        { id: number; name: string; code: string; }
 interface Association { id: number; name: string; code: string; }
 
 type TabKey = 'all' | 'cn' | 'acp' | 'ap';
+type RoleType = 'cn' | 'acp' | 'ap' | 'none';
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
@@ -38,21 +39,24 @@ function initials(fn: string, ln: string) {
   return `${fn[0] ?? ''}${ln[0] ?? ''}`.toUpperCase();
 }
 
-function roleLabel(role: 'cn' | 'acp' | 'ap') {
-  if (role === 'cn')  return 'CN';
-  if (role === 'acp') return 'APC';
+function roleLabel(role: RoleType) {
+  if (role === 'cn')   return 'CN';
+  if (role === 'acp')  return 'APC';
+  if (role === 'none') return 'Sans rôle';
   return 'AP';
 }
 
-function roleBg(role: 'cn' | 'acp' | 'ap') {
-  if (role === 'cn')  return 'bg-amber-500';
-  if (role === 'acp') return 'bg-blue-500';
+function roleBg(role: RoleType) {
+  if (role === 'cn')   return 'bg-amber-500';
+  if (role === 'acp')  return 'bg-blue-500';
+  if (role === 'none') return 'bg-slate-400';
   return 'bg-violet-500';
 }
 
-function roleBadge(role: 'cn' | 'acp' | 'ap') {
-  if (role === 'cn')  return 'bg-amber-50 text-amber-700 border-amber-200';
-  if (role === 'acp') return 'bg-blue-50 text-blue-700 border-blue-200';
+function roleBadge(role: RoleType) {
+  if (role === 'cn')   return 'bg-amber-50 text-amber-700 border-amber-200';
+  if (role === 'acp')  return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (role === 'none') return 'bg-slate-50 text-slate-600 border-slate-200';
   return 'bg-violet-50 text-violet-700 border-violet-200';
 }
 
@@ -60,7 +64,7 @@ function roleBadge(role: 'cn' | 'acp' | 'ap') {
 // CARD
 // ─────────────────────────────────────────────────────────────
 function ContactCard({ role, fn, ln, email, phone, city, poleName, poleCode, assocName, isActive, isSuperAdmin, fonctionLabel }: {
-  role: 'cn' | 'acp' | 'ap';
+  role: RoleType;
   fn: string; ln: string; email: string; phone?: string; city?: string;
   poleName?: string; poleCode?: string; assocName?: string;
   isActive: boolean; isSuperAdmin?: boolean;
@@ -199,7 +203,7 @@ export function AnnuaireORA() {
   const items = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    type Card = { type: 'cn' | 'acp' | 'ap'; key: string; data: CNMember | Animateur };
+    type Card = { type: RoleType; key: string; data: CNMember | Animateur };
     const cards: Card[] = [];
 
     // Membres CN : inclus seulement si onglet CN ou "Tous" SANS filtre pôle actif
@@ -221,7 +225,7 @@ export function AnnuaireORA() {
         if (filterPole  && String(a.pole_id)        !== filterPole)  return;
         if (filterAssoc && String(a.association_id) !== filterAssoc) return;
         if (q && !`${a.first_name} ${a.last_name} ${a.email} ${a.pole_name} ${a.association_name}`.toLowerCase().includes(q)) return;
-        cards.push({ type: a.is_acp ? 'acp' : 'ap', key: `anim-${a.id}`, data: a });
+        cards.push({ type: a.is_acp ? 'acp' : a.is_ap ? 'ap' : 'none', key: `anim-${a.id}`, data: a });
       });
     }
 
@@ -328,7 +332,7 @@ export function AnnuaireORA() {
               const a = item.data as Animateur;
               return (
                 <ContactCard key={item.key}
-                  role={item.type as 'acp' | 'ap'}
+                  role={item.type}
                   fn={a.first_name} ln={a.last_name}
                   email={a.email} phone={a.phone} city={a.city}
                   poleName={a.pole_name} poleCode={a.pole_code}
