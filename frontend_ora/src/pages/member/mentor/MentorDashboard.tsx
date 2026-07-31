@@ -49,6 +49,7 @@ export interface MentoratActif {
     diplome_prepare: string; diplome_label: string;
     situation: string; situation_label: string;
     etablissement_id: number | null; nom_etablissement: string;
+    date_previsionnelle: string;
   };
   date_debut: string;
   expected_end_date: string | null;

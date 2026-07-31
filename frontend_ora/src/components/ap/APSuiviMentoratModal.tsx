@@ -46,7 +46,8 @@ interface SuiviDetail {
     commune: string; code_postal: string; city: string;
     diplome_prepare: string; diplome_label: string;
     situation: string; situation_label: string;
-    nom_etablissement: string; needs_description: string;
+    nom_etablissement: string; date_previsionnelle: string;
+    needs_description: string;
     request_date: string;
   } | null;
   ap_responsable: { first_name: string; last_name: string; email: string; } | null;
@@ -91,6 +92,7 @@ interface JeuneData {
   diplome_prepare: string; diplome_label: string;
   situation: string; situation_label: string;
   etablissement_id: number | null; nom_etablissement: string;
+  date_previsionnelle: string;
   needs_description: string;
 }
 
@@ -133,6 +135,7 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
       commune: form.commune, code_postal: form.code_postal, city: form.commune,
       diplome_prepare: form.diplome_prepare,
       situation: form.situation,
+      date_previsionnelle: form.date_previsionnelle || null,
       needs_description: form.needs_description,
     };
     if (form.situation === 'apprentissage') {
@@ -178,6 +181,7 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
             <div className="text-sm text-slate-600">
               <span className="font-medium">{form.situation_label || '—'}</span>
               {form.nom_etablissement && <span className="text-slate-400"> · {form.nom_etablissement}</span>}
+              {form.date_previsionnelle && <span className="text-slate-400"> · {new Date(form.date_previsionnelle).toLocaleDateString('fr-FR')}</span>}
             </div>
             {form.needs_description && <p className="text-sm text-slate-500 italic leading-relaxed">{form.needs_description}</p>}
           </div>
@@ -276,6 +280,19 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
             <input type="text" value={autreNom} onChange={e => setAutreNom(e.target.value)}
               placeholder="Nom de l'établissement…" className={INPUT} />
           )}
+        </div>
+      )}
+
+      {form.situation === 'apprentissage' && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date prévisionnelle d'obtention du diplôme</label>
+          <input type="date" value={form.date_previsionnelle} onChange={set('date_previsionnelle')} className={INPUT} />
+        </div>
+      )}
+      {form.situation === 'recherche' && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date prévisionnelle de début de formation</label>
+          <input type="date" value={form.date_previsionnelle} onChange={set('date_previsionnelle')} className={INPUT} />
         </div>
       )}
 

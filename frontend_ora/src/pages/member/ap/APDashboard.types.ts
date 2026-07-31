@@ -102,6 +102,7 @@ export interface APMesMenutorat {
     situation_label: string;
     etablissement_id: number | null;
     nom_etablissement: string;
+    date_previsionnelle: string;
     needs_description: string;
   } | null;
   objectif_mentor: string;

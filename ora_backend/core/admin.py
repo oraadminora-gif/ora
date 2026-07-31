@@ -352,7 +352,7 @@ class YoungRequestAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Jeune',                    {'fields': ('first_name', 'last_name', 'email', 'phone', 'birth_date', 'gender')}),
         ('Localisation',             {'fields': ('city', 'department', 'pole')}),
-        ('Établissement & Formation',{'fields': ('nom_etablissement', 'etablissement', 'diplome_prepare', 'situation')}),
+        ('Établissement & Formation',{'fields': ('nom_etablissement', 'etablissement', 'diplome_prepare', 'situation', 'date_previsionnelle')}),
         ('Demande',                  {'fields': ('needs_description', 'status')}),
     )
 

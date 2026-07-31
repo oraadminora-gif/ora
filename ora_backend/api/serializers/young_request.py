@@ -24,6 +24,7 @@ class YoungRequestListSerializer(serializers.ModelSerializer):
             'nom_etablissement', 'etablissement_nom',
             'diplome_prepare', 'diplome_label',
             'situation', 'situation_label',
+            'date_previsionnelle',
             'created_at',
         ]
 
@@ -53,6 +54,7 @@ class YoungRequestSerializer(serializers.ModelSerializer):
             'nom_etablissement', 'etablissement', 'etablissement_nom',
             'diplome_prepare', 'diplome_label',
             'situation', 'situation_label',
+            'date_previsionnelle',
             'needs_description',
             'status', 'pole', 'pole_name',
             'request_date', 'created_at', 'updated_at',
@@ -88,8 +90,22 @@ class YoungRequestCreateSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'email', 'phone',
             'birth_date', 'gender', 'city', 'department_code',
             'nom_etablissement', 'diplome_prepare', 'situation',
+            'date_previsionnelle',
             'needs_description',
         ]
+
+    def validate(self, attrs):
+        situation = attrs.get('situation')
+        if situation and not attrs.get('date_previsionnelle'):
+            field = (
+                "la date prévisionnelle d'obtention du diplôme"
+                if situation == 'apprentissage'
+                else 'la date prévisionnelle de début de formation'
+            )
+            raise serializers.ValidationError(
+                {'date_previsionnelle': f"Merci de renseigner {field}."}
+            )
+        return attrs
 
     def create(self, validated_data):
         dept_code = validated_data.pop('department_code', None)

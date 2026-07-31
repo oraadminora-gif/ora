@@ -172,6 +172,7 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
             'nom_etablissement': (
                 young.etablissement.nom if young.etablissement_id else young.nom_etablissement
             ) or '',
+            'date_previsionnelle': str(young.date_previsionnelle) if young.date_previsionnelle else '',
             'needs_description': young.needs_description or '',
         } if young else None,
         'objectif_mentor': m.objectif_mentor or '',
@@ -547,6 +548,7 @@ class APMesMentoratExportView(APIView):
                 'Jeune Diplôme':         jr.get_diplome_prepare_display() if (jr and jr.diplome_prepare) else '',
                 'Jeune Situation':       jr.get_situation_display() if (jr and jr.situation) else '',
                 'Jeune Établissement':   (jr.etablissement.nom if jr.etablissement_id else jr.nom_etablissement) if jr else '',
+                'Jeune Date prévisionnelle': str(jr.date_previsionnelle) if (jr and jr.date_previsionnelle) else '',
                 'Jeune Demande':         jr.needs_description if jr else '',
                 # Stats suivi
                 'Dernière rencontre':    str(stats.get('last_rencontre', '')) if stats.get('last_rencontre') else '',
@@ -1231,6 +1233,9 @@ class APUpdateJeuneView(APIView):
                 return Response({'error': 'Situation invalide.'}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
 
+        if 'date_previsionnelle' in data:
+            req.date_previsionnelle = data['date_previsionnelle'] or None
+
         if 'etablissement_id' in data:
             etab_id = data['etablissement_id']
             if etab_id:
@@ -1285,6 +1290,7 @@ class APUpdateJeuneView(APIView):
             'situation_label':   req.get_situation_display() if req.situation else '',
             'etablissement_id':  req.etablissement_id,
             'nom_etablissement': (req.etablissement.nom if req.etablissement_id else req.nom_etablissement) or '',
+            'date_previsionnelle': str(req.date_previsionnelle) if req.date_previsionnelle else '',
             'needs_description': req.needs_description,
         })
 
@@ -1332,6 +1338,7 @@ class APMentoratSuiviView(APIView):
             'jeune_nom_etablissement': (
                 req.etablissement.nom if req.etablissement_id else req.nom_etablissement
             ) or '',
+            'jeune_date_previsionnelle': str(req.date_previsionnelle) if req.date_previsionnelle else '',
         }
 
     def get(self, request, mentorat_id):
@@ -1398,6 +1405,10 @@ class APMentoratSuiviView(APIView):
                 return Response({"error": "Situation invalide."}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
             req_updated.append('situation')
+
+        if 'date_previsionnelle' in data:
+            req.date_previsionnelle = data['date_previsionnelle'] or None
+            req_updated.append('date_previsionnelle')
 
         if 'etablissement_id' in data:
             etab_id = data['etablissement_id']
@@ -1658,6 +1669,7 @@ class APMentoratSuiviDetailView(APIView):
                 'situation':        jr.situation,
                 'situation_label':  jr.get_situation_display() if jr.situation else '',
                 'nom_etablissement': jr.etablissement.nom if jr.etablissement_id else jr.nom_etablissement,
+                'date_previsionnelle': str(jr.date_previsionnelle) if jr.date_previsionnelle else '',
                 'needs_description': jr.needs_description,
                 'request_date':     str(jr.request_date) if jr.request_date else '',
             } if jr else None,

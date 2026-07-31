@@ -80,6 +80,14 @@ class YoungRequest(models.Model):
         max_length=20, choices=SITUATION_CHOICES, blank=True,
         verbose_name='Situation'
     )
+    date_previsionnelle = models.DateField(
+        null=True, blank=True,
+        verbose_name='Date prévisionnelle',
+        help_text=(
+            "Si en apprentissage : date prévisionnelle d'obtention du diplôme. "
+            "Si en recherche : date prévisionnelle de début de formation."
+        ),
+    )
 
     # ── Demande ──────────────────────────────────────────────
     request_date      = models.DateField(auto_now_add=True)

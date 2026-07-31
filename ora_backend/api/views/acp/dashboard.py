@@ -291,6 +291,7 @@ class ACPDashboardView(APIView):
                 'diplome_label':    d.get_diplome_prepare_display() if d.diplome_prepare else '',
                 'situation':        d.situation,
                 'situation_label':  d.get_situation_display() if d.situation else '',
+                'date_previsionnelle': str(d.date_previsionnelle) if d.date_previsionnelle else '',
                 'raison_transfert': d.raison_transfert if hasattr(d, 'raison_transfert') else '',
             }
             for d in demandes_qs

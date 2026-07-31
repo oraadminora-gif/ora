@@ -98,6 +98,13 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
         champs.append(f"Diplôme préparé : {_DIPLOME_LABELS.get(yr.diplome_prepare, yr.diplome_prepare)}")
     if yr.nom_etablissement:
         champs.append(f"Établissement : {yr.nom_etablissement}")
+    if yr.date_previsionnelle:
+        label_date = (
+            "Date prévisionnelle d'obtention du diplôme"
+            if yr.situation == 'apprentissage'
+            else 'Date prévisionnelle de début de formation'
+        )
+        champs.append(f"{label_date} : {yr.date_previsionnelle.strftime('%d/%m/%Y')}")
     if yr.needs_description:
         champs.append(f"Demande / besoin :\n  {yr.needs_description}")
 
@@ -163,6 +170,18 @@ class CreateYoungRequestView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        situation = data.get('situation', '')
+        if situation and not data.get('date_previsionnelle'):
+            champ = (
+                "la date prévisionnelle d'obtention du diplôme"
+                if situation == 'apprentissage'
+                else 'la date prévisionnelle de début de formation'
+            )
+            return Response(
+                {"error": f"Merci de renseigner {champ}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         pole = None
         dept = None
 
@@ -200,7 +219,8 @@ class CreateYoungRequestView(APIView):
             department=dept,
             nom_etablissement=data.get('nom_etablissement', '').strip(),
             diplome_prepare=data.get('diplome_prepare', ''),
-            situation=data.get('situation', ''),
+            situation=situation,
+            date_previsionnelle=data.get('date_previsionnelle') or None,
             needs_description=data['needs_description'],
             pole=pole,
             status='NEW',

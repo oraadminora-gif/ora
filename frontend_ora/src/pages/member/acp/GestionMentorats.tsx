@@ -38,6 +38,7 @@ interface Mentorat {
   jeune_situation_label: string;
   jeune_etablissement_id: number | null;
   jeune_nom_etablissement: string;
+  jeune_date_previsionnelle: string;
   ap_responsable_id: number | null;
   ap_responsable_name: string | null;
   ap_responsable_assoc: string | null;

@@ -43,7 +43,7 @@ HEADERS = [
     # ── Jeune ─────────────────────────────────────────────────────
     'Prénom jeune', 'Nom jeune', 'Email jeune', 'Tél jeune',
     'Date naissance', 'Genre', 'Commune', 'Code postal jeune',
-    'Diplôme préparé', 'Situation', 'Urgence (1-5)',
+    'Diplôme préparé', 'Situation', 'Date prévisionnelle',
     'Nom établissement',
     # ── Mentor ────────────────────────────────────────────────────
     'Prénom mentor', 'Nom mentor', 'Email mentor', 'Tél mentor',
@@ -125,6 +125,7 @@ def _build_rows(qs):
             getattr(req, 'code_postal', '') or '',
             req.get_diplome_prepare_display() if req.diplome_prepare else '',
             req.get_situation_display() if req.situation else '',
+            _fmt(req.date_previsionnelle),
             nom_etab,
             # Mentor
             mentor.first_name,

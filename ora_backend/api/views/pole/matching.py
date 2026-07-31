@@ -91,6 +91,13 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None)
             champs.append(f"Diplôme préparé : {diplome}")
         if jeune.nom_etablissement:
             champs.append(f"Établissement / CFA : {jeune.nom_etablissement}")
+        if jeune.date_previsionnelle:
+            label_date = (
+                "Date prévisionnelle d'obtention du diplôme"
+                if jeune.situation == 'apprentissage'
+                else 'Date prévisionnelle de début de formation'
+            )
+            champs.append(f"{label_date} : {jeune.date_previsionnelle.strftime('%d/%m/%Y')}")
         if jeune.needs_description:
             champs.append(f"Demande / besoin :\n  {jeune.needs_description}")
 
@@ -204,6 +211,7 @@ class MatchingSuggestionsView(APIView):
                 "etablissement":   etab_nom or '',
                 "diplome_prepare": young_request.get_diplome_prepare_display() if young_request.diplome_prepare else '',
                 "situation":       young_request.get_situation_display() if young_request.situation else '',
+                "date_previsionnelle": str(young_request.date_previsionnelle) if young_request.date_previsionnelle else '',
                 "pole":            young_request.pole.name if young_request.pole else None,
             },
             "suggestions": data[:10],

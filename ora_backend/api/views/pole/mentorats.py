@@ -49,6 +49,7 @@ def _serialize_mentorat(m):
         "jeune_nom_etablissement": (
             req.etablissement.nom if req.etablissement_id else req.nom_etablissement
         ) or '',
+        "jeune_date_previsionnelle": str(req.date_previsionnelle) if req.date_previsionnelle else '',
         "ap_responsable_id":   m.ap_responsable_id,
         "ap_responsable_name": (
             f"{m.ap_responsable.first_name} {m.ap_responsable.last_name}"
@@ -301,6 +302,9 @@ class PoleMentoratDetailView(APIView):
                 return Response({"error": "Situation invalide"}, status=status.HTTP_400_BAD_REQUEST)
             req.situation = val
             req_updated.append('situation')
+        if 'date_previsionnelle' in data:
+            req.date_previsionnelle = data['date_previsionnelle'] or None
+            req_updated.append('date_previsionnelle')
         if 'etablissement_id' in data:
             etab_id = data['etablissement_id']
             if etab_id:

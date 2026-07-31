@@ -70,6 +70,7 @@ export interface ACPDemande {
   diplome_label: string;
   situation: string;
   situation_label: string;
+  date_previsionnelle: string;
   raison_transfert?: string;
 }
 

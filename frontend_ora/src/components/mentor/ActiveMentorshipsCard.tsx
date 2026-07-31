@@ -120,6 +120,7 @@ function MentoratCard({ mentorat, onSuivi }: { mentorat: MentoratActif; onSuivi:
             <CheckCircle className="w-3 h-3 text-ora-blue shrink-0" />
             <span className="text-xs font-semibold text-ora-blue">
               {j.situation_label}{j.nom_etablissement ? ` · ${j.nom_etablissement}` : ''}
+              {j.date_previsionnelle ? ` · ${new Date(j.date_previsionnelle).toLocaleDateString('fr-FR')}` : ''}
             </span>
           </div>
         )}

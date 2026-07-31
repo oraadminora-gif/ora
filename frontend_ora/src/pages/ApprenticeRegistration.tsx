@@ -83,6 +83,7 @@ export function ApprenticeRegistration() {
     poleId: '', commune: '', codePostal: '',
     nomEtablissement: '', diplomePrepare: '',
     situation: '' as '' | 'apprentissage' | 'recherche',
+    datePrevisionnelle: '',
     demande: '', engagementAccepted: false, consentGiven: false,
   });
 
@@ -133,6 +134,7 @@ export function ApprenticeRegistration() {
         nom_etablissement: formData.nomEtablissement,
         diplome_prepare:   formData.diplomePrepare || undefined,
         situation:         formData.situation || undefined,
+        date_previsionnelle: formData.datePrevisionnelle || undefined,
         needs_description: formData.demande || 'Non précisé',
       });
       if (res.data && typeof res.data === 'object' && 'error' in res.data) {
@@ -331,6 +333,22 @@ export function ApprenticeRegistration() {
               <Field label="Nom de ton école / CFA">
                 <input type="text" placeholder="Ex : CFA des Métiers, Lycée Professionnel…"
                   value={formData.nomEtablissement} onChange={set('nomEtablissement')}
+                  className={INPUT} />
+              </Field>
+            )}
+
+            {formData.situation === 'apprentissage' && (
+              <Field label="Date prévisionnelle d'obtention du diplôme *">
+                <input type="date" required
+                  value={formData.datePrevisionnelle} onChange={set('datePrevisionnelle')}
+                  className={INPUT} />
+              </Field>
+            )}
+
+            {formData.situation === 'recherche' && (
+              <Field label="Date prévisionnelle de début de formation *">
+                <input type="date" required
+                  value={formData.datePrevisionnelle} onChange={set('datePrevisionnelle')}
                   className={INPUT} />
               </Field>
             )}

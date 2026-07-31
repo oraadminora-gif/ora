@@ -5,7 +5,7 @@ import {
   Users, MapPin, Building2, CheckCircle,
   Loader2, AlertCircle, Clock, ArrowRight, X, Star,
   GraduationCap, Trophy, Shuffle, Search,
-  UserPlus, Scale, Mail, Phone,
+  UserPlus, Scale, Mail, Phone, Calendar,
 } from 'lucide-react';
 
 // Constante module-level pour éviter Date.now() dans le render (impure)
@@ -35,6 +35,7 @@ interface Demande {
   diplome_label: string;
   situation: string;
   situation_label: string;
+  date_previsionnelle: string;
   raison_transfert?: string;
 }
 
@@ -72,6 +73,7 @@ interface SuggestionsData {
     diplome_label: string;
     situation: string;
     situation_label: string;
+    date_previsionnelle: string;
     pole: string | null;
   };
   suggestions: MentorSuggestion[];
@@ -290,6 +292,14 @@ function DemandeCard({ demande, selected, onClick }: {
         <p className="text-sm text-slate-400 flex items-center gap-1.5 mb-2">
           <Building2 className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">{demande.nom_etablissement}</span>
+        </p>
+      )}
+
+      {/* Date prévisionnelle */}
+      {demande.date_previsionnelle && (
+        <p className="text-sm text-slate-400 flex items-center gap-1.5 mb-2">
+          <Calendar className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{new Date(demande.date_previsionnelle).toLocaleDateString('fr-FR')}</span>
         </p>
       )}
 
@@ -1144,6 +1154,11 @@ export function MatchingBoard() {
                         {suggestions?.demande.nom_etablissement && (
                           <span className="flex items-center gap-1">
                             <Building2 className="w-3 h-3" />{suggestions.demande.nom_etablissement}
+                          </span>
+                        )}
+                        {suggestions?.demande.date_previsionnelle && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />{new Date(suggestions.demande.date_previsionnelle).toLocaleDateString('fr-FR')}
                           </span>
                         )}
                         {suggestions && (

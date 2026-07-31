@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import {
   ClipboardList, MapPin, GraduationCap, ArrowRightLeft,
   School, X, CheckCircle, MessageSquare, Plus, Loader2,
-  Mail, Phone, User, Download,
+  Mail, Phone, User, Download, Calendar,
 } from 'lucide-react';
 import api from '../../services/api';
 import type { ACPDemande } from '../../pages/member/acp/ACPDashboard.types';
@@ -56,6 +56,7 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
     birth_date: '', gender: '',
     commune: '', code_postal: '',
     diplome_prepare: '', situation: '', nom_etablissement: '',
+    date_previsionnelle: '',
     demande: '',
   });
 
@@ -72,6 +73,13 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
     }
     if (!form.situation) {
       setError('Veuillez indiquer la situation du jeune.'); return;
+    }
+    if (!form.date_previsionnelle) {
+      setError(
+        form.situation === 'apprentissage'
+          ? "Veuillez indiquer la date prévisionnelle d'obtention du diplôme."
+          : 'Veuillez indiquer la date prévisionnelle de début de formation.'
+      ); return;
     }
     if (!form.demande.trim()) {
       setError('Veuillez décrire la demande du jeune.'); return;
@@ -90,6 +98,7 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
         diplome_prepare:   form.diplome_prepare || undefined,
         situation:         form.situation,
         nom_etablissement: form.situation === 'apprentissage' ? form.nom_etablissement : '',
+        date_previsionnelle: form.date_previsionnelle || undefined,
         needs_description: form.demande.trim(),
       });
       onSuccess();
@@ -214,6 +223,18 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
                   <label className={labelCls}>Établissement / CFA</label>
                   <input type="text" value={form.nom_etablissement} onChange={set('nom_etablissement')}
                     className={inputCls} placeholder="Nom de l'école ou du CFA" />
+                </div>
+              )}
+              {form.situation === 'apprentissage' && (
+                <div>
+                  <label className={labelCls}>Date prévisionnelle d'obtention du diplôme <span className="text-red-500">*</span></label>
+                  <input type="date" value={form.date_previsionnelle} onChange={set('date_previsionnelle')} className={inputCls} />
+                </div>
+              )}
+              {form.situation === 'recherche' && (
+                <div>
+                  <label className={labelCls}>Date prévisionnelle de début de formation <span className="text-red-500">*</span></label>
+                  <input type="date" value={form.date_previsionnelle} onChange={set('date_previsionnelle')} className={inputCls} />
                 </div>
               )}
             </div>
@@ -444,6 +465,7 @@ function exportDemandes(demandes: ACPDemande[]) {
     Diplôme:          d.diplome_label,
     Situation:        d.situation_label,
     Établissement:    d.nom_etablissement,
+    'Date prévisionnelle': d.date_previsionnelle ? new Date(d.date_previsionnelle).toLocaleDateString('fr-FR') : '',
     Demande:          d.needs_description,
     Statut:           d.status === 'NEW' ? 'Nouveau' : 'En attente',
     'Date demande':   new Date(d.request_date).toLocaleDateString('fr-FR'),
@@ -556,6 +578,14 @@ function DemandesList({
               <div className="flex items-center gap-1.5 mb-2 text-sm text-slate-400">
                 <School className="w-4 h-4 shrink-0" />
                 <span className="truncate">{d.nom_etablissement}</span>
+              </div>
+            )}
+
+            {/* Date prévisionnelle */}
+            {d.date_previsionnelle && (
+              <div className="flex items-center gap-1.5 mb-2 text-sm text-slate-400">
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="truncate">{new Date(d.date_previsionnelle).toLocaleDateString('fr-FR')}</span>
               </div>
             )}
 

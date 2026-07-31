@@ -105,6 +105,10 @@ class MentorDashboardView(APIView):
                                 if m.young_request.etablissement_id
                                 else m.young_request.nom_etablissement
                             ) or '',
+                            "date_previsionnelle": (
+                                str(m.young_request.date_previsionnelle)
+                                if m.young_request.date_previsionnelle else ''
+                            ),
                         },
                         "date_debut":          m.assigned_at,
                         "expected_end_date":   m.expected_end_date,
@@ -515,6 +519,10 @@ class MentorUpdateJeuneView(APIView):
             req.situation = val
             updated.append('situation')
 
+        if 'date_previsionnelle' in request.data:
+            req.date_previsionnelle = request.data['date_previsionnelle'] or None
+            updated.append('date_previsionnelle')
+
         if 'etablissement_id' in request.data:
             etab_id = request.data['etablissement_id']
             if etab_id:
@@ -568,6 +576,7 @@ class MentorUpdateJeuneView(APIView):
             "nom_etablissement": (
                 req.etablissement.nom if req.etablissement_id else req.nom_etablissement
             ) or '',
+            "date_previsionnelle": str(req.date_previsionnelle) if req.date_previsionnelle else '',
         })
 
 

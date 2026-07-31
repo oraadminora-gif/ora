@@ -39,6 +39,7 @@ interface SuiviData {
   jeune_situation: string;
   jeune_etablissement_id: number | null;
   jeune_nom_etablissement: string;
+  jeune_date_previsionnelle: string;
 }
 
 interface MentoratFinancement {
@@ -346,6 +347,7 @@ export function APMentoratSuiviModal({
         birth_date:        data.jeune_birth_date || null,
         diplome_prepare:   data.jeune_diplome_prepare,
         situation:         data.jeune_situation,
+        date_previsionnelle: data.jeune_date_previsionnelle || null,
         ...(data.jeune_etablissement_id
           ? { etablissement_id: data.jeune_etablissement_id }
           : { etablissement_id: null, nom_etablissement: data.jeune_nom_etablissement }),
@@ -565,6 +567,22 @@ export function APMentoratSuiviModal({
                 )}
               </div>
             </div>}
+
+            {/* Date prévisionnelle */}
+            {data.jeune_situation === 'apprentissage' && (
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date prévisionnelle d'obtention du diplôme</label>
+                <input type="date" value={data.jeune_date_previsionnelle ?? ''}
+                  onChange={e => setData({ ...data, jeune_date_previsionnelle: e.target.value })} className={INPUT_CLS} />
+              </div>
+            )}
+            {data.jeune_situation === 'recherche' && (
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date prévisionnelle de début de formation</label>
+                <input type="date" value={data.jeune_date_previsionnelle ?? ''}
+                  onChange={e => setData({ ...data, jeune_date_previsionnelle: e.target.value })} className={INPUT_CLS} />
+              </div>
+            )}
           </section>
 
           {/* ── Financements ── */}

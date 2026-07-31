@@ -57,6 +57,7 @@ class PendingRequestsView(APIView):
             "diplome_label":   d.get_diplome_prepare_display() if d.diplome_prepare else '',
             "situation":       d.situation,
             "situation_label": d.get_situation_display() if d.situation else '',
+            "date_previsionnelle": str(d.date_previsionnelle) if d.date_previsionnelle else '',
             "date_demande":    d.created_at,
             "besoins":         d.needs_description,
             "raison_transfert": d.raison_transfert or '',
@@ -187,6 +188,15 @@ class CreateDemandeView(APIView):
                 status=400,
             )
 
+        situation = (data.get('situation') or '').strip()
+        if situation and not data.get('date_previsionnelle'):
+            champ = (
+                "la date prévisionnelle d'obtention du diplôme"
+                if situation == 'apprentissage'
+                else 'la date prévisionnelle de début de formation'
+            )
+            return Response({"error": f"Merci de renseigner {champ}."}, status=400)
+
         # ── Localisation ──────────────────────────────────────
         commune     = (data.get('commune') or '').strip()
         code_postal = (data.get('code_postal') or '').strip()
@@ -204,7 +214,8 @@ class CreateDemandeView(APIView):
             city              = commune,  # city = commune pour compatibilité
             nom_etablissement = (data.get('nom_etablissement') or '').strip(),
             diplome_prepare   = (data.get('diplome_prepare') or '').strip(),
-            situation         = (data.get('situation') or '').strip(),
+            situation         = situation,
+            date_previsionnelle = data.get('date_previsionnelle') or None,
             needs_description = needs_description,
             pole              = pole,
             status            = 'NEW',

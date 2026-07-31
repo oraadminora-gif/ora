@@ -34,7 +34,7 @@ interface EtabOption { id: number; nom: string; code_postal: string; }
 
 function JeuneEditSection({ mentoratId, initial }: {
   mentoratId: number;
-  initial: { situation: string; situation_label: string; etablissement_id: number | null; nom_etablissement: string };
+  initial: { situation: string; situation_label: string; etablissement_id: number | null; nom_etablissement: string; date_previsionnelle: string };
 }) {
   const [editing, setEditing]               = useState(false);
   const [situation, setSituation]           = useState(initial.situation);
@@ -42,6 +42,7 @@ function JeuneEditSection({ mentoratId, initial }: {
   const [etabId, setEtabId]                 = useState<number | null>(initial.etablissement_id);
   const [displayNom, setDisplayNom]         = useState(initial.nom_etablissement);
   const [autreNom, setAutreNom]             = useState(initial.etablissement_id ? '' : initial.nom_etablissement);
+  const [datePrevisionnelle, setDatePrevisionnelle] = useState(initial.date_previsionnelle ?? '');
   const [etabs, setEtabs]                   = useState<EtabOption[]>([]);
   const [saving, setSaving]                 = useState(false);
   const [error, setError]                   = useState('');
@@ -61,7 +62,7 @@ function JeuneEditSection({ mentoratId, initial }: {
 
   const handleSave = async () => {
     setSaving(true); setError('');
-    const payload: Record<string, unknown> = { situation };
+    const payload: Record<string, unknown> = { situation, date_previsionnelle: datePrevisionnelle || null };
     if (etabId) {
       payload.etablissement_id = etabId;
     } else {
@@ -72,11 +73,13 @@ function JeuneEditSection({ mentoratId, initial }: {
       const res = await api.patch<{
         situation: string; situation_label: string;
         etablissement_id: number | null; nom_etablissement: string;
+        date_previsionnelle: string;
       }>(`/ap/mentorats/${mentoratId}/jeune/`, payload);
       setSituationLabel(res.data.situation_label);
       setEtabId(res.data.etablissement_id);
       setDisplayNom(res.data.nom_etablissement);
       setAutreNom(res.data.etablissement_id ? '' : res.data.nom_etablissement);
+      setDatePrevisionnelle(res.data.date_previsionnelle ?? '');
       setEditing(false);
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } };
@@ -93,6 +96,9 @@ function JeuneEditSection({ mentoratId, initial }: {
         }
         {displayNom && (
           <><span className="text-slate-300">·</span><span className="text-slate-500">{displayNom}</span></>
+        )}
+        {datePrevisionnelle && (
+          <><span className="text-slate-300">·</span><span className="text-slate-500">{new Date(datePrevisionnelle).toLocaleDateString('fr-FR')}</span></>
         )}
       </div>
     );
@@ -127,6 +133,20 @@ function JeuneEditSection({ mentoratId, initial }: {
           placeholder="Nom de l'établissement…"
           className="w-full px-2 py-1 text-[11px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue"
         />
+      )}
+      {situation === 'apprentissage' && (
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Date prévisionnelle d'obtention du diplôme</label>
+          <input type="date" value={datePrevisionnelle} onChange={e => setDatePrevisionnelle(e.target.value)}
+            className="w-full px-2 py-1 text-[11px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue" />
+        </div>
+      )}
+      {situation === 'recherche' && (
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Date prévisionnelle de début de formation</label>
+          <input type="date" value={datePrevisionnelle} onChange={e => setDatePrevisionnelle(e.target.value)}
+            className="w-full px-2 py-1 text-[11px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue" />
+        </div>
       )}
       <div className="flex gap-1.5">
         <button type="button" onClick={() => setEditing(false)}
@@ -216,6 +236,7 @@ function MentoratCard({ mentorat, onSuivi }: {
                   situation_label:   mentorat.jeune.situation_label,
                   etablissement_id:  mentorat.jeune.etablissement_id,
                   nom_etablissement: mentorat.jeune.nom_etablissement,
+                  date_previsionnelle: mentorat.jeune.date_previsionnelle,
                 }}
               />
               {mentorat.jeune.needs_description && (

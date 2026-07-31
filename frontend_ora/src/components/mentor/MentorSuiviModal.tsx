@@ -53,6 +53,7 @@ function JeuneSection({ mentoratId, jeune }: {
       : (jeune.nom_etablissement && !jeune.etablissement_id ? 'autre' : '')
   );
   const [autreNom, setAutreNom]             = useState(jeune.etablissement_id ? '' : jeune.nom_etablissement);
+  const [datePrevisionnelle, setDatePrevisionnelle] = useState(jeune.date_previsionnelle ?? '');
   const [etabs, setEtabs]                   = useState<EtabOption[]>([]);
   const [saving, setSaving]                 = useState(false);
   const [err, setErr]                       = useState('');
@@ -64,7 +65,7 @@ function JeuneSection({ mentoratId, jeune }: {
 
   const handleSave = async () => {
     setSaving(true); setErr('');
-    const payload: Record<string, unknown> = { diplome_prepare: diplome, situation };
+    const payload: Record<string, unknown> = { diplome_prepare: diplome, situation, date_previsionnelle: datePrevisionnelle || null };
     if (situation === 'apprentissage') {
       if (etabSelectVal === 'autre' || etabSelectVal === '') {
         payload.etablissement_id  = null;
@@ -82,6 +83,7 @@ function JeuneSection({ mentoratId, jeune }: {
         diplome_prepare: string; diplome_label: string;
         situation: string; situation_label: string;
         etablissement_id: number | null; nom_etablissement: string;
+        date_previsionnelle: string;
       }>(`/mentor/mentorats/${mentoratId}/jeune/`, payload);
       setDiplome(res.data.diplome_prepare);
       setDiplomeLabel(res.data.diplome_label);
@@ -89,6 +91,7 @@ function JeuneSection({ mentoratId, jeune }: {
       setEtabId(res.data.etablissement_id);
       setDisplayNom(res.data.nom_etablissement);
       setAutreNom(res.data.etablissement_id ? '' : res.data.nom_etablissement);
+      setDatePrevisionnelle(res.data.date_previsionnelle ?? '');
       setEtabSelectVal(
         res.data.etablissement_id ? String(res.data.etablissement_id)
           : (res.data.nom_etablissement ? 'autre' : '')
@@ -149,6 +152,9 @@ function JeuneSection({ mentoratId, jeune }: {
             {displayNom && (
               <><span className="text-slate-300">·</span><span>{displayNom}</span></>
             )}
+            {datePrevisionnelle && (
+              <><span className="text-slate-300">·</span><span>{new Date(datePrevisionnelle).toLocaleDateString('fr-FR')}</span></>
+            )}
           </div>
           <button onClick={() => setEditing(true)}
             className="shrink-0 p-1 hover:bg-white rounded-lg text-slate-300 hover:text-ora-blue transition-colors">
@@ -198,6 +204,22 @@ function JeuneSection({ mentoratId, jeune }: {
                   className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40" />
               )}
             </>
+          )}
+
+          {/* Date prévisionnelle */}
+          {situation === 'apprentissage' && (
+            <div>
+              <label className="block text-[10px] text-slate-400 mb-1">Date prévisionnelle d'obtention du diplôme</label>
+              <input type="date" value={datePrevisionnelle} onChange={e => setDatePrevisionnelle(e.target.value)}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40" />
+            </div>
+          )}
+          {situation === 'recherche' && (
+            <div>
+              <label className="block text-[10px] text-slate-400 mb-1">Date prévisionnelle de début de formation</label>
+              <input type="date" value={datePrevisionnelle} onChange={e => setDatePrevisionnelle(e.target.value)}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40" />
+            </div>
           )}
 
           <div className="flex gap-2">
