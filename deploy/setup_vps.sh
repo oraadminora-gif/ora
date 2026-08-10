@@ -10,7 +10,9 @@
 #  3. Uploader ce script + .env.production sur le serveur :
 #     scp deploy/setup_vps.sh deploy/.env.production root@IP_HETZNER:/root/
 #  4. Se connecter : ssh root@IP_HETZNER
-#  5. Lancer : bash setup_vps.sh
+#  5. Lancer avec le mot de passe DB en variable d'environnement (jamais en dur ici) :
+#     DB_PASSWORD='...' bash setup_vps.sh
+#     (doit être identique à PROD_DB_PASSWORD dans .env.production)
 # ============================================================
 
 set -e
@@ -19,7 +21,10 @@ set -e
 DOMAIN="objectifreussirapprentissage.eu"
 ADMIN_EMAIL="admin@objectifreussirapprentissage.eu"
 REPO_URL="https://github.com/oraadminora-gif/ora.git"
-DB_PASSWORD='4x!9XmPOFRauC6qAbkZ#'   # même valeur que dans .env.production
+# Doit être défini dans l'environnement avant de lancer ce script, ex :
+#   DB_PASSWORD='...' bash setup_vps.sh
+# Doit être identique à PROD_DB_PASSWORD dans .env.production.
+DB_PASSWORD="${DB_PASSWORD:?Erreur: définir DB_PASSWORD comme variable d'environnement avant d'exécuter ce script}"
 PROJECT_DIR="/var/www/ora"
 # ─────────────────────────────────────────────────────────────
 
