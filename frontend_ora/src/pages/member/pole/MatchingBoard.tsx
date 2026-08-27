@@ -116,16 +116,20 @@ interface ApiError { response?: { data?: { error?: string; message?: string; cod
 // PETITS COMPOSANTS RÉUTILISABLES
 // ─────────────────────────────────────────────────────────────
 
+const SCORE_MAX = 370; // somme des 5 critères pondérés (core/services/matching.py)
+
 function ScoreBadge({ score }: { score: number }) {
-  // Nouveau max : 370 pts
+  // Seuils exprimés en points bruts (cohérents avec le backend) ; l'affichage, lui, est en %
   const color = score >= 200
     ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
     : score >= 120
       ? 'text-sky-700 bg-sky-50 border-sky-200'
       : 'text-slate-500 bg-slate-50 border-slate-200';
+  const pct = Math.round((score / SCORE_MAX) * 100);
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${color}`}>
-      <Trophy className="w-2.5 h-2.5" />{score} pts
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${color}`}
+      title={`${score} / ${SCORE_MAX} pts`}>
+      <Trophy className="w-2.5 h-2.5" />{pct}%
     </span>
   );
 }
