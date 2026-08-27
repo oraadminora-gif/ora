@@ -322,6 +322,13 @@ class PoleMentorDetailView(APIView):
         if err:
             return err
 
+        # Suppression réservée à l'ACP, y compris pour un mentor de sa propre association
+        if not request.user.animateur.is_acp:
+            return Response(
+                {"error": "Seul l'APC peut supprimer un mentor."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Bloquer la suppression si le mentor a des mentorats actifs
         active_count = mentor.mentorats.filter(status='ACTIVE').count()
         if active_count > 0:

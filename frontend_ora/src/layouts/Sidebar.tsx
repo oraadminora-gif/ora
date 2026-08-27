@@ -169,6 +169,7 @@ const menuItems: MenuItem[] = [
   // AP
   { label: 'Tableau de bord',  path: '/member/ap/dashboard',     roles: ['AP'], icon: <LayoutDashboard size={18} /> },
   { label: 'Suivi mentors',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
+  { label: 'Gestion mentors',  path: '/member/acp/mentors',      roles: ['AP'], icon: <Users size={18} /> },
   { label: 'Annuaire',         path: '/member/acp/annuaire',     roles: ['AP'], icon: <MapPin size={18} /> },
   { label: 'KPIs Pôle',        path: '/member/pole/kpi',         roles: ['AP'], icon: <BarChart3 size={18} /> },
   { label: 'Implantations',    path: '/member/cn/implantations', roles: ['AP'], icon: <Globe size={18} /> },
