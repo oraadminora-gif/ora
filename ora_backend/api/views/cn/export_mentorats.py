@@ -21,7 +21,13 @@ from core.models import Mentorat
 from api.permissions import IsCN
 from api.views.pole.export_csv import HEADERS, _build_rows
 
-HEADERS_NATIONAL = ['Pôle'] + HEADERS
+_ID_MENTORAT_IDX = HEADERS.index('ID Mentorat')
+
+# « Pôle » puis « ID Mentorat » en tête, pour identifier chaque ligne au
+# premier coup d'œil dans cet export qui regroupe tous les pôles.
+HEADERS_NATIONAL = ['Pôle', 'ID Mentorat'] + [
+    h for i, h in enumerate(HEADERS) if i != _ID_MENTORAT_IDX
+]
 
 
 class ExportMentoratsNationalCsvView(APIView):
@@ -63,10 +69,12 @@ class ExportMentoratsNationalCsvView(APIView):
             base_name += f"_au_{date_fin}"
 
         mentorats = list(qs)
-        rows = [
-            [f"{m.pole.code} — {m.pole.name}" if m.pole_id else ''] + row
-            for m, row in zip(mentorats, _build_rows(mentorats))
-        ]
+        rows = []
+        for m, row in zip(mentorats, _build_rows(mentorats)):
+            pole_label = f"{m.pole.code} — {m.pole.name}" if m.pole_id else ''
+            id_mentorat = row[_ID_MENTORAT_IDX]
+            reste = [v for i, v in enumerate(row) if i != _ID_MENTORAT_IDX]
+            rows.append([pole_label, id_mentorat] + reste)
 
         fmt = request.query_params.get('file_format', 'xlsx').lower()
         if fmt == 'csv':
