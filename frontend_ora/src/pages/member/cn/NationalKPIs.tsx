@@ -8,7 +8,7 @@ import type { NationalKPIDetailed, PoleKPI, PoleSummaryKPI, FinancementParAssocK
 import {
   Users, UserCheck, AlertTriangle, TrendingUp, TrendingDown,
   RefreshCw, Activity, FileDown, ChevronUp, ChevronDown,
-  ArrowLeft, CheckCircle, XCircle, Hourglass, Clock, Zap,
+  ArrowLeft, CheckCircle, XCircle, Hourglass, Clock, Zap, Download,
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -1891,6 +1891,29 @@ export function NationalKPIs() {
     setTimeout(() => handlePrint(), 300);
   };
 
+  const [exportingMentorats, setExportingMentorats] = useState(false);
+
+  const handleExportMentorats = async () => {
+    setExportingMentorats(true);
+    try {
+      const res = await api.get('/cn/mentorats/export-csv/?file_format=xlsx', { responseType: 'blob' });
+      const disposition = res.headers['content-disposition'] ?? '';
+      const match = disposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : `mentorats_national_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const url  = URL.createObjectURL(new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }));
+      const link = document.createElement('a');
+      link.href = url; link.setAttribute('download', filename);
+      document.body.appendChild(link); link.click();
+      document.body.removeChild(link); URL.revokeObjectURL(url);
+    } catch {
+      alert("Erreur lors de l'export des mentorats.");
+    } finally {
+      setExportingMentorats(false);
+    }
+  };
+
   // Charger les pôles
   useEffect(() => {
     api.get('/poles/?page_size=100').then(r => {
@@ -1962,10 +1985,17 @@ export function NationalKPIs() {
             {selectedPoleName ? `Pôle : ${selectedPoleName}` : 'Vue nationale — tous les pôles'}
           </p>
         </div>
-        <button onClick={() => setShowPrintModal(true)}
-          className="no-print flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-all">
-          <FileDown className="w-4 h-4" />Exporter PDF
-        </button>
+        <div className="no-print flex items-center gap-2">
+          <button onClick={handleExportMentorats} disabled={exportingMentorats}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-60 transition-all">
+            <Download className="w-4 h-4" />
+            {exportingMentorats ? 'Export en cours…' : 'Exporter mentorats'}
+          </button>
+          <button onClick={() => setShowPrintModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-all">
+            <FileDown className="w-4 h-4" />Exporter KPIs
+          </button>
+        </div>
       </div>
 
       {/* Contrôles */}

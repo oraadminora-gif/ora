@@ -7,8 +7,10 @@ from .implantations import CNImplantationsView
 from .retribution   import RetributionView
 from .messages      import CNMessagesView, CNMessageDetailView
 from .mentors       import CNMenteursListView, CNMenteurDetailView
+from .export_mentorats import ExportMentoratsNationalCsvView
 
 urlpatterns = [
+    path('mentorats/export-csv/', ExportMentoratsNationalCsvView.as_view(), name='cn-mentorats-export-csv'),
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
     path('implantations/',       CNImplantationsView.as_view(),   name='cn-implantations'),
     path('animateurs/',          CNAnimateursView.as_view(),      name='cn-animateurs'),
