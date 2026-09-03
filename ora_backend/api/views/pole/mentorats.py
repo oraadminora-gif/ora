@@ -1,4 +1,5 @@
 # api/views/pole/mentorats.py
+import threading
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -352,6 +353,7 @@ class PoleMentoratDetailView(APIView):
             req.save(update_fields=list(set(req_updated)))
 
         # ── Réassignation du mentor ──────────────────────────────
+        resend_acceptance_to = None
         if 'mentor_id' in data:
             new_mentor_id = data.get('mentor_id')
             if new_mentor_id and int(new_mentor_id) != m.mentor_id:
@@ -374,6 +376,15 @@ class PoleMentoratDetailView(APIView):
                     new_mentor.disponibilite_reelle = max(0, new_mentor.disponibilite_reelle - 1)
                     new_mentor.save()
                 m.mentor = new_mentor
+                if m.status == 'PENDING':
+                    # Le mentorat est encore en attente de réponse : invalide
+                    # l'ancien lien d'acceptation (destiné à l'ancien mentor)
+                    # et en envoie un nouveau au mentor nouvellement choisi.
+                    try:
+                        m.acceptance.delete()
+                    except Exception:
+                        pass
+                    resend_acceptance_to = new_mentor.id
 
         # ── Transfert vers un autre pôle ────────────────────────
         if 'pole_id' in data:
@@ -390,6 +401,19 @@ class PoleMentoratDetailView(APIView):
                 m.ap_responsable = None  # AP belongs to the old pole
 
         m.save()
+
+        if resend_acceptance_to:
+            from .matching import _send_mentorat_emails
+            acp_animateur_id = getattr(getattr(request.user, 'animateur', None), 'id', None)
+            mentorat_id = m.id
+            # on_commit : le nouveau mentor (et le token d'acceptation créé
+            # dans le thread) ne doivent être lus qu'une fois la transaction
+            # validée, sous peine d'email envoyé avec des données obsolètes.
+            transaction.on_commit(lambda: threading.Thread(
+                target=_send_mentorat_emails,
+                args=(mentorat_id, acp_animateur_id),
+                daemon=True,
+            ).start())
 
         # Recharge avec relations pour la réponse
         m.refresh_from_db()

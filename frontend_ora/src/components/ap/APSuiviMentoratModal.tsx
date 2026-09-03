@@ -35,6 +35,7 @@ interface SuiviDetail {
   cloture_reason_demandee: string;
   cloture_message_demandee: string;
   mentor: {
+    id: number;
     first_name: string; last_name: string; email: string; phone: string;
     city: string; code_postal: string; department: string;
     association: string; is_trained: boolean; training_date: string;
@@ -53,7 +54,15 @@ interface SuiviDetail {
   ap_responsable: { first_name: string; last_name: string; email: string; } | null;
 }
 
-interface Props { mentoratId: number; onClose: () => void; onSaved?: () => void; }
+interface Props {
+  mentoratId: number;
+  onClose: () => void;
+  onSaved?: () => void;
+  /** APC uniquement : autorise le changement de mentor depuis la fiche de suivi. */
+  canReassignMentor?: boolean;
+  /** Appelé après un changement de mentor réussi, sans fermer la modale (ex. rafraîchir la liste). */
+  onMentorChanged?: () => void;
+}
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -426,7 +435,77 @@ function FinanceurSection({ mentoratId }: { mentoratId: number }) {
   );
 }
 
-export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
+// ── Changement de mentor (APC uniquement) ──────────────────────────────────────
+interface MentorOption {
+  id: number; name: string; association: string;
+  disponibilite: number; is_active: boolean;
+}
+
+function MentorReassignPanel({ mentoratId, currentMentorId, onCancel, onSaved }: {
+  mentoratId: number;
+  currentMentorId: number;
+  onCancel: () => void;
+  onSaved: () => void;
+}) {
+  const [options, setOptions]   = useState<MentorOption[]>([]);
+  const [loadingOpts, setLoadingOpts] = useState(true);
+  const [selected, setSelected] = useState(String(currentMentorId));
+  const [saving, setSaving]     = useState(false);
+  const [err, setErr]           = useState('');
+
+  useEffect(() => {
+    api.get<{ mentors: MentorOption[] }>('/pole/mentors/')
+      .then(r => setOptions(r.data.mentors ?? []))
+      .catch(() => setErr('Erreur de chargement des mentors du pôle.'))
+      .finally(() => setLoadingOpts(false));
+  }, []);
+
+  const handleSave = async () => {
+    const newId = Number(selected);
+    if (newId === currentMentorId) { onCancel(); return; }
+    setSaving(true); setErr('');
+    try {
+      await api.patch(`/pole/mentorats/${mentoratId}/`, { mentor_id: newId });
+      onSaved();
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { error?: string } } };
+      setErr(error.response?.data?.error ?? 'Erreur lors du changement de mentor.');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="mt-2 p-4 bg-white border-2 border-ora-blue/20 rounded-xl space-y-3">
+      {err && <p className="text-xs text-red-600">{err}</p>}
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+          Choisir un autre mentor du pôle
+        </label>
+        {loadingOpts ? (
+          <p className="text-xs text-slate-400">Chargement…</p>
+        ) : (
+          <select value={selected} onChange={e => setSelected(e.target.value)} className={INPUT}>
+            {options.map(o => (
+              <option key={o.id} value={o.id} disabled={o.id !== currentMentorId && (!o.is_active || o.disponibilite <= 0)}>
+                {o.name} — {o.association}
+                {o.id === currentMentorId ? ' (mentor actuel)' : ` (${o.disponibilite} place${o.disponibilite > 1 ? 's' : ''} dispo.)`}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <button type="button" onClick={onCancel}
+          className="flex-1 py-2 text-sm text-slate-500 border border-slate-200 rounded-xl">Annuler</button>
+        <button type="button" onClick={handleSave} disabled={saving || loadingOpts}
+          className="flex-1 py-2 text-sm font-bold text-white bg-ora-blue rounded-xl disabled:opacity-50">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Enregistrer'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassignMentor, onMentorChanged }: Props) {
   const [data, setData]         = useState<SuiviDetail | null>(null);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
@@ -446,7 +525,13 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
   const [typeMentorat, setTypeMentorat]       = useState('');
   const [closureCode, setClosureCode]         = useState('');
   const [closedAt, setClosedAt]               = useState('');
+  const [editingMentor, setEditingMentor]     = useState(false);
 
+  const refreshMentorOnly = () => {
+    api.get<SuiviDetail>(`/ap/mentorats/${mentoratId}/suivi-detail/`).then(r => {
+      setData(prev => prev ? { ...prev, mentor: r.data.mentor } : r.data);
+    }).catch(() => {});
+  };
 
   useEffect(() => {
     api.get<SuiviDetail>(`/ap/mentorats/${mentoratId}/suivi-detail/`).then(r => {
@@ -623,9 +708,15 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
               {/* Mentor */}
               {data.mentor && (
                 <section>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <GraduationCap className="w-3.5 h-3.5" />Mentor
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <GraduationCap className="w-3.5 h-3.5" />Mentor
+                    </h3>
+                    {canReassignMentor && !editingMentor && (
+                      <button onClick={() => setEditingMentor(true)}
+                        className="text-xs text-ora-blue hover:underline">Modifier</button>
+                    )}
+                  </div>
                   <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                     <p className="font-semibold text-slate-900">{data.mentor.first_name} {data.mentor.last_name}
                       {data.mentor.is_trained && <span className="ml-2 text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-full">Formé{data.mentor.training_date ? ` (${new Date(data.mentor.training_date).toLocaleDateString('fr-FR', {month:'short',year:'numeric'})})` : ''}</span>}
@@ -646,6 +737,18 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved }: Props) {
                       </div>
                     )}
                   </div>
+                  {editingMentor && (
+                    <MentorReassignPanel
+                      mentoratId={data.id}
+                      currentMentorId={data.mentor.id}
+                      onCancel={() => setEditingMentor(false)}
+                      onSaved={() => {
+                        setEditingMentor(false);
+                        refreshMentorOnly();
+                        onMentorChanged?.();
+                      }}
+                    />
+                  )}
                 </section>
               )}
 

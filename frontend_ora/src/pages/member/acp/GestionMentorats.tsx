@@ -829,6 +829,8 @@ export function GestionMentorats() {
           mentoratId={showSuiviModal}
           onClose={() => setShowSuiviModal(null)}
           onSaved={() => { setShowSuiviModal(null); loadData(); }}
+          canReassignMentor
+          onMentorChanged={loadData}
         />
       )}
 
