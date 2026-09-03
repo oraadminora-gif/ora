@@ -32,12 +32,17 @@ class PendingRequestsView(APIView):
         pole_id = user.animateur.pole_id
         demandes = YoungRequest.objects.filter(
             pole_id=pole_id, status__in=['NEW', 'PENDING']
-        ).select_related('etablissement').order_by('-created_at')
+        ).select_related('etablissement', 'mentorat', 'mentorat__mentor').order_by('-created_at')
 
         data = [self._serialize(d) for d in demandes]
         return Response({"count": len(data), "demandes": data})
 
     def _serialize(self, d):
+        # Mentorat PENDING = proposition envoyée à un mentor, en attente de
+        # sa réponse (acceptation/refus) — voir PublicMentoratAcceptanceView.
+        pending_mentor = None
+        if hasattr(d, 'mentorat') and d.mentorat.status == 'PENDING':
+            pending_mentor = d.mentorat.mentor
         return {
             "id":              d.id,
             "jeune":           f"{d.first_name} {d.last_name}",
@@ -61,6 +66,11 @@ class PendingRequestsView(APIView):
             "date_demande":    d.created_at,
             "besoins":         d.needs_description,
             "raison_transfert": d.raison_transfert or '',
+            "mentorat_pending":    pending_mentor is not None,
+            "pending_mentor_name": (
+                f"{pending_mentor.first_name} {pending_mentor.last_name}"
+                if pending_mentor else None
+            ),
         }
 
     @staticmethod
@@ -92,6 +102,12 @@ class RerouterDemandeView(APIView):
 
         if demande.status not in ('NEW', 'PENDING'):
             return Response({"error": "Seules les demandes NEW ou PENDING peuvent être transférées"}, status=400)
+
+        if hasattr(demande, 'mentorat') and demande.mentorat.status == 'PENDING':
+            return Response(
+                {"error": "Cette demande a une proposition d'affectation en attente de réponse du mentor. Attendez sa réponse avant de la transférer."},
+                status=400,
+            )
 
         new_pole_id = request.data.get('pole_id')
         if not new_pole_id:

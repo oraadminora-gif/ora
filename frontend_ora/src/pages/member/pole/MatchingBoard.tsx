@@ -37,6 +37,8 @@ interface Demande {
   situation_label: string;
   date_previsionnelle: string;
   raison_transfert?: string;
+  mentorat_pending?: boolean;
+  pending_mentor_name?: string | null;
 }
 
 interface MentorSuggestion {
@@ -238,6 +240,13 @@ function DemandeCard({ demande, selected, onClick }: {
           </span>
         )}
       </div>
+
+      {demande.mentorat_pending && (
+        <p className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg">
+          <Clock className="w-3.5 h-3.5 shrink-0" />
+          En attente de la réponse de {demande.pending_mentor_name ?? 'ce mentor'}
+        </p>
+      )}
 
       {/* Contact */}
       <div className="space-y-0.5 mb-2">
@@ -996,8 +1005,8 @@ export function MatchingBoard() {
         } catch { /* non bloquant */ }
       }
 
-      setAssignSuccess(res.data?.message ?? 'Mentorat créé avec succès.');
-      setDemandes(prev => prev.filter(d => d.id !== selectedDemande.id));
+      setAssignSuccess(res.data?.message ?? 'Proposition envoyée au mentor.');
+      fetchDemandes();
       setMentors([]);
       setSelectedDemande(null);
       setSuggestions(null);

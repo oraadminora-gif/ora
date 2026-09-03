@@ -1,6 +1,7 @@
 import logging
 import threading
 
+from django.db import transaction
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.conf import settings
@@ -13,17 +14,13 @@ from core.models import AcceptanceMentorat
 logger = logging.getLogger(__name__)
 
 
-def _send_response_notification(acceptance_id: int):
-    try:
-        acc = AcceptanceMentorat.objects.select_related(
-            'mentorat', 'mentorat__mentor',
-            'mentorat__young_request', 'mentorat__pole',
-            'mentorat__ap_responsable',
-            'assigned_by',
-        ).get(id=acceptance_id)
-    except AcceptanceMentorat.DoesNotExist:
-        return
-
+def _send_response_notification(acc: AcceptanceMentorat):
+    """
+    Reçoit l'objet AcceptanceMentorat déjà chargé (select_related) en mémoire.
+    En cas de refus, le mentorat est supprimé en base AVANT l'envoi de ce mail :
+    on ne doit donc jamais re-requêter la DB ici, seulement lire les attributs
+    déjà résolus par select_related sur l'objet Python passé en argument.
+    """
     m      = acc.mentorat
     mentor = m.mentor
     jeune  = m.young_request
@@ -88,7 +85,10 @@ class PublicMentoratAcceptanceView(APIView):
                 'mentorat__young_request', 'mentorat__pole',
             ).get(token=token)
         except AcceptanceMentorat.DoesNotExist:
-            return Response({"error": "Lien invalide ou expiré."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Lien invalide, déjà traité (mentor réaffecté depuis) ou expiré."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         m = acc.mentorat
         return Response({
@@ -109,7 +109,10 @@ class PublicMentoratAcceptanceView(APIView):
                 'assigned_by',
             ).get(token=token)
         except AcceptanceMentorat.DoesNotExist:
-            return Response({"error": "Lien invalide ou expiré."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Lien invalide, déjà traité (mentor réaffecté depuis) ou expiré."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if acc.statut != 'PENDING':
             return Response({
@@ -125,18 +128,37 @@ class PublicMentoratAcceptanceView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        m = acc.mentorat
         acc.statut     = 'ACCEPTE' if action == 'accept' else 'REFUSE'
         acc.repondu_at = timezone.now()
-        acc.save()
+
+        with transaction.atomic():
+            if action == 'accept':
+                acc.save()
+                # PENDING → ACTIVE : décompte la disponibilité du mentor
+                m.activer()
+                m.young_request.status = 'ASSIGNED'
+                m.young_request.save()
+            else:
+                # Le mentor refuse : le mentorat PENDING n'a jamais réellement
+                # démarré, on le supprime pour libérer la demande — elle
+                # réapparaît immédiatement sur le tableau de matching pour
+                # être affectée à un autre mentor. La suppression du
+                # mentorat entraîne (CASCADE) celle de cet AcceptanceMentorat.
+                m.delete()
 
         threading.Thread(
             target=_send_response_notification,
-            args=(acc.id,),
+            args=(acc,),
             daemon=True,
         ).start()
 
         return Response({
             "success": True,
             "statut":  acc.statut,
-            "message": "Votre réponse a bien été enregistrée. Merci !",
+            "message": (
+                "Merci, votre acceptation a bien été enregistrée. Le mentorat est désormais actif !"
+                if action == 'accept' else
+                "Votre refus a bien été enregistré. Merci de nous en avoir informés."
+            ),
         })

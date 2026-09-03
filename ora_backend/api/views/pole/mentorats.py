@@ -201,6 +201,8 @@ class PoleMentoratDetailView(APIView):
                     {"error": f"Transition {m.status} → {new_status} non autorisée"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            was_active     = m.status == 'ACTIVE'
+            was_pending    = m.status == 'PENDING'
             was_terminated = m.status in ('CLOSED', 'ABORTED')
             if new_status in ('CLOSED', 'ABORTED'):
                 if not data.get('closure_reason', '').strip():
@@ -209,17 +211,42 @@ class PoleMentoratDetailView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 m.closure_reason = data['closure_reason'].strip()
-                if not was_terminated:
-                    # Passage depuis ACTIVE : libère une place et ferme la demande
-                    m.closed_at = timezone.now().date()
+                m.closed_at = timezone.now().date()
+                if was_active:
+                    # Libère une place uniquement si le mentorat l'occupait
+                    # réellement (un PENDING jamais accepté n'en occupait pas)
                     mentor = m.mentor
                     mentor.disponibilite_reelle = min(
                         mentor.disponibilite_reelle + 1, mentor.max_capacity
                     )
                     mentor.save()
+                if not was_terminated:
+                    # Depuis ACTIVE ou PENDING : la demande est considérée close
                     m.young_request.status = 'CLOSED'
                     m.young_request.save()
+                if was_pending:
+                    # Invalide le lien email d'acceptation encore en attente,
+                    # pour qu'un clic tardif du mentor ne réactive pas ce
+                    # mentorat que l'ACP vient de traiter manuellement.
+                    try:
+                        m.acceptance.delete()
+                    except Exception:
+                        pass
                 # Sinon (CLOSED↔ABORTED) : juste mise à jour du statut + raison, pas d'effet de bord
+            elif new_status == 'ACTIVE' and was_pending:
+                # Activation manuelle par l'ACP d'un mentorat en attente de
+                # réponse (ex. accord obtenu par téléphone) : décompte la
+                # disponibilité du mentor et marque la demande assignée.
+                mentor = m.mentor
+                mentor.disponibilite_reelle = max(0, mentor.disponibilite_reelle - 1)
+                mentor.save()
+                m.assigned_at = m.assigned_at or timezone.now().date()
+                m.young_request.status = 'ASSIGNED'
+                m.young_request.save()
+                try:
+                    m.acceptance.delete()
+                except Exception:
+                    pass
             elif new_status == 'ACTIVE' and was_terminated:
                 # Réactivation par l'ACP : efface tous les champs de clôture
                 m.closed_at              = None

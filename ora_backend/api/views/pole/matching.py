@@ -1,7 +1,6 @@
 import logging
 import threading
 from django.db import transaction, IntegrityError
-from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.conf import settings
 from rest_framework.views import APIView
@@ -287,8 +286,14 @@ class AssignMentorView(APIView):
             )
 
         # ── Vérification doublon ─────────────────────────────────
-        if Mentorat.objects.filter(young_request=young_request).exists():
-            # Corrige l'incohérence en base
+        existing = Mentorat.objects.filter(young_request=young_request).first()
+        if existing:
+            if existing.status == 'PENDING':
+                return Response(
+                    {"error": "Une proposition d'affectation est déjà en attente de réponse du mentor pour cette demande."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            # Incohérence en base : mentorat actif/clos mais demande non marquée assignée
             if young_request.status in ('NEW', 'PENDING'):
                 young_request.status = 'ASSIGNED'
                 young_request.save()
@@ -309,15 +314,18 @@ class AssignMentorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ── Création du mentorat ─────────────────────────────────
+        # ── Création du mentorat (en attente de la réponse du mentor) ────
+        # Le mentorat n'est activé (et la place du mentor décomptée) que
+        # lorsque le mentor accepte via le lien reçu par email — voir
+        # PublicMentoratAcceptanceView. S'il refuse, ce mentorat PENDING est
+        # supprimé et la demande reste disponible pour une nouvelle affectation.
         try:
             mentorat = Mentorat.objects.create(
                 mentor=mentor,
                 young_request=young_request,
                 ap_responsable=ap_responsable,
                 pole=mentor.pole,
-                status='ACTIVE',
-                assigned_at=timezone.now().date(),
+                status='PENDING',
             )
         except IntegrityError:
             return Response(
@@ -325,11 +333,9 @@ class AssignMentorView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        # ── Mises à jour ─────────────────────────────────────────
-        mentor.disponibilite_reelle -= 1
-        mentor.save()
-
-        young_request.status = 'ASSIGNED'
+        # ── Mise à jour de la demande (reste visible sur le tableau,
+        # avec un badge « en attente de réponse du mentor ») ────────────
+        young_request.status = 'PENDING'
         young_request.save()
 
         # ── Emails de notification (non bloquants) ───────────────
@@ -375,9 +381,9 @@ class AssignMentorView(APIView):
                     },
                 },
                 "message": (
-                    f"Mentorat créé. "
-                    f"{ap_responsable.first_name} ({ap_responsable.association.name}) "
-                    f"assure le suivi."
+                    f"Proposition envoyée à {mentor.first_name} {mentor.last_name}. "
+                    f"Le mentorat sera créé dès son acceptation "
+                    f"({ap_responsable.first_name} de {ap_responsable.association.name} en assurera le suivi)."
                 ),
             },
             status=status.HTTP_201_CREATED,
