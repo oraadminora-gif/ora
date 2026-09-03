@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
 from core.models.mentorat import CLOSURE_REASON_CHOICES
+from core.models.young_request import validate_birth_date
 from api.permissions import IsAP, IsACP, IsCN
 
 # ─────────────────────────────────────────────────────────────
@@ -1219,6 +1220,9 @@ class APUpdateJeuneView(APIView):
 
         # Identité
         if 'birth_date' in data:
+            birth_date_error = validate_birth_date(data['birth_date'])
+            if birth_date_error:
+                return Response({'error': birth_date_error}, status=status.HTTP_400_BAD_REQUEST)
             req.birth_date = data['birth_date'] or None
         if 'gender' in data:
             req.gender = str(data['gender']).strip()

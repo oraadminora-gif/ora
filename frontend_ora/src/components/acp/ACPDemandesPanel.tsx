@@ -20,6 +20,13 @@ interface PoleOption { id: number; name: string; code: string }
 interface EtabOption  { id: number; nom: string; code_postal: string }
 interface DeptOption  { id: number; code: string; name: string; label: string }
 
+// Date de naissance : pas dans le futur, au moins 16 ans
+const MAX_BIRTH_DATE = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 16);
+  return d.toISOString().split('T')[0];
+})();
+
 
 function StatusBadge({ status }: { status: ACPDemande['status'] }) {
   return status === 'NEW' ? (
@@ -154,7 +161,7 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
               </div>
               <div>
                 <label className={labelCls}>Date de naissance</label>
-                <input type="date" value={form.birth_date} onChange={set('birth_date')} className={inputCls} />
+                <input type="date" value={form.birth_date} max={MAX_BIRTH_DATE} onChange={set('birth_date')} className={inputCls} />
               </div>
               <div>
                 <label className={labelCls}>Genre</label>

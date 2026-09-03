@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from core.models import YoungRequest, Pole, Etablissement, Department
+from core.models.young_request import validate_birth_date
 from core.services.geocoding import geocode_commune
 from api.permissions import IsACP, IsCN, IsAnimateur
 
@@ -203,6 +204,10 @@ class CreateDemandeView(APIView):
                 {"error": "Champs requis : first_name, last_name, needs_description"},
                 status=400,
             )
+
+        birth_date_error = validate_birth_date(data.get('birth_date'))
+        if birth_date_error:
+            return Response({"error": birth_date_error}, status=400)
 
         situation = (data.get('situation') or '').strip()
         if situation and not data.get('date_previsionnelle'):

@@ -10,6 +10,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 from core.models import YoungRequest, Pole, Department, Animateur
+from core.models.young_request import validate_birth_date
 from core.services.geocoding import geocode_commune
 
 logger = logging.getLogger(__name__)
@@ -169,6 +170,10 @@ class CreateYoungRequestView(APIView):
                 {"error": f"Champs obligatoires manquants: {', '.join(missing)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        birth_date_error = validate_birth_date(data.get('birth_date'))
+        if birth_date_error:
+            return Response({"error": birth_date_error}, status=status.HTTP_400_BAD_REQUEST)
 
         situation = data.get('situation', '')
         if situation and not data.get('date_previsionnelle'):

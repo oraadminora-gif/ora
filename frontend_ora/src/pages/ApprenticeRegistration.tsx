@@ -39,6 +39,14 @@ const DIPLOME_OPTIONS = [
 
 const INPUT = 'w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
 
+// ── Contraintes date de naissance : pas dans le futur, au moins 16 ans ────────
+const MIN_AGE = 16;
+const maxBirthDate = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MIN_AGE);
+  return d.toISOString().split('T')[0];
+})();
+
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
@@ -118,6 +126,14 @@ export function ApprenticeRegistration() {
     }
     if (noPoleFound || !formData.poleId) {
       setError("Aucun pôle ne couvre votre département. Veuillez nous contacter."); return;
+    }
+    if (formData.birthDate && formData.birthDate > maxBirthDate) {
+      setError(
+        formData.birthDate > new Date().toISOString().split('T')[0]
+          ? 'La date de naissance ne peut pas être dans le futur.'
+          : `Vous devez avoir au moins ${MIN_AGE} ans pour vous inscrire.`
+      );
+      return;
     }
     setLoading(true);
     try {
@@ -226,8 +242,8 @@ export function ApprenticeRegistration() {
               </Field>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Date de naissance">
-                <input type="date" value={formData.birthDate}
+              <Field label="Date de naissance" hint={`16 ans minimum`}>
+                <input type="date" value={formData.birthDate} max={maxBirthDate}
                   onChange={set('birthDate')} className={INPUT} />
               </Field>
               <Field label="Genre">

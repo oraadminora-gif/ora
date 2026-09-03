@@ -1,5 +1,35 @@
 # core/models/young_request.py
+from datetime import date
+
 from django.db import models
+
+MIN_AGE_YEARS = 16
+
+
+def validate_birth_date(birth_date):
+    """
+    Retourne un message d'erreur (str) si la date de naissance est invalide
+    (dans le futur, ou moins de MIN_AGE_YEARS ans), sinon None.
+    `birth_date` peut être un objet date ou une chaîne 'YYYY-MM-DD'.
+    """
+    if not birth_date:
+        return None
+    if isinstance(birth_date, str):
+        try:
+            birth_date = date.fromisoformat(birth_date)
+        except ValueError:
+            return "Date de naissance invalide."
+
+    today = date.today()
+    if birth_date > today:
+        return "La date de naissance ne peut pas être dans le futur."
+
+    age = today.year - birth_date.year - (
+        (today.month, today.day) < (birth_date.month, birth_date.day)
+    )
+    if age < MIN_AGE_YEARS:
+        return f"Le jeune doit avoir au moins {MIN_AGE_YEARS} ans."
+    return None
 
 
 class YoungRequest(models.Model):

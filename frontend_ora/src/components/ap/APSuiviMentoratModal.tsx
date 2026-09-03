@@ -76,6 +76,13 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 
 const INPUT = 'w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue';
 
+// Date de naissance : pas dans le futur, au moins 16 ans
+const MAX_BIRTH_DATE = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 16);
+  return d.toISOString().split('T')[0];
+})();
+
 // ── Diplômes disponibles ──────────────────────────────────────────────────────
 const DIPLOMES = [
   { value: 'CAP',       label: 'Niveau 3 — CAP' },
@@ -168,7 +175,10 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
       setAutreNom(res.data.etablissement_id ? '' : res.data.nom_etablissement);
       onUpdate(res.data);
       setEditing(false);
-    } catch { setErr('Erreur de sauvegarde.'); }
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { error?: string } } };
+      setErr(error.response?.data?.error ?? 'Erreur de sauvegarde.');
+    }
     finally { setSaving(false); }
   };
 
@@ -232,7 +242,7 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
         </div>
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date de naissance</label>
-          <input type="date" value={form.birth_date} onChange={set('birth_date')} className={INPUT} />
+          <input type="date" value={form.birth_date} max={MAX_BIRTH_DATE} onChange={set('birth_date')} className={INPUT} />
         </div>
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Genre</label>
