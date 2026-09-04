@@ -9,10 +9,12 @@ from .messages      import CNMessagesView, CNMessageDetailView
 from .mentors       import CNMenteursListView, CNMenteurDetailView
 from .export_mentorats import ExportMentoratsNationalCsvView
 from .export_mentors import ExportMentorsNationalCsvView
+from .export_animateurs import ExportAnimateursNationalCsvView
 
 urlpatterns = [
-    path('mentorats/export-csv/', ExportMentoratsNationalCsvView.as_view(), name='cn-mentorats-export-csv'),
-    path('mentors/export-csv/',   ExportMentorsNationalCsvView.as_view(),   name='cn-mentors-export-csv'),
+    path('mentorats/export-csv/',   ExportMentoratsNationalCsvView.as_view(),   name='cn-mentorats-export-csv'),
+    path('mentors/export-csv/',     ExportMentorsNationalCsvView.as_view(),     name='cn-mentors-export-csv'),
+    path('animateurs/export-csv/',  ExportAnimateursNationalCsvView.as_view(),  name='cn-animateurs-export-csv'),
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
     path('implantations/',       CNImplantationsView.as_view(),   name='cn-implantations'),
     path('animateurs/',          CNAnimateursView.as_view(),      name='cn-animateurs'),

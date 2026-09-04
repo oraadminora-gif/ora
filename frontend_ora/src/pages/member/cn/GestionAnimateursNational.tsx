@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import {
   Plus, Search, Loader2, AlertCircle, Pencil, X,
   CheckCircle, UserX, UserCheck, Shield, Key, Copy, Users,
-  ChevronDown,
+  ChevronDown, Download,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -321,7 +321,29 @@ export function GestionAnimateursNational() {
   const [tempPasswordInfo, setTempPasswordInfo] = useState<{
     name: string; email: string; password: string;
   } | null>(null);
+  const [exporting, setExporting] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get('/cn/animateurs/export-csv/?file_format=xlsx', { responseType: 'blob' });
+      const disposition = res.headers['content-disposition'] ?? '';
+      const match = disposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : `animateurs_national_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const url  = URL.createObjectURL(new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }));
+      const link = document.createElement('a');
+      link.href = url; link.setAttribute('download', filename);
+      document.body.appendChild(link); link.click();
+      document.body.removeChild(link); URL.revokeObjectURL(url);
+    } catch {
+      alert("Erreur lors de l'export des animateurs.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // ── Chargement des pôles (une seule fois) ─────────────────────────────────
   useEffect(() => {
@@ -412,10 +434,19 @@ export function GestionAnimateursNational() {
             {tc ? `${tc.all} animateur${tc.all > 1 ? 's' : ''} · ${tc.acps} APC · ${tc.aps} AP` : 'Tous les pôles · APC et AP'}
           </p>
         </div>
-        <button onClick={() => { setEditingAnim(null); setModalMode('create'); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-all shadow-sm shadow-violet-500/20">
-          <Plus className="w-4 h-4" />Nouvel animateur
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleExport} disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-60 transition-all">
+            {exporting
+              ? <><Loader2 className="w-4 h-4 animate-spin" />Export en cours…</>
+              : <><Download className="w-4 h-4" />Exporter animateurs</>
+            }
+          </button>
+          <button onClick={() => { setEditingAnim(null); setModalMode('create'); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-all shadow-sm shadow-violet-500/20">
+            <Plus className="w-4 h-4" />Nouvel animateur
+          </button>
+        </div>
       </div>
 
       {/* Stats bar */}
