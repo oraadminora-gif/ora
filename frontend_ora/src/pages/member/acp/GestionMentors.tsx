@@ -113,16 +113,23 @@ function TempPasswordDialog({ name, email, password, onClose }: {
 // MODAL
 // ─────────────────────────────────────────────────────────────
 function MentorModal({
-  mode, mentor, associations, departments, isAP, onClose, onSaved,
+  mode, mentor, associations, departments, isAP, myAssociationId, onClose, onSaved,
 }: {
   mode: ModalMode;
   mentor: Mentor | null;
   associations: Association[];
   departments: Department[];
   isAP: boolean;
+  myAssociationId: number | null;
   onClose: () => void;
   onSaved: (m: Mentor, tempPassword?: string) => void;
 }) {
+  // AP : n'affiche/ne verrouille que sa propre association — y compris pour un
+  // animateur double-rôle (AP + APC) pour qui le backend renvoie les 4
+  // associations (son is_acp reste vrai même quand il agit "en tant qu'AP").
+  const visibleAssociations = isAP
+    ? associations.filter(a => a.id === myAssociationId)
+    : associations;
   const [form, setForm] = useState<MentorForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,11 +156,11 @@ function MentorModal({
     } else {
       // AP : son unique association est présélectionnée et verrouillée.
       // ACP : aucune présélection, libre choix parmi les associations.
-      const defaultAssoc = isAP ? String(associations[0]?.id ?? '') : '';
+      const defaultAssoc = isAP ? String(myAssociationId ?? '') : '';
       setForm({ ...EMPTY_FORM, association_id: defaultAssoc });
     }
     setError(null);
-  }, [mode, mentor, associations, isAP]);
+  }, [mode, mentor, associations, isAP, myAssociationId]);
 
   const set = (field: keyof MentorForm) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -270,7 +277,7 @@ function MentorModal({
               disabled={isAP}
               className={INPUT}>
               <option value="">— Choisir —</option>
-              {associations.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {visibleAssociations.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
             {isAP && (
               <p className="text-[11px] text-slate-400 mt-1">
@@ -728,6 +735,7 @@ export function GestionMentors() {
           associations={associations}
           departments={departments}
           isAP={isAP}
+          myAssociationId={myAssociationId}
           onClose={() => setModalMode(null)}
           onSaved={handleSaved}
         />
