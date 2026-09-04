@@ -7,7 +7,7 @@ import {
   CheckCircle, XCircle,
   Users, UserCheck, GraduationCap,
   ToggleLeft, ToggleRight,
-  ChevronDown, Filter,
+  ChevronDown, Filter, Download,
 } from 'lucide-react';
 
 interface Association { id: number; code: string; name: string; }
@@ -61,7 +61,29 @@ export function CNMentors() {
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
   const [assocId, setAssocId]           = useState('');
   const [togglingId, setTogglingId]     = useState<number | null>(null);
+  const [exporting, setExporting]       = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get('/cn/mentors/export-csv/?file_format=xlsx', { responseType: 'blob' });
+      const disposition = res.headers['content-disposition'] ?? '';
+      const match = disposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : `mentors_national_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const url  = URL.createObjectURL(new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }));
+      const link = document.createElement('a');
+      link.href = url; link.setAttribute('download', filename);
+      document.body.appendChild(link); link.click();
+      document.body.removeChild(link); URL.revokeObjectURL(url);
+    } catch {
+      alert("Erreur lors de l'export des mentors.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // ── Fetch paginé ──────────────────────────────────────────────────────────
   const fetchMentors = useCallback(async (
@@ -137,13 +159,25 @@ export function CNMentors() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Gestion des Mentors</h1>
-        <p className="text-sm text-slate-500 mt-0.5">
-          {tc
-            ? `${tc.all} mentor${tc.all > 1 ? 's' : ''} · ${tc.actifs} actifs · ${tc.inactifs} inactifs`
-            : '—'}
-        </p>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Gestion des Mentors</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {tc
+              ? `${tc.all} mentor${tc.all > 1 ? 's' : ''} · ${tc.actifs} actifs · ${tc.inactifs} inactifs`
+              : '—'}
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl disabled:opacity-60 transition-all"
+        >
+          {exporting
+            ? <><Loader2 className="w-4 h-4 animate-spin" />Export en cours…</>
+            : <><Download className="w-4 h-4" />Exporter mentors</>
+          }
+        </button>
       </div>
 
       {/* Stats */}

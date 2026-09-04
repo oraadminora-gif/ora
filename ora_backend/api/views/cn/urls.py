@@ -8,9 +8,11 @@ from .retribution   import RetributionView
 from .messages      import CNMessagesView, CNMessageDetailView
 from .mentors       import CNMenteursListView, CNMenteurDetailView
 from .export_mentorats import ExportMentoratsNationalCsvView
+from .export_mentors import ExportMentorsNationalCsvView
 
 urlpatterns = [
     path('mentorats/export-csv/', ExportMentoratsNationalCsvView.as_view(), name='cn-mentorats-export-csv'),
+    path('mentors/export-csv/',   ExportMentorsNationalCsvView.as_view(),   name='cn-mentors-export-csv'),
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
     path('implantations/',       CNImplantationsView.as_view(),   name='cn-implantations'),
     path('animateurs/',          CNAnimateursView.as_view(),      name='cn-animateurs'),
