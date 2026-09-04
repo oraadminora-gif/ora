@@ -9,6 +9,7 @@ CLOSURE_REASON_CHOICES = [
     ('DIPLOMA_FAIL',      'Échec diplôme'),
     ('MENTEE_STOP',       'Arrêt souhaité par le mentoré'),
     ('OBJECTIVE_REACHED', 'Objectif atteint'),
+    ('OTHER',             'Autre'),
 ]
 
 CLOSURE_REASON_SCORE = {
@@ -17,6 +18,7 @@ CLOSURE_REASON_SCORE = {
     'DIPLOMA_FAIL':     -1,
     'MENTEE_STOP':       1,
     'OBJECTIVE_REACHED': 1,
+    'OTHER':             0,
 }
 
 PROBLEMATIQUES_CHOICES = [
