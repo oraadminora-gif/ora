@@ -190,13 +190,9 @@ function MentorModal({
         is_active:      form.is_active,
       };
 
-      if (mode === 'create') {
-        if (form.create_account) payload.create_account = true;
-        else if (form.link_user_email.trim()) payload.link_user_email = form.link_user_email.trim();
-      } else {
-        // edit : inclure link_user_email si renseigné
-        if (form.link_user_email.trim()) payload.link_user_email = form.link_user_email.trim();
-      }
+      // Création OU édition d'un mentor sans compte : mêmes options (créer / lier)
+      if (form.create_account) payload.create_account = true;
+      else if (form.link_user_email.trim()) payload.link_user_email = form.link_user_email.trim();
 
       const res = mode === 'create'
         ? await api.post('/pole/mentors/', payload)
@@ -348,17 +344,8 @@ function MentorModal({
                   <Link2Off className="w-3 h-3" /> Délier
                 </button>
               </div>
-            ) : isEdit ? (
-              /* Edit : pas de compte — proposer de lier un compte existant */
-              <Field label="Lier à un compte existant (email)">
-                <input type="email" value={form.link_user_email} onChange={set('link_user_email')}
-                  className={INPUT} placeholder="email@existant.fr" />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Entrez l'email d'un compte déjà créé (ex : un APC qui est aussi mentor).
-                </p>
-              </Field>
             ) : (
-              /* Création : deux options */
+              /* Création OU édition d'un mentor sans compte : deux options */
               <div className="space-y-3">
                 <Toggle
                   label="Créer un compte de connexion pour ce mentor"

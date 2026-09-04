@@ -204,7 +204,9 @@ class PoleMentorDetailView(APIView):
     GET   /pole/mentors/{id}/  – détail d'un mentor
     PATCH /pole/mentors/{id}/  – modifier un mentor (ACP : tous ; AP : seulement son association)
 
-    Champ compte (PATCH) :
+    Champ compte (PATCH), mutuellement exclusifs :
+    - create_account: true      → crée un nouveau compte (email du mentor),
+                                   retourne temp_password
     - link_user_email: "email"  → lie à un User existant
     - link_user_email: ""       → délie le compte
     """
@@ -293,8 +295,24 @@ class PoleMentorDetailView(APIView):
                     actifs = mentor.mentorats.filter(status='ACTIVE').count()
                     mentor.disponibilite_reelle = max(0, mentor.max_capacity - actifs)
 
-        # ── Liaison compte utilisateur ─────────────────────────────
-        if 'link_user_email' in data:
+        # ── Liaison / création de compte utilisateur ────────────────
+        temp_password = None
+        if data.get('create_account'):
+            # Créer un nouveau compte pour un mentor qui n'en a pas encore
+            if mentor.user_id:
+                return Response({"error": "Ce mentor a déjà un compte lié"}, status=400)
+            if User.objects.filter(email__iexact=mentor.email).exists():
+                return Response(
+                    {"error": "Un compte utilisateur avec cet email existe déjà"}, status=400
+                )
+            temp_password = _generate_temp_password()
+            mentor.user = User.objects.create_user(
+                email=mentor.email,
+                password=temp_password,
+                first_name=mentor.first_name,
+                last_name=mentor.last_name,
+            )
+        elif 'link_user_email' in data:
             link_email = data.get('link_user_email') or ''
             if link_email.strip():
                 link_email = link_email.strip().lower()
@@ -315,7 +333,10 @@ class PoleMentorDetailView(APIView):
 
         mentor.save()
         m = _annotated_mentor_qs(mentor_id=mentor.id).first()
-        return Response(_serialize_mentor(m))
+        result = _serialize_mentor(m)
+        if temp_password:
+            result['temp_password'] = temp_password
+        return Response(result)
 
     def delete(self, request, mentor_id):
         mentor, _, err = self._get_mentor_and_pole(request, mentor_id)
