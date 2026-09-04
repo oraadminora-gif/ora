@@ -7,7 +7,7 @@ from django.db.models import Sum, Count
 from datetime import date  # ✅ AJOUTÉ pour validation date
 
 from core.models import Mentorat, Department, SuiviMentorat, Etablissement
-from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES
+from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES, POSITIVE_CLOSURE_REASONS
 from api.permissions import IsMentor
 
 
@@ -452,8 +452,7 @@ class MentorCloturerMentoratView(APIView):
         reason_text         = request.data.get('reason', closure_reason_code)
 
         # Dériver l'action depuis le code de raison
-        POSITIVE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
-        action = 'CLOSED' if closure_reason_code in POSITIVE_REASONS else 'ABORTED'
+        action = 'CLOSED' if closure_reason_code in POSITIVE_CLOSURE_REASONS else 'ABORTED'
 
         # Enregistrer la demande — la clôture effective sera faite par l'AP
         mentorat.cloture_en_attente          = True

@@ -83,6 +83,11 @@ const MAX_BIRTH_DATE = (() => {
   return d.toISOString().split('T')[0];
 })();
 
+// Raisons de clôture considérées comme un succès → statut CLOSED.
+// Toute autre raison → arrêt prématuré, statut ABORTED (même logique que
+// côté mentor et que la clôture directe depuis la fiche mentor).
+const POSITIVE_CLOSURE_REASONS = ['OBJECTIVE_REACHED', 'MENTEE_STOP'];
+
 // ── Diplômes disponibles ──────────────────────────────────────────────────────
 const DIPLOMES = [
   { value: 'CAP',       label: 'Niveau 3 — CAP' },
@@ -612,6 +617,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
   };
 
   const canCloturer = closureCode && closedAt && data?.status === 'ACTIVE';
+  const closureWillAbort = closureCode !== '' && !POSITIVE_CLOSURE_REASONS.includes(closureCode);
 
   const handleCloturer = async () => {
     if (!canCloturer) return;
@@ -899,6 +905,11 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
                   {!canCloturer && (closedAt || closureCode) && (
                     <p className="text-xs text-amber-600">Complétez la date ET la raison pour pouvoir clôturer.</p>
                   )}
+                  {closureCode && (
+                    <p className={`text-xs font-semibold ${closureWillAbort ? 'text-orange-600' : 'text-emerald-600'}`}>
+                      → Ce mentorat sera enregistré comme {closureWillAbort ? '« Abandonné » (arrêt prématuré)' : '« Clôturé » (terminé normalement)'}.
+                    </p>
+                  )}
                 </section>
               )}
 
@@ -937,9 +948,11 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
                       Enregistrer le suivi
                     </button>
                     <button onClick={handleCloturer} disabled={saving || !canCloturer}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white text-sm font-bold rounded-xl hover:bg-slate-800 disabled:opacity-40">
+                      className={`flex items-center gap-2 px-4 py-2 text-white text-sm font-bold rounded-xl disabled:opacity-40 ${
+                        closureWillAbort ? 'bg-orange-500 hover:bg-orange-600' : 'bg-slate-700 hover:bg-slate-800'
+                      }`}>
                       <Lock className="w-4 h-4" />
-                      Clôturer
+                      {closureWillAbort ? 'Arrêter' : 'Clôturer'}
                     </button>
                   </>
                 )}
