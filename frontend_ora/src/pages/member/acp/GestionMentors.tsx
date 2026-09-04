@@ -147,12 +147,13 @@ function MentorModal({
         link_user_email: '',
       });
     } else {
-      // Pré-sélectionner l'association si une seule est disponible (cas AP)
-      const defaultAssoc = associations.length === 1 ? String(associations[0].id) : '';
+      // AP : son unique association est présélectionnée et verrouillée.
+      // ACP : aucune présélection, libre choix parmi les associations.
+      const defaultAssoc = isAP ? String(associations[0]?.id ?? '') : '';
       setForm({ ...EMPTY_FORM, association_id: defaultAssoc });
     }
     setError(null);
-  }, [mode, mentor, associations]);
+  }, [mode, mentor, associations, isAP]);
 
   const set = (field: keyof MentorForm) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -266,11 +267,16 @@ function MentorModal({
 
           <Field label="Association *">
             <select required value={form.association_id} onChange={set('association_id')}
-              disabled={associations.length === 1}
+              disabled={isAP}
               className={INPUT}>
               <option value="">— Choisir —</option>
               {associations.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
+            {isAP && (
+              <p className="text-[11px] text-slate-400 mt-1">
+                Vous ne pouvez créer des mentors que pour votre propre association.
+              </p>
+            )}
           </Field>
 
           <Field label="Département">
