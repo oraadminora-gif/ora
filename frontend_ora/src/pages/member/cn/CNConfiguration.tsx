@@ -136,10 +136,6 @@ function AddMemberModal({ onClose, onCreated }: {
       const poleList: PoleOption[] = pRes.data.results ?? pRes.data ?? [];
       setPoles(poleList);
     });
-    // Fetch associations via poles endpoint or dedicated list
-    api.get('/poles/').then(res => {
-      // Use associations from annuaire if available
-    });
     // Load associations from animateurs data to get the 4 national ones
     api.get('/cn/annuaire/').then(res => {
       const map = new Map<number, AssocOption>();
