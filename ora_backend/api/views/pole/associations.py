@@ -2,7 +2,6 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Q
 
 from core.models import Association
 from api.permissions import IsAnimateur
@@ -11,9 +10,10 @@ from api.permissions import IsAnimateur
 class PoleAssociationsView(APIView):
     """
     Liste des associations disponibles pour la création de mentors.
-    - AP            → uniquement sa propre association
-    - ACP / CN      → toutes les associations présentes dans le pôle
-                      (via animateurs ou mentors déjà rattachés)
+    - AP       → uniquement sa propre association (présélectionnée, non modifiable)
+    - ACP / CN → les 4 associations nationales, qu'elles soient ou non déjà
+                 représentées dans le pôle (une APC doit pouvoir démarrer un
+                 nouveau partenariat local avec une association encore absente)
     """
     permission_classes = [IsAuthenticated, IsAnimateur]
 
@@ -23,19 +23,10 @@ class PoleAssociationsView(APIView):
             return Response({"error": "Pas de pôle"}, status=400)
 
         animateur = user.animateur
-        pole_id   = animateur.pole_id
 
         if animateur.is_acp:
-            # ACP : toutes les associations représentées dans le pôle
-            associations = (
-                Association.objects
-                .filter(
-                    Q(animateurs__pole_id=pole_id) | Q(mentors__pole_id=pole_id),
-                    is_active=True,
-                )
-                .distinct()
-                .order_by('name')
-            )
+            # ACP : les 4 associations nationales
+            associations = Association.objects.filter(is_active=True).order_by('name')
         else:
             # AP : seulement sa propre association
             associations = Association.objects.filter(
