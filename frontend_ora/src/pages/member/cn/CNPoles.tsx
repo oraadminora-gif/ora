@@ -1,5 +1,6 @@
 // src/pages/member/cn/CNPoles.tsx
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import api from '../../../services/api';
 import {
   MapPin,
@@ -12,6 +13,7 @@ import {
   Mail,
   Phone,
   X,
+  Download,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -118,6 +120,27 @@ export function CNPoles() {
     totalAnimateurs: poles.reduce((sum, p) => sum + p.animateurs_count, 0),
   };
 
+  const handleExport = () => {
+    const rows = poles.map(p => ({
+      Code:                 p.code,
+      Nom:                  p.name,
+      Statut:               p.status === 'ACTIVE' ? 'Actif' : 'Inactif',
+      "État d'activité":    p.etat_activite_label || '',
+      Villes:               (p.villes ?? []).join(' | '),
+      'Départements':       (p.departments ?? []).map(d => d.code).join(', '),
+      'Email contact':      p.contact_email || '',
+      'Téléphone contact':  p.contact_phone || '',
+      Associations:         p.associations_count,
+      Animateurs:           p.animateurs_count,
+      Mentors:              p.mentors_count,
+      'Date création':      p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pôles');
+    XLSX.writeFile(wb, `Poles_ORA_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -134,13 +157,23 @@ export function CNPoles() {
           <h1 className="text-2xl font-bold text-slate-900">Gestion des Pôles</h1>
           <p className="text-slate-600">Gérer les pôles régionaux et leurs coordinateurs</p>
         </div>
-        <button
-          onClick={() => { setEditingPole(null); setShowModal(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-ora-blue text-white rounded-lg hover:bg-ora-dark"
-        >
-          <Plus className="w-4 h-4" />
-          Nouveau pôle
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            disabled={poles.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-40"
+          >
+            <Download className="w-4 h-4" />
+            Exporter pôles
+          </button>
+          <button
+            onClick={() => { setEditingPole(null); setShowModal(true); }}
+            className="flex items-center gap-2 px-4 py-2 bg-ora-blue text-white rounded-lg hover:bg-ora-dark"
+          >
+            <Plus className="w-4 h-4" />
+            Nouveau pôle
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
