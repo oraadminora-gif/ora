@@ -16,9 +16,10 @@ from core.models import Mentor
 from api.permissions import IsCN
 
 HEADERS = [
-    'Prénom', 'Nom', 'Email', 'Téléphone',
+    'ID', 'Prénom', 'Nom', 'Email', 'Téléphone',
     'Ville', 'Code postal', 'Département',
-    'Pôle', 'Association',
+    'Code pôle', 'Pôle',
+    'Association',
     'Formé', 'Date formation',
     'Statut', 'Disponibilité', 'Capacité max',
     'Mentorats actifs', 'Mentorats terminés',
@@ -30,6 +31,7 @@ def _build_rows(mentors):
     rows = []
     for m in mentors:
         rows.append([
+            m.id,
             m.first_name,
             m.last_name,
             m.email,
@@ -37,7 +39,8 @@ def _build_rows(mentors):
             m.city or '',
             m.code_postal or '',
             m.department.name if m.department_id else '',
-            f"{m.pole.code} — {m.pole.name}" if m.pole_id else '',
+            m.pole.code if m.pole_id else '',
+            m.pole.name if m.pole_id else '',
             m.association.name if m.association_id else '',
             'Oui' if m.is_trained else 'Non',
             m.training_date.strftime('%d/%m/%Y') if m.training_date else '',
@@ -109,13 +112,13 @@ class ExportMentorsNationalCsvView(APIView):
             ws.append(row)
 
         col_widths = {
-            1: 14, 2: 16, 3: 28, 4: 14,
-            5: 18, 6: 10, 7: 16,
-            8: 20, 9: 14,
-            10: 8, 11: 14,
-            12: 10, 13: 14, 14: 14,
-            15: 14, 16: 16,
-            17: 36,
+            1: 8,  2: 14, 3: 16, 4: 28, 5: 14,
+            6: 18, 7: 10, 8: 16,
+            9: 12, 10: 20, 11: 14,
+            12: 8, 13: 14,
+            14: 10, 15: 14, 16: 14,
+            17: 14, 18: 16,
+            19: 36,
         }
         for col_idx, width in col_widths.items():
             ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
