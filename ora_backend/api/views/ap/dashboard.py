@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
-from core.models.mentorat import CLOSURE_REASON_CHOICES, POSITIVE_CLOSURE_REASONS
+from core.models.mentorat import CLOSURE_REASON_CHOICES
 from core.models.young_request import validate_birth_date
 from api.permissions import IsAP, IsACP, IsCN
 
@@ -1747,12 +1747,9 @@ class APMentoratSuiviDetailView(APIView):
                 if code not in valid_codes:
                     return Response({'error': 'Code de raison invalide.'}, status=400)
                 reason_label = dict(CLOSURE_REASON_CHOICES).get(code, code)
-                # Même dérivation que côté mentor : une raison "positive"
-                # clôture normalement, toute autre raison est un arrêt prématuré.
-                statut_final = 'CLOSED' if code in POSITIVE_CLOSURE_REASONS else 'ABORTED'
                 m.closure_reason_code = code
                 m.save()
-                m.cloturer(reason=reason_label, statut=statut_final)
+                m.cloturer(reason=reason_label, statut='CLOSED')
                 # Respecte la date choisie par l'AP
                 Mentorat.objects.filter(pk=m.pk).update(closed_at=closed_at_val)
                 m.refresh_from_db()

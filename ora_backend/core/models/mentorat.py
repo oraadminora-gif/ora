@@ -21,10 +21,6 @@ CLOSURE_REASON_SCORE = {
     'OTHER':             0,
 }
 
-# Raisons de clôture considérées comme un succès (→ statut CLOSED).
-# Toutes les autres raisons impliquent un arrêt prématuré (→ statut ABORTED).
-POSITIVE_CLOSURE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
-
 PROBLEMATIQUES_CHOICES = [
     ('AIDE_INFO',       'Aide informatique'),
     ('FLE',             'Apprentissage du Français (FLE)'),
