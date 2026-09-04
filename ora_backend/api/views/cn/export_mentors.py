@@ -16,9 +16,9 @@ from core.models import Mentor
 from api.permissions import IsCN
 
 HEADERS = [
-    'ID', 'Prénom', 'Nom', 'Email', 'Téléphone',
+    'Code pôle', 'Pôle', 'ID',
+    'Prénom', 'Nom', 'Email', 'Téléphone',
     'Ville', 'Code postal', 'Département',
-    'Code pôle', 'Pôle',
     'Association',
     'Formé', 'Date formation',
     'Statut', 'Disponibilité', 'Capacité max',
@@ -31,6 +31,8 @@ def _build_rows(mentors):
     rows = []
     for m in mentors:
         rows.append([
+            m.pole.code if m.pole_id else '',
+            m.pole.name if m.pole_id else '',
             m.id,
             m.first_name,
             m.last_name,
@@ -39,8 +41,6 @@ def _build_rows(mentors):
             m.city or '',
             m.code_postal or '',
             m.department.name if m.department_id else '',
-            m.pole.code if m.pole_id else '',
-            m.pole.name if m.pole_id else '',
             m.association.name if m.association_id else '',
             'Oui' if m.is_trained else 'Non',
             m.training_date.strftime('%d/%m/%Y') if m.training_date else '',
@@ -112,9 +112,10 @@ class ExportMentorsNationalCsvView(APIView):
             ws.append(row)
 
         col_widths = {
-            1: 8,  2: 14, 3: 16, 4: 28, 5: 14,
-            6: 18, 7: 10, 8: 16,
-            9: 12, 10: 20, 11: 14,
+            1: 12, 2: 20, 3: 8,
+            4: 14, 5: 16, 6: 28, 7: 14,
+            8: 18, 9: 10, 10: 16,
+            11: 14,
             12: 8, 13: 14,
             14: 10, 15: 14, 16: 14,
             17: 14, 18: 16,
