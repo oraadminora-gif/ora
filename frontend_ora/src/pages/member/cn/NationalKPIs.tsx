@@ -472,14 +472,14 @@ function NationalView({
                     <Pie data={genderData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={4} dataKey="value">
                       {genderData.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v) => `${v}%`} />
+                    <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
                   {genderData.map(e => (
                     <span key={e.name} className="flex items-center gap-1.5 text-xs text-slate-600">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                      {e.name} <span className="font-semibold">{e.value}%</span>
+                      {e.name} <span className="font-semibold">{e.value.toFixed(1)}%</span>
                     </span>
                   ))}
                 </div>
