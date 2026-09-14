@@ -350,11 +350,31 @@ class PoleMentorDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Bloquer la suppression si le mentor a des mentorats actifs
-        active_count = mentor.mentorats.filter(status='ACTIVE').count()
-        if active_count > 0:
+        # Bloquer la suppression dès que le mentor a le moindre historique de
+        # mentorat (actif, en attente, ou clos) : Mentorat.mentor est en
+        # CASCADE, donc supprimer le mentor effacerait aussi définitivement
+        # ses suivis, évaluations et financeurs. On préserve cet historique
+        # en redirigeant vers la désactivation (is_active=False).
+        total_count = mentor.mentorats.count()
+        if total_count > 0:
+            active_count = mentor.mentorats.filter(status='ACTIVE').count()
+            pending_count = mentor.mentorats.filter(status='PENDING').count()
+            cloture_count = total_count - active_count - pending_count
+            details = []
+            if active_count:
+                details.append(f"{active_count} actif(s)")
+            if pending_count:
+                details.append(f"{pending_count} en attente")
+            if cloture_count:
+                details.append(f"{cloture_count} clôturé(s)/abandonné(s)")
             return Response(
-                {"error": f"Impossible de supprimer ce mentor : il a {active_count} mentorat(s) actif(s)."},
+                {
+                    "error": (
+                        f"Impossible de supprimer ce mentor : il a {total_count} mentorat(s) "
+                        f"({', '.join(details)}). Désactivez-le plutôt pour conserver son historique."
+                    ),
+                    "code": "HAS_MENTORATS",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
