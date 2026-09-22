@@ -51,8 +51,8 @@ class CNDashboardView(APIView):
                 for p in poles
             ],
             "liens_admin": {
-                "gestion_poles": "/admin/core/pole/",
-                "gestion_associations": "/admin/core/association/",
-                "gestion_utilisateurs": "/admin/core/user/",
+                "gestion_poles": "/shams/core/pole/",
+                "gestion_associations": "/shams/core/association/",
+                "gestion_utilisateurs": "/shams/core/user/",
             }
         })
