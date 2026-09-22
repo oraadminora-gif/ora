@@ -123,7 +123,7 @@ echo "=== SSL Let's Encrypt ==="
 certbot --nginx -d $DOMAIN -d www.$DOMAIN \
     --non-interactive --agree-tos -m $ADMIN_EMAIL
 
-echo "=== [10/10] fail2ban — protection anti brute-force ==="
+echo "=== [10/11] fail2ban — protection anti brute-force ==="
 # [sshd] est déjà activé par défaut par le paquet fail2ban sur Ubuntu.
 # On ajoute les jails spécifiques à ORA (login JWT + login admin Django).
 cp $PROJECT_DIR/deploy/fail2ban/filter.d/ora-login.conf       /etc/fail2ban/filter.d/
@@ -132,6 +132,14 @@ cp $PROJECT_DIR/deploy/fail2ban/jail.d/ora.conf                /etc/fail2ban/jai
 systemctl enable fail2ban
 systemctl restart fail2ban
 echo "fail2ban configuré (jails : sshd, ora-login, ora-admin-login)."
+
+echo "=== [11/11] Tâches planifiées (cron) ==="
+chmod +x $PROJECT_DIR/deploy/backup_db.sh
+( crontab -l 2>/dev/null | grep -v 'deploy/backup_db.sh' | grep -v 'purge_donnees_perimees' ; \
+  echo "0 2 * * * bash $PROJECT_DIR/deploy/backup_db.sh" ; \
+  echo "0 3 1 * * cd $PROJECT_DIR/ora_backend && $PROJECT_DIR/.venv/bin/python manage.py purge_donnees_perimees --apply >> /var/log/ora/purge.log 2>&1" \
+) | crontab -
+echo "Cron installés : sauvegarde DB quotidienne (2h), purge RGPD mensuelle (1er du mois, 3h)."
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
