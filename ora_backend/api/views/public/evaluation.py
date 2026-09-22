@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.conf import settings
@@ -82,6 +83,8 @@ class PublicEvaluationView(APIView):
     POST /api/public/evaluation/{token}/ → soumettre les 3 notes + commentaire
     """
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_write'
 
     def _get_evaluation(self, token):
         try:

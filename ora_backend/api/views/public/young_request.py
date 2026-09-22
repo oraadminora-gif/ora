@@ -5,6 +5,7 @@ from datetime import date
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 
 from django.core.mail import EmailMessage
 from django.conf import settings
@@ -159,6 +160,8 @@ class CreateYoungRequestView(APIView):
     Pas d'authentification requise.
     """
     permission_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_write'
 
     def post(self, request):
         data = request.data

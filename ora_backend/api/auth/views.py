@@ -4,12 +4,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from .serializers import CustomTokenObtainPairSerializer
 
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    # Limite stricte (10/min/IP) : ralentit une attaque par force brute
+    # sur les mots de passe sans gêner un utilisateur normal.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
 
 
 class TokenRefreshView(TokenRefreshView):

@@ -84,6 +84,19 @@ DATABASES = {
     }
 }
 
+# Cache partagé (table PostgreSQL) — nécessaire pour que la limitation de
+# débit (throttling DRF ci-dessous) compte correctement les requêtes sur
+# les 3 workers Gunicorn en production : un cache en mémoire locale
+# (LocMemCache, le défaut Django) serait isolé par worker et laisserait
+# passer jusqu'à 3× la limite configurée.
+# Table créée une fois via : python manage.py createcachetable
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
+    }
+}
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -125,6 +138,22 @@ REST_FRAMEWORK = {
     
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.StandardPagination',
     'PAGE_SIZE': 20,
+
+    # Limitation de débit — protège contre les attaques par requêtes en
+    # boucle (brute-force login, spam des formulaires publics, flood).
+    # anon/user s'appliquent par défaut à toute l'API ; login/public_write
+    # sont des scopes plus stricts posés explicitement sur les vues
+    # sensibles (connexion, formulaires publics non authentifiés).
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon':         '60/minute',
+        'user':         '300/minute',
+        'login':        '10/minute',
+        'public_write': '20/minute',
+    },
 }
 
 # JWT Configuration

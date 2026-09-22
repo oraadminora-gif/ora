@@ -8,6 +8,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 
 from core.models import AcceptanceMentorat
 
@@ -77,6 +78,8 @@ def _send_response_notification(acc: AcceptanceMentorat):
 
 class PublicMentoratAcceptanceView(APIView):
     permission_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_write'
 
     def get(self, request, token):
         try:

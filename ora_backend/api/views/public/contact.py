@@ -2,6 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 from django.core.mail import send_mail
 from django.conf import settings
 import logging
@@ -22,6 +23,8 @@ SUJET_LABELS = {
 class PublicContactView(APIView):
     """POST public — formulaire de contact (sans authentification)."""
     permission_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'public_write'
 
     def post(self, request):
         data = request.data
