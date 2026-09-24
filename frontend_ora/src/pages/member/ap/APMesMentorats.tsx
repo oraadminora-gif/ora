@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import {
   Loader2, AlertCircle, Search,
   Clock, BookOpen, MapPin, GraduationCap, Users,
-  CheckCircle, XCircle, Mail, ChevronDown, ClipboardList, Download, AlertTriangle,
+  Mail, ChevronDown, ClipboardList, Download, AlertTriangle,
 } from 'lucide-react';
 import api from '../../../services/api';
 import type { APDashboardData, APMesMenutorat, APMesMentoratPage } from './APDashboard.types';
@@ -302,79 +302,6 @@ function MentoratCard({ mentorat, onSuivi }: {
   );
 }
 
-// ── Carte clôture en attente ────────────────────────────────────────────────────
-function ClotureEnAttenteCard({
-  mentorat, onAction, busy,
-}: {
-  mentorat: APMesMenutorat;
-  onAction: (id: number, action: 'confirm' | 'reject', message?: string) => void;
-  busy: number | null;
-}) {
-  const isClose = mentorat.cloture_action_demandee === 'CLOSED';
-  const [message, setMessage] = useState(mentorat.cloture_message_demandee ?? '');
-
-  return (
-    <div className={`rounded-xl border-2 p-4 space-y-3 ${
-      isClose ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/20'
-    }`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-              isClose ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-600 bg-red-100 border-red-200'
-            }`}>
-              {isClose ? 'Demande de clôture' : "Demande d'arrêt"}
-            </span>
-          </div>
-          <p className="text-sm font-bold text-slate-800 mt-1">{mentorat.mentor.name}</p>
-          {mentorat.jeune && (
-            <p className="text-xs text-slate-500">Jeune : <span className="font-semibold">{mentorat.jeune.name}</span></p>
-          )}
-        </div>
-        <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-      </div>
-      {mentorat.cloture_reason_demandee && (
-        <div className="bg-white/70 rounded-lg px-3 py-2 border border-slate-100">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Raison (mentor)</p>
-          <p className="text-xs text-slate-700">{mentorat.cloture_reason_demandee}</p>
-        </div>
-      )}
-      <div>
-        <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-          <Mail className="w-3 h-3" /> Message au jeune
-          <span className="font-normal normal-case text-slate-300">(modifiable)</span>
-        </label>
-        <textarea
-          rows={5}
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue resize-y bg-white transition-all"
-          placeholder="Ce message sera envoyé au jeune lors de la confirmation…"
-        />
-        <p className="text-[10px] text-slate-300 mt-1">Envoyé uniquement si vous confirmez la clôture.</p>
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={() => onAction(mentorat.id, 'confirm', message)}
-          disabled={busy === mentorat.id}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-        >
-          {busy === mentorat.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-          Confirmer
-        </button>
-        <button
-          onClick={() => onAction(mentorat.id, 'reject', message)}
-          disabled={busy === mentorat.id}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-        >
-          <XCircle className="w-3.5 h-3.5" />
-          Rejeter
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Filtre status ──────────────────────────────────────────────────────────────
 type StatusFilter = 'all' | 'ACTIVE' | 'CLOSED' | 'ABORTED';
 
@@ -403,7 +330,6 @@ export function APMesMentorats() {
   const [data, setData]       = useState<APDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
-  const [busyCloture, setBusyCloture] = useState<number | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ACTIVE');
   const [search, setSearch]             = useState('');
@@ -455,19 +381,6 @@ export function APMesMentorats() {
   const handleLoadMore = () => {
     if (!mentoratsMeta?.has_next) return;
     fetchMentorats(statusFilter, search, mentoratsMeta.page + 1, true);
-  };
-
-  const handleClotureAction = async (mentoratId: number, action: 'confirm' | 'reject', message?: string) => {
-    setBusyCloture(mentoratId);
-    try {
-      await api.post(`/ap/mentorats/${mentoratId}/confirmer-cloture/`, {
-        action,
-        ...(message !== undefined ? { message } : {}),
-      });
-      fetchDashboard();
-      fetchMentorats(statusFilter, search, 1, false);
-    } catch { fetchDashboard(); fetchMentorats(statusFilter, search, 1, false); }
-    finally { setBusyCloture(null); }
   };
 
   const counts = {
@@ -549,34 +462,6 @@ export function APMesMentorats() {
           </button>
         </div>
       </div>
-
-      {/* ── Clôtures en attente ──────────────────────────────────────────────── */}
-      {data.clotures_en_attente.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-amber-500" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Clôtures en attente</h2>
-              <p className="text-xs text-amber-600">
-                {data.clotures_en_attente.length} demande{data.clotures_en_attente.length > 1 ? 's' : ''} à valider
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {data.clotures_en_attente.map(m => (
-              <ClotureEnAttenteCard
-                key={m.id}
-                mentorat={m}
-                onAction={handleClotureAction}
-                busy={busyCloture}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
 
       {/* ── Liste mentorats ──────────────────────────────────────────────────── */}
       <div>

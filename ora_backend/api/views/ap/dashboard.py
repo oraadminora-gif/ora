@@ -340,13 +340,11 @@ class APDashboardView(APIView):
         level_order = {'alert': 0, 'warn': 1, 'ok': 2}
         mentors_data.sort(key=lambda m: level_order.get(m['derniere_activite']['level'], 3))
 
-        # ── Mes mentorats — stats + clôtures en attente uniquement ──
+        # ── Mes mentorats — stats ────────────────────────────────
         mes_mentorats_actifs_count  = 0
         mes_mentorats_clotures      = 0
         mes_mentorats_abandonnes    = 0
         mes_mentorats_total         = 0
-        clotures_en_attente_count   = 0
-        clotures_en_attente_data    = []
 
         # "Mes mentorats" = ceux dont CET animateur est ap_responsable — un
         # APC peut lui aussi être ap_responsable sur certains mentorats
@@ -361,19 +359,6 @@ class APDashboardView(APIView):
             mes_mentorats_total         = (
                 mes_mentorats_actifs_count + mes_mentorats_clotures + mes_mentorats_abandonnes
             )
-            # Seules les clôtures en attente sont chargées intégralement (petit ensemble)
-            pending_qs = (
-                base_qs
-                .filter(status='ACTIVE', cloture_en_attente=True)
-                .select_related('mentor__association', 'young_request', 'young_request__etablissement')
-                .order_by('-assigned_at')
-            )
-            clotures_en_attente_count = pending_qs.count()
-            pending_list  = list(pending_qs)
-            pending_suivi = bulk_suivi_stats([m.id for m in pending_list])
-            clotures_en_attente_data = [
-                serialize_mesmentorat(m, pending_suivi.get(m.id)) for m in pending_list
-            ]
 
         return Response({
             'animateur': {
@@ -404,10 +389,8 @@ class APDashboardView(APIView):
                 'mes_mentorats_clotures':     mes_mentorats_clotures,
                 'mes_mentorats_abandonnes':   mes_mentorats_abandonnes,
                 'mes_mentorats_total':        mes_mentorats_total,
-                'clotures_en_attente':        clotures_en_attente_count,
             },
             'mentors':               mentors_data,
-            'clotures_en_attente':   clotures_en_attente_data,
         })
 
 

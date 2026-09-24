@@ -21,7 +21,6 @@ export interface APStats {
   mes_mentorats_clotures: number;
   mes_mentorats_abandonnes: number;
   mes_mentorats_total: number;
-  clotures_en_attente: number;
 }
 
 export interface APInactivite {
@@ -120,7 +119,6 @@ export interface APDashboardData {
   animateur: APAnimateur;
   stats: APStats;
   mentors: APMentor[];
-  clotures_en_attente: APMesMenutorat[];
 }
 
 export interface APMesMentoratPage {
