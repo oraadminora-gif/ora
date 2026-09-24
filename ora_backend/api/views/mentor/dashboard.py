@@ -455,6 +455,14 @@ class MentorCloturerMentoratView(APIView):
         POSITIVE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
         action = 'CLOSED' if closure_reason_code in POSITIVE_REASONS else 'ABORTED'
 
+        # Enregistre aussi les champs de suivi envoyés en même temps que la
+        # demande de clôture (si le mentor a saisi sans passer par
+        # "Enregistrer le suivi" avant) — rien ne doit se perdre.
+        try:
+            suivi_fields = _apply_suivi_fields(mentorat, request.data)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         # Enregistrer la demande — la clôture effective sera faite par l'AP
         mentorat.cloture_en_attente          = True
         mentorat.cloture_action_demandee     = action
@@ -462,7 +470,7 @@ class MentorCloturerMentoratView(APIView):
         mentorat.cloture_message_demandee    = message_jeune
         if message_jeune:
             mentorat.message_cloture = message_jeune
-        mentorat.save(update_fields=[
+        mentorat.save(update_fields=suivi_fields + [
             'cloture_en_attente', 'cloture_action_demandee',
             'cloture_reason_demandee', 'cloture_message_demandee',
             'message_cloture',
@@ -580,6 +588,88 @@ class MentorUpdateJeuneView(APIView):
         })
 
 
+def _apply_suivi_fields(mentorat, data):
+    """
+    Applique au Mentorat les champs de suivi envoyés par le mentor
+    (nb_rencontres, nb_heures, type_mentorat, problematiques,
+    objectif_mentor, bilan_suivi, expected_end_date, dernier_contact).
+    Ne sauvegarde PAS elle-même (l'appelant décide, via save(update_fields=...)
+    ou save() global) — retourne la liste des champs modifiés.
+    Lève ValueError(message) si une donnée est invalide.
+    Utilisée à la fois par MentorUpdateSuiviView (bouton "Enregistrer le
+    suivi") et MentorCloturerMentoratView (bouton "Demande de clôture"),
+    pour que rien de ce que le mentor a saisi ne se perde s'il clique
+    directement sur clôture sans être passé par "Enregistrer" avant.
+    """
+    update_fields = []
+
+    if 'nb_rencontres' in data:
+        try:
+            mentorat.nb_rencontres = max(0, int(data['nb_rencontres']))
+            update_fields.append('nb_rencontres')
+        except (ValueError, TypeError):
+            pass
+
+    if 'nb_heures' in data:
+        try:
+            mentorat.nb_heures = max(0.0, float(data['nb_heures']))
+            update_fields.append('nb_heures')
+        except (ValueError, TypeError):
+            pass
+
+    if 'type_mentorat' in data:
+        val = data['type_mentorat']
+        if val in ('', 'presentiel', 'distanciel'):
+            mentorat.type_mentorat = val
+            update_fields.append('type_mentorat')
+
+    if 'problematiques' in data:
+        probs = data['problematiques']
+        if isinstance(probs, list):
+            mentorat.problematiques = probs
+            update_fields.append('problematiques')
+
+    if 'objectif_mentor' in data:
+        mentorat.objectif_mentor = str(data['objectif_mentor'])
+        update_fields.append('objectif_mentor')
+
+    if 'bilan_suivi' in data:
+        mentorat.notes_suivi = str(data['bilan_suivi'])
+        update_fields.append('notes_suivi')
+
+    if 'expected_end_date' in data:
+        val = data['expected_end_date']
+        if val:
+            try:
+                from datetime import datetime as dt
+                dt.strptime(str(val), '%Y-%m-%d')
+                mentorat.expected_end_date = val
+            except ValueError:
+                raise ValueError("Format de date invalide.")
+        else:
+            mentorat.expected_end_date = None
+        update_fields.append('expected_end_date')
+
+    if 'dernier_contact' in data:
+        val = data['dernier_contact']
+        if val:
+            try:
+                from datetime import datetime as dt, date as ddate
+                parsed = dt.strptime(str(val), '%Y-%m-%d').date()
+                if parsed > ddate.today():
+                    raise ValueError("La date du dernier contact ne peut pas être dans le futur.")
+                mentorat.dernier_contact = parsed
+            except ValueError as e:
+                if str(e) == "La date du dernier contact ne peut pas être dans le futur.":
+                    raise
+                raise ValueError("Format de date invalide pour dernier_contact.")
+        else:
+            mentorat.dernier_contact = None
+        update_fields.append('dernier_contact')
+
+    return update_fields
+
+
 class MentorUpdateSuiviView(APIView):
     """
     PATCH /mentor/mentorats/{id}/suivi/
@@ -595,70 +685,10 @@ class MentorUpdateSuiviView(APIView):
         except Mentorat.DoesNotExist:
             return Response({"error": "Mentorat introuvable ou non actif."}, status=status.HTTP_404_NOT_FOUND)
 
-        data = request.data
-        update_fields = []
-
-        if 'nb_rencontres' in data:
-            try:
-                mentorat.nb_rencontres = max(0, int(data['nb_rencontres']))
-                update_fields.append('nb_rencontres')
-            except (ValueError, TypeError):
-                pass
-
-        if 'nb_heures' in data:
-            try:
-                mentorat.nb_heures = max(0.0, float(data['nb_heures']))
-                update_fields.append('nb_heures')
-            except (ValueError, TypeError):
-                pass
-
-        if 'type_mentorat' in data:
-            val = data['type_mentorat']
-            if val in ('', 'presentiel', 'distanciel'):
-                mentorat.type_mentorat = val
-                update_fields.append('type_mentorat')
-
-        if 'problematiques' in data:
-            probs = data['problematiques']
-            if isinstance(probs, list):
-                mentorat.problematiques = probs
-                update_fields.append('problematiques')
-
-        if 'objectif_mentor' in data:
-            mentorat.objectif_mentor = str(data['objectif_mentor'])
-            update_fields.append('objectif_mentor')
-
-        if 'bilan_suivi' in data:
-            mentorat.notes_suivi = str(data['bilan_suivi'])
-            update_fields.append('notes_suivi')
-
-        if 'expected_end_date' in data:
-            val = data['expected_end_date']
-            if val:
-                try:
-                    from datetime import datetime as dt
-                    dt.strptime(str(val), '%Y-%m-%d')
-                    mentorat.expected_end_date = val
-                except ValueError:
-                    return Response({"error": "Format de date invalide."}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                mentorat.expected_end_date = None
-            update_fields.append('expected_end_date')
-
-        if 'dernier_contact' in data:
-            val = data['dernier_contact']
-            if val:
-                try:
-                    from datetime import datetime as dt, date as ddate
-                    parsed = dt.strptime(str(val), '%Y-%m-%d').date()
-                    if parsed > ddate.today():
-                        return Response({"error": "La date du dernier contact ne peut pas être dans le futur."}, status=status.HTTP_400_BAD_REQUEST)
-                    mentorat.dernier_contact = parsed
-                except ValueError:
-                    return Response({"error": "Format de date invalide pour dernier_contact."}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                mentorat.dernier_contact = None
-            update_fields.append('dernier_contact')
+        try:
+            update_fields = _apply_suivi_fields(mentorat, request.data)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if update_fields:
             mentorat.save(update_fields=update_fields)

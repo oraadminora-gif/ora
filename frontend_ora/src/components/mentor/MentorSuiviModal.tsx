@@ -294,8 +294,19 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
     if (!closureCode) { setClotError('Veuillez sélectionner une raison.'); return; }
     setClotSaving(true); setClotError('');
     try {
+      // Envoie aussi les champs de suivi : si le mentor a saisi des infos
+      // sans cliquer sur "Enregistrer le suivi" avant, elles ne doivent
+      // pas se perdre — l'AP/APC doit pouvoir les voir et les compléter.
       await api.post(`/mentor/mentorats/${mentorat.id}/cloturer/`, {
         closure_reason_code: closureCode,
+        nb_rencontres:    Number(nbRencontres) || 0,
+        nb_heures:        parseFloat(nbHeures) || 0,
+        type_mentorat:    typeMentorat,
+        problematiques,
+        objectif_mentor:  objectif,
+        bilan_suivi:      bilan,
+        expected_end_date: expectedEnd || null,
+        dernier_contact:  dernierContact || null,
       });
       onSaved();
       onClose();
