@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import {
   ClipboardList, MapPin, GraduationCap, ArrowRightLeft,
   School, X, CheckCircle, MessageSquare, Plus, Loader2,
-  Mail, Phone, User, Download, Calendar,
+  Mail, Phone, User, Download, Calendar, XCircle,
 } from 'lucide-react';
 import api from '../../services/api';
 import type { ACPDemande } from '../../pages/member/acp/ACPDashboard.types';
@@ -17,7 +17,6 @@ interface Props {
 }
 
 interface PoleOption { id: number; name: string; code: string }
-interface EtabOption  { id: number; nom: string; code_postal: string }
 interface DeptOption  { id: number; code: string; name: string; label: string }
 
 // Date de naissance : pas dans le futur, au moins 16 ans
@@ -352,37 +351,25 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
   );
 }
 
-// ── Etablissement Modal ───────────────────────────────────────────────────────
-function EtablissementModal({ demande, onClose, onSuccess }: {
+// ── Refuser Modal ────────────────────────────────────────────────────────────
+function RefuserModal({ demande, onClose, onSuccess }: {
   demande: ACPDemande;
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [etabs, setEtabs]         = useState<EtabOption[]>([]);
-  const [etabId, setEtabId]       = useState('');
-  const [nomManuel, setNomManuel] = useState(demande.nom_etablissement ?? '');
-  const [useManuel, setUseManuel] = useState(false);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState('');
-
-  useEffect(() => {
-    api.get('/pole/etablissements/').then(r => setEtabs(r.data.etablissements ?? []));
-  }, []);
+  const [raison, setRaison]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
 
   const submit = async () => {
+    if (!raison.trim()) { setError('Merci de préciser la raison du refus.'); return; }
     setLoading(true); setError('');
     try {
-      if (useManuel) {
-        if (!nomManuel.trim()) { setError('Veuillez saisir un nom'); setLoading(false); return; }
-        await api.patch(`/pole/requests/${demande.id}/etablissement/`, { nom_manuel: nomManuel.trim() });
-      } else {
-        if (!etabId) { setError('Veuillez choisir un établissement'); setLoading(false); return; }
-        await api.patch(`/pole/requests/${demande.id}/etablissement/`, { etablissement_id: Number(etabId) });
-      }
+      await api.post(`/pole/requests/${demande.id}/refuser/`, { raison: raison.trim() });
       onSuccess();
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } };
-      setError(err.response?.data?.error ?? 'Erreur lors de la mise à jour');
+      setError(err.response?.data?.error ?? 'Erreur lors du refus');
     } finally { setLoading(false); }
   };
 
@@ -391,8 +378,8 @@ function EtablissementModal({ demande, onClose, onSuccess }: {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <School className="w-4 h-4 text-violet-600" />
-            Modifier l'établissement
+            <XCircle className="w-4 h-4 text-red-600" />
+            Refuser la demande
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
@@ -400,47 +387,19 @@ function EtablissementModal({ demande, onClose, onSuccess }: {
         </div>
 
         <p className="text-sm text-slate-500 mb-1">
-          Demande de <span className="font-semibold text-slate-700">{demande.nom}</span>
+          <span className="font-semibold text-slate-700">{demande.nom}</span>
         </p>
-        {demande.nom_etablissement && (
-          <p className="text-xs text-slate-400 mb-4">Saisi par le jeune : {demande.nom_etablissement}</p>
-        )}
+        <p className="text-sm font-semibold text-red-600 mb-4">
+          Merci de répondre et de motiver votre refus à cette demande, s'il vous plaît !
+        </p>
 
         {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
-        <div className="space-y-3">
-          {!useManuel ? (
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Sélectionner un établissement du pôle
-              </label>
-              <select value={etabId} onChange={e => {
-                const v = e.target.value;
-                if (v === '__autre__') { setUseManuel(true); setEtabId(''); }
-                else setEtabId(v);
-              }}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500">
-                <option value="">— Choisir —</option>
-                {etabs.map(e => (
-                  <option key={e.id} value={e.id}>{e.nom} ({e.code_postal})</option>
-                ))}
-                <option value="__autre__">Autre (saisie libre)</option>
-              </select>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Nom de l'établissement
-              </label>
-              <input type="text" value={nomManuel} onChange={e => setNomManuel(e.target.value)}
-                placeholder="Nom exact de l'école / CFA"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500" />
-              <button onClick={() => setUseManuel(false)}
-                className="text-xs text-violet-600 mt-1 hover:underline">
-                ← Revenir à la liste
-              </button>
-            </div>
-          )}
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Raison du refus *</label>
+          <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={4}
+            placeholder="Expliquez pourquoi cette demande est refusée…"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 resize-none" />
         </div>
 
         <div className="flex gap-3 mt-5">
@@ -449,8 +408,8 @@ function EtablissementModal({ demande, onClose, onSuccess }: {
             Annuler
           </button>
           <button onClick={submit} disabled={loading}
-            className="flex-1 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50">
-            {loading ? 'Sauvegarde…' : 'Enregistrer'}
+            className="flex-1 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
+            {loading ? 'Refus…' : 'Refuser la demande'}
           </button>
         </div>
       </div>
@@ -486,12 +445,12 @@ function exportDemandes(demandes: ACPDemande[]) {
 
 // ── Demand list ───────────────────────────────────────────────────────────────
 function DemandesList({
-  demandes, poleId, onRerouter, onEtablissement, flashId,
+  demandes, poleId, onRerouter, onRefuser, flashId,
 }: {
   demandes: ACPDemande[];
   poleId: number;
   onRerouter: (d: ACPDemande) => void;
-  onEtablissement: (d: ACPDemande) => void;
+  onRefuser: (d: ACPDemande) => void;
   flashId: number | null;
 }) {
   if (demandes.length === 0) {
@@ -618,9 +577,9 @@ function DemandesList({
 
             {/* Actions */}
             <div className="flex gap-2 mt-3">
-              <button onClick={() => onEtablissement(d)}
-                className="flex-1 py-2 text-sm font-semibold text-violet-600 border border-violet-200 rounded-lg hover:bg-violet-50 transition-colors flex items-center justify-center gap-1.5">
-                <School className="w-4 h-4" />Établissement
+              <button onClick={() => onRefuser(d)}
+                className="flex-1 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5">
+                <XCircle className="w-4 h-4" />Refuser la demande
               </button>
               <button onClick={() => onRerouter(d)}
                 className="flex-1 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5">
@@ -639,10 +598,10 @@ export function ACPDemandesPanel({ demandes: demandesProp, poleId, onRefresh }: 
   const [selfLoading, setSelfLoading]   = useState(demandesProp === undefined);
   const isSelfFetch = demandesProp === undefined;
 
-  const [showNouvelleModal, setShowNouvelleModal]     = useState(false);
-  const [rerouterTarget, setRerouterTarget]           = useState<ACPDemande | null>(null);
-  const [etablissementTarget, setEtablissementTarget] = useState<ACPDemande | null>(null);
-  const [flashId, setFlashId]                         = useState<number | null>(null);
+  const [showNouvelleModal, setShowNouvelleModal] = useState(false);
+  const [rerouterTarget, setRerouterTarget]       = useState<ACPDemande | null>(null);
+  const [refuserTarget, setRefuserTarget]         = useState<ACPDemande | null>(null);
+  const [flashId, setFlashId]                     = useState<number | null>(null);
 
   const fetchSelf = async () => {
     setSelfLoading(true);
@@ -672,7 +631,7 @@ export function ACPDemandesPanel({ demandes: demandesProp, poleId, onRefresh }: 
 
   const handleModalSuccess = (id: number) => {
     setRerouterTarget(null);
-    setEtablissementTarget(null);
+    setRefuserTarget(null);
     setFlashId(id);
     setTimeout(() => { setFlashId(null); handleRefresh(); }, 1200);
   };
@@ -723,7 +682,7 @@ export function ACPDemandesPanel({ demandes: demandesProp, poleId, onRefresh }: 
             demandes={demandes}
             poleId={poleId}
             onRerouter={setRerouterTarget}
-            onEtablissement={setEtablissementTarget}
+            onRefuser={setRefuserTarget}
             flashId={flashId}
           />
         )}
@@ -744,11 +703,11 @@ export function ACPDemandesPanel({ demandes: demandesProp, poleId, onRefresh }: 
           onSuccess={() => handleModalSuccess(rerouterTarget.id)}
         />
       )}
-      {etablissementTarget && (
-        <EtablissementModal
-          demande={etablissementTarget}
-          onClose={() => setEtablissementTarget(null)}
-          onSuccess={() => handleModalSuccess(etablissementTarget.id)}
+      {refuserTarget && (
+        <RefuserModal
+          demande={refuserTarget}
+          onClose={() => setRefuserTarget(null)}
+          onSuccess={() => handleModalSuccess(refuserTarget.id)}
         />
       )}
     </>

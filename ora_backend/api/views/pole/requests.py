@@ -134,6 +134,47 @@ class RerouterDemandeView(APIView):
         })
 
 
+class RefuserDemandeView(APIView):
+    """
+    AP/ACP : Refuser une demande (elle sort de la liste "en attente").
+    POST /api/pole/requests/{pk}/refuser/
+    Body : { "raison": str }  (obligatoire)
+    """
+    permission_classes = [IsAuthenticated, IsAnimateur]
+
+    def post(self, request, pk):
+        user = request.user
+        if not hasattr(user, 'animateur'):
+            return Response({"error": "Accès refusé"}, status=403)
+
+        try:
+            demande = YoungRequest.objects.get(pk=pk, pole=user.animateur.pole)
+        except YoungRequest.DoesNotExist:
+            return Response({"error": "Demande introuvable dans votre pôle"}, status=404)
+
+        if demande.status not in ('NEW', 'PENDING'):
+            return Response({"error": "Seules les demandes NEW ou PENDING peuvent être refusées"}, status=400)
+
+        if hasattr(demande, 'mentorat') and demande.mentorat.status == 'PENDING':
+            return Response(
+                {"error": "Cette demande a une proposition d'affectation en attente de réponse du mentor. Attendez sa réponse avant de la refuser."},
+                status=400,
+            )
+
+        raison = (request.data.get('raison') or '').strip()
+        if not raison:
+            return Response({"error": "Merci de préciser la raison du refus."}, status=400)
+
+        demande.status       = 'CANCELLED'
+        demande.raison_refus = raison
+        demande.save()
+
+        return Response({
+            "success": True,
+            "message": "Demande refusée.",
+        })
+
+
 class SetEtablissementDemandeView(APIView):
     """
     AP/ACP : Modifier l'établissement d'une demande.

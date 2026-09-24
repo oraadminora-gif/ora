@@ -136,6 +136,11 @@ class YoungRequest(models.Model):
         verbose_name='Raison du transfert',
         help_text='Raison saisie par le pôle qui a transféré cette demande'
     )
+    raison_refus = models.TextField(
+        blank=True, default='',
+        verbose_name='Raison du refus',
+        help_text="Motif saisi par l'AP/APC qui a refusé cette demande"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

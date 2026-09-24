@@ -4,7 +4,7 @@ from .mentors        import PoleMentorsView, PoleMentorDetailView
 from .animateurs     import PoleAnimateursView, PoleAnimateurDetailView
 from .mentorats      import PoleMentoratListView, PoleMentoratDetailView
 from .export_csv     import ExportMentoratsCsvView
-from .requests       import PendingRequestsView, RerouterDemandeView, SetEtablissementDemandeView, CreateDemandeView
+from .requests       import PendingRequestsView, RerouterDemandeView, RefuserDemandeView, SetEtablissementDemandeView, CreateDemandeView
 from .associations   import PoleAssociationsView
 from .departments    import DepartmentsView
 from .etablissements import PoleEtablissementsView
@@ -35,6 +35,7 @@ urlpatterns = [
     path('requests/',                                  CreateDemandeView.as_view(),           name='create-demande'),
     path('requests/pending/',                          PendingRequestsView.as_view(),         name='pending-requests'),
     path('requests/<int:pk>/rerouter/',                RerouterDemandeView.as_view(),         name='rerouter-demande'),
+    path('requests/<int:pk>/refuser/',                 RefuserDemandeView.as_view(),          name='refuser-demande'),
     path('requests/<int:pk>/etablissement/',           SetEtablissementDemandeView.as_view(), name='set-etablissement-demande'),
     path('matching/<int:request_id>/',                 MatchingSuggestionsView.as_view(),     name='matching-suggestions'),
     path('matching/assign/',                           AssignMentorView.as_view(),            name='assign-mentor'),
