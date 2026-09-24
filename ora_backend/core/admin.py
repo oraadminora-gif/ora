@@ -343,17 +343,18 @@ class YoungRequestAdmin(admin.ModelAdmin):
     list_per_page  = 25
 
     STATUS_COLORS = {
-        'NEW':     ('#0ea5e9', 'Nouveau'),
-        'PENDING': ('#f59e0b', 'En attente'),
-        'MATCHED': ('#22c55e', 'Apparié'),
-        'CLOSED':  ('#6b7280', 'Clôturé'),
+        'NEW':       ('#0ea5e9', 'Nouveau'),
+        'PENDING':   ('#f59e0b', 'En attente'),
+        'ASSIGNED':  ('#22c55e', 'Mentor assigné'),
+        'CLOSED':    ('#6b7280', 'Clôturé'),
+        'CANCELLED': ('#ef4444', 'Annulée'),
     }
 
     fieldsets = (
         ('Jeune',                    {'fields': ('first_name', 'last_name', 'email', 'phone', 'birth_date', 'gender')}),
         ('Localisation',             {'fields': ('city', 'department', 'pole')}),
         ('Établissement & Formation',{'fields': ('nom_etablissement', 'etablissement', 'diplome_prepare', 'situation', 'date_previsionnelle')}),
-        ('Demande',                  {'fields': ('needs_description', 'status')}),
+        ('Demande',                  {'fields': ('needs_description', 'status', 'raison_refus', 'raison_transfert')}),
     )
 
     def full_name(self, obj):
