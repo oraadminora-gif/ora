@@ -131,6 +131,10 @@ class Mentorat(models.Model):
         max_length=10, blank=True,
         help_text="Action demandée : CLOSED ou ABORTED"
     )
+    cloture_demandee_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Horodatage de la demande de clôture du mentor (pour afficher le délai d'attente à l'AP/APC)"
+    )
     cloture_reason_demandee = models.TextField(
         blank=True, help_text="Raison soumise par le mentor"
     )

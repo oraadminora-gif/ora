@@ -12,6 +12,15 @@ import { APSuiviMentoratModal } from '../../../components/ap/APSuiviMentoratModa
 
 interface ApiError { response?: { data?: { error?: string } } }
 
+// Délai écoulé depuis une date ISO, ex. "depuis 3 jours" / "depuis aujourd'hui"
+function formatDelai(isoDate: string | null): string {
+  if (!isoDate) return '';
+  const days = Math.floor((Date.now() - new Date(isoDate).getTime()) / 86400000);
+  if (days <= 0) return "depuis aujourd'hui";
+  if (days === 1) return 'depuis 1 jour';
+  return `depuis ${days} jours`;
+}
+
 // ── Statut badge ───────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
   ACTIVE:  { label: 'Actif',      cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
@@ -25,6 +34,19 @@ function StatusBadge({ status }: { status: APMesMenutorat['status'] }) {
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${cfg.cls}`}>
       {cfg.label}
+    </span>
+  );
+}
+
+// Badge dédié : un mentorat ACTIF mais dont le mentor a demandé la clôture
+// (en attente de confirmation AP/APC) doit se distinguer d'un mentorat
+// simplement actif — avec le délai écoulé, visible sans ouvrir Suivi.
+function CloturePendingBadge({ since }: { since: string | null }) {
+  const delai = formatDelai(since);
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border text-amber-700 bg-amber-50 border-amber-200">
+      <Clock className="w-2.5 h-2.5" />
+      En attente de clôture{delai && ` · ${delai}`}
     </span>
   );
 }
@@ -168,6 +190,8 @@ function MentoratCard({ mentorat, onSuivi }: {
   const inactif = mentorat.status === 'ACTIVE' && mentorat.inactivite.level !== 'ok';
   const borderCls = mentorat.alerte_rouge
     ? 'border-red-300 bg-red-50/30'
+    : mentorat.cloture_en_attente
+    ? 'border-amber-300 bg-amber-50/30'
     : (inactif && mentorat.inactivite.level === 'alert')
     ? 'border-orange-200 bg-orange-50/20'
     : 'border-slate-200 bg-white';
@@ -191,7 +215,10 @@ function MentoratCard({ mentorat, onSuivi }: {
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-bold text-slate-900 truncate">{mentorat.mentor.name}</p>
-            <StatusBadge status={mentorat.status} />
+            {mentorat.cloture_en_attente
+              ? <CloturePendingBadge since={mentorat.cloture_demandee_at} />
+              : <StatusBadge status={mentorat.status} />
+            }
             {mentorat.alerte_rouge && (
               <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-red-600">
                 <AlertTriangle className="w-3 h-3" />Alerte

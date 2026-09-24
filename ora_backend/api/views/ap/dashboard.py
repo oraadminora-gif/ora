@@ -183,6 +183,7 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
         'cloture_action_demandee':    m.cloture_action_demandee,
         'cloture_reason_demandee':    m.cloture_reason_demandee,
         'cloture_date_demandee':      str(m.cloture_date_demandee) if m.cloture_date_demandee else None,
+        'cloture_demandee_at':        m.cloture_demandee_at.isoformat() if m.cloture_demandee_at else None,
         'cloture_message_demandee':   m.cloture_message_demandee,
     }
 
@@ -940,12 +941,13 @@ class APConfirmerClotureView(APIView):
         mentorat.cloture_action_demandee = ''
         mentorat.cloture_reason_demandee = ''
         mentorat.cloture_date_demandee = None
+        mentorat.cloture_demandee_at = None
         mentorat.cloture_message_demandee = ''
         mentorat.closure_reason_code = reason_code
         mentorat.save(update_fields=[
             'cloture_en_attente', 'cloture_action_demandee',
-            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_message_demandee',
-            'closure_reason_code',
+            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_demandee_at',
+            'cloture_message_demandee', 'closure_reason_code',
         ])
 
         # Clôture effective (libère slot mentor + ferme demande)
@@ -1635,6 +1637,7 @@ class APMentoratSuiviDetailView(APIView):
             'cloture_action_demandee':   m.cloture_action_demandee,
             'cloture_reason_demandee':   m.cloture_reason_demandee or '',
             'cloture_date_demandee':     str(m.cloture_date_demandee) if m.cloture_date_demandee else '',
+            'cloture_demandee_at':       m.cloture_demandee_at.isoformat() if m.cloture_demandee_at else None,
             'cloture_message_demandee':  m.cloture_message_demandee or '',
 
             # Suivi

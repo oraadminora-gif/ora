@@ -111,6 +111,8 @@ export interface APMesMenutorat {
   cloture_en_attente: boolean;
   cloture_action_demandee: 'CLOSED' | 'ABORTED' | '';
   cloture_reason_demandee: string;
+  cloture_date_demandee: string | null;
+  cloture_demandee_at: string | null;
   cloture_message_demandee: string;
 }
 

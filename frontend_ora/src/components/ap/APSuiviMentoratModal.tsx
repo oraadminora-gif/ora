@@ -9,6 +9,15 @@ import api from '../../services/api';
 
 interface Choice { value: string; label: string; }
 
+// Délai écoulé depuis une date ISO, ex. "depuis 3 jours" / "depuis aujourd'hui"
+function formatDelai(isoDate: string | null): string {
+  if (!isoDate) return '';
+  const days = Math.floor((Date.now() - new Date(isoDate).getTime()) / 86400000);
+  if (days <= 0) return "depuis aujourd'hui";
+  if (days === 1) return 'depuis 1 jour';
+  return `depuis ${days} jours`;
+}
+
 interface SuiviDetail {
   id: number;
   status: string; status_label: string;
@@ -34,6 +43,7 @@ interface SuiviDetail {
   cloture_action_demandee: string;
   cloture_reason_demandee: string;
   cloture_date_demandee: string;
+  cloture_demandee_at: string | null;
   cloture_message_demandee: string;
   mentor: {
     id: number;
@@ -850,7 +860,14 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
                       <Bell className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-amber-800">Le mentor demande la clôture</h3>
+                      <h3 className="text-sm font-bold text-amber-800 flex items-center gap-2">
+                        Le mentor demande la clôture
+                        {data.cloture_demandee_at && (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                            {formatDelai(data.cloture_demandee_at)}
+                          </span>
+                        )}
+                      </h3>
                       {data.cloture_reason_demandee && (
                         <p className="text-xs text-amber-700 mt-0.5">
                           Raison : {

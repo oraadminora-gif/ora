@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum, Count
+from django.utils import timezone
 from datetime import date  # ✅ AJOUTÉ pour validation date
 
 from core.models import Mentorat, Department, SuiviMentorat, Etablissement
@@ -480,13 +481,14 @@ class MentorCloturerMentoratView(APIView):
         mentorat.cloture_action_demandee     = action
         mentorat.cloture_reason_demandee     = closure_reason_code or reason_text
         mentorat.cloture_date_demandee       = date_demandee
+        mentorat.cloture_demandee_at         = timezone.now()
         mentorat.cloture_message_demandee    = message_jeune
         if message_jeune:
             mentorat.message_cloture = message_jeune
         mentorat.save(update_fields=suivi_fields + [
             'cloture_en_attente', 'cloture_action_demandee',
-            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_message_demandee',
-            'message_cloture',
+            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_demandee_at',
+            'cloture_message_demandee', 'message_cloture',
         ])
 
         # Email AP + ACP en arrière-plan
