@@ -348,7 +348,12 @@ class APDashboardView(APIView):
         clotures_en_attente_count   = 0
         clotures_en_attente_data    = []
 
-        if animateur and not animateur.is_acp:
+        # "Mes mentorats" = ceux dont CET animateur est ap_responsable — un
+        # APC peut lui aussi être ap_responsable sur certains mentorats
+        # (voir AssignMentorView._get_ap_responsable), donc ne pas exclure
+        # is_acp ici sous peine d'afficher 0 partout pour un AP qui est
+        # aussi APC.
+        if animateur:
             base_qs = Mentorat.objects.filter(ap_responsable=animateur)
             mes_mentorats_actifs_count  = base_qs.filter(status='ACTIVE').count()
             mes_mentorats_clotures      = base_qs.filter(status='CLOSED').count()
