@@ -252,9 +252,10 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
   const [objectif,      setObjectif]      = useState(mentorat.objectif_mentor);
   const [bilan,         setBilan]         = useState(mentorat.bilan_suivi);
 
-  // Clôture — pas de date ici : ce n'est qu'une DEMANDE, la date effective
-  // de clôture est fixée automatiquement quand l'AP/APC la confirme.
+  // Clôture — la date est une simple proposition, facultative : l'AP/APC
+  // pourra la reprendre telle quelle ou la modifier avant de confirmer.
   const [closureCode,   setClosureCode]   = useState('');
+  const [closedAtProposee, setClosedAtProposee] = useState('');
 
   // UI
   const [saving,   setSaving]   = useState(false);
@@ -299,6 +300,7 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
       // pas se perdre — l'AP/APC doit pouvoir les voir et les compléter.
       await api.post(`/mentor/mentorats/${mentorat.id}/cloturer/`, {
         closure_reason_code: closureCode,
+        closed_at:        closedAtProposee || null,
         nb_rencontres:    Number(nbRencontres) || 0,
         nb_heures:        parseFloat(nbHeures) || 0,
         type_mentorat:    typeMentorat,
@@ -461,15 +463,25 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5" /> Demande de clôture
                 </h3>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Raison de clôture *</label>
-                  <select value={closureCode} onChange={e => setClosureCode(e.target.value)} className={INPUT}>
-                    <option value="">— Choisir une raison —</option>
-                    {mentorat.closure_reason_choices.map(c => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Raison de clôture *</label>
+                    <select value={closureCode} onChange={e => setClosureCode(e.target.value)} className={INPUT}>
+                      <option value="">— Choisir une raison —</option>
+                      {mentorat.closure_reason_choices.map(c => (
+                        <option key={c.value} value={c.value}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Date proposée (optionnel)</label>
+                    <input type="date" value={closedAtProposee} onChange={e => setClosedAtProposee(e.target.value)}
+                      className={INPUT} />
+                  </div>
                 </div>
+                <p className="text-[11px] text-slate-400">
+                  L'AP/APC pourra reprendre ou modifier cette date avant de confirmer.
+                </p>
                 {clotError && (
                   <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{clotError}</p>
                 )}
@@ -480,7 +492,12 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
                 <div>
                   <p className="text-xs font-bold text-amber-700">Clôture en attente de confirmation AP</p>
                   {cloturePendingLabel && (
-                    <p className="text-[10px] text-amber-600 mt-0.5">Raison : {cloturePendingLabel}</p>
+                    <p className="text-[10px] text-amber-600 mt-0.5">
+                      Raison : {cloturePendingLabel}
+                      {mentorat.cloture_date_demandee && (
+                        <> · Date proposée : {new Date(mentorat.cloture_date_demandee).toLocaleDateString('fr-FR')}</>
+                      )}
+                    </p>
                   )}
                 </div>
               </div>

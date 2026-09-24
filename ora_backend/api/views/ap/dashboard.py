@@ -182,6 +182,7 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
         'cloture_en_attente':         m.cloture_en_attente,
         'cloture_action_demandee':    m.cloture_action_demandee,
         'cloture_reason_demandee':    m.cloture_reason_demandee,
+        'cloture_date_demandee':      str(m.cloture_date_demandee) if m.cloture_date_demandee else None,
         'cloture_message_demandee':   m.cloture_message_demandee,
     }
 
@@ -922,20 +923,33 @@ class APConfirmerClotureView(APIView):
         # L'AP peut passer un message personnalisé ; sinon on prend celui du mentor
         message_jeune = request.data.get('message', mentorat.cloture_message_demandee)
 
+        # Date de clôture : l'AP peut la modifier au moment de confirmer ;
+        # sinon on reprend celle proposée par le mentor ; sinon aujourd'hui
+        # (géré par défaut dans Mentorat.cloturer()).
+        closed_at_final = mentorat.cloture_date_demandee
+        closed_at_raw = (request.data.get('closed_at') or '').strip()
+        if closed_at_raw:
+            try:
+                from datetime import datetime as dt
+                closed_at_final = dt.strptime(closed_at_raw, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"error": "Format de date invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
         # Effacer les flags + stocker le code de raison avant la clôture
         mentorat.cloture_en_attente = False
         mentorat.cloture_action_demandee = ''
         mentorat.cloture_reason_demandee = ''
+        mentorat.cloture_date_demandee = None
         mentorat.cloture_message_demandee = ''
         mentorat.closure_reason_code = reason_code
         mentorat.save(update_fields=[
             'cloture_en_attente', 'cloture_action_demandee',
-            'cloture_reason_demandee', 'cloture_message_demandee',
+            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_message_demandee',
             'closure_reason_code',
         ])
 
         # Clôture effective (libère slot mentor + ferme demande)
-        mentorat.cloturer(reason=reason, statut=statut_final)
+        mentorat.cloturer(reason=reason, statut=statut_final, closed_at=closed_at_final)
 
         # Email unique : clôture + lien évaluation
         import threading
@@ -1620,6 +1634,7 @@ class APMentoratSuiviDetailView(APIView):
             'cloture_en_attente':        m.cloture_en_attente,
             'cloture_action_demandee':   m.cloture_action_demandee,
             'cloture_reason_demandee':   m.cloture_reason_demandee or '',
+            'cloture_date_demandee':     str(m.cloture_date_demandee) if m.cloture_date_demandee else '',
             'cloture_message_demandee':  m.cloture_message_demandee or '',
 
             # Suivi

@@ -135,6 +135,7 @@ class MentorDashboardView(APIView):
                         "cloture_en_attente":       m.cloture_en_attente,
                         "cloture_action_demandee":  m.cloture_action_demandee,
                         "cloture_reason_demandee":  m.cloture_reason_demandee or '',
+                        "cloture_date_demandee":    str(m.cloture_date_demandee) if m.cloture_date_demandee else None,
                         # Suivis inline (conservé pour compatibilité)
                         "suivis":        [serialize_suivi(s) for s in m.suivis.all()],
                         "suivi_stats":   get_suivi_stats(m),
@@ -451,6 +452,17 @@ class MentorCloturerMentoratView(APIView):
         message_jeune       = request.data.get('message', '')
         reason_text         = request.data.get('reason', closure_reason_code)
 
+        # Date de clôture proposée par le mentor (optionnelle — l'AP/APC
+        # pourra la reprendre telle quelle ou la modifier avant de confirmer).
+        date_demandee = None
+        closed_at_raw = (request.data.get('closed_at') or '').strip()
+        if closed_at_raw:
+            try:
+                from datetime import datetime as dt
+                date_demandee = dt.strptime(closed_at_raw, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"error": "Format de date invalide pour la date de clôture."}, status=status.HTTP_400_BAD_REQUEST)
+
         # Dériver l'action depuis le code de raison
         POSITIVE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
         action = 'CLOSED' if closure_reason_code in POSITIVE_REASONS else 'ABORTED'
@@ -467,12 +479,13 @@ class MentorCloturerMentoratView(APIView):
         mentorat.cloture_en_attente          = True
         mentorat.cloture_action_demandee     = action
         mentorat.cloture_reason_demandee     = closure_reason_code or reason_text
+        mentorat.cloture_date_demandee       = date_demandee
         mentorat.cloture_message_demandee    = message_jeune
         if message_jeune:
             mentorat.message_cloture = message_jeune
         mentorat.save(update_fields=suivi_fields + [
             'cloture_en_attente', 'cloture_action_demandee',
-            'cloture_reason_demandee', 'cloture_message_demandee',
+            'cloture_reason_demandee', 'cloture_date_demandee', 'cloture_message_demandee',
             'message_cloture',
         ])
 

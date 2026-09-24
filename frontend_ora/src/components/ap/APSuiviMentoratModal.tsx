@@ -33,6 +33,7 @@ interface SuiviDetail {
   cloture_en_attente: boolean;
   cloture_action_demandee: string;
   cloture_reason_demandee: string;
+  cloture_date_demandee: string;
   cloture_message_demandee: string;
   mentor: {
     id: number;
@@ -536,6 +537,8 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
   const [closureCode, setClosureCode]         = useState('');
   const [closedAt, setClosedAt]               = useState('');
   const [editingMentor, setEditingMentor]     = useState(false);
+  // Date de clôture proposée par le mentor — modifiable par l'AP/APC avant confirmation
+  const [cloturePendingDate, setCloturePendingDate] = useState('');
 
   const refreshMentorOnly = () => {
     api.get<SuiviDetail>(`/ap/mentorats/${mentoratId}/suivi-detail/`).then(r => {
@@ -557,6 +560,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
       setTypeMentorat(d.type_mentorat ?? '');
       setClosureCode(d.closure_reason_code ?? '');
       setClosedAt(d.closed_at ?? '');
+      setCloturePendingDate(d.cloture_date_demandee || today);
     }).catch(() => setError('Erreur de chargement')).finally(() => setLoading(false));
   }, [mentoratId]);
 
@@ -602,7 +606,9 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
     if (!data) return;
     setConfirmSaving(true); setConfirmError('');
     try {
-      await api.post(`/ap/mentorats/${data.id}/confirmer-cloture/`, { action });
+      const payload: Record<string, unknown> = { action };
+      if (action === 'confirm') payload.closed_at = cloturePendingDate || undefined;
+      await api.post(`/ap/mentorats/${data.id}/confirmer-cloture/`, payload);
       onSaved?.();
       onClose();
     } catch (e: unknown) {
@@ -860,6 +866,13 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
                       {data.cloture_message_demandee}
                     </div>
                   )}
+                  <div>
+                    <label className="block text-xs font-semibold text-amber-700 mb-1">
+                      Date de clôture {data.cloture_date_demandee ? '(proposée par le mentor, modifiable)' : ''}
+                    </label>
+                    <input type="date" value={cloturePendingDate} onChange={e => setCloturePendingDate(e.target.value)}
+                      className="w-full px-3 py-2 border border-amber-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                  </div>
                   {confirmError && (
                     <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{confirmError}</p>
                   )}

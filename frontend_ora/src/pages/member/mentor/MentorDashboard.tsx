@@ -62,6 +62,7 @@ export interface MentoratActif {
   cloture_en_attente: boolean;
   cloture_action_demandee: 'CLOSED' | 'ABORTED' | '';
   cloture_reason_demandee: string;
+  cloture_date_demandee: string | null;
   closure_reason_choices: Array<{ value: string; label: string }>;
   problematiques_choices: Array<{ value: string; label: string }>;
   nb_rencontres: number;

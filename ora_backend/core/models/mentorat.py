@@ -134,6 +134,10 @@ class Mentorat(models.Model):
     cloture_reason_demandee = models.TextField(
         blank=True, help_text="Raison soumise par le mentor"
     )
+    cloture_date_demandee = models.DateField(
+        null=True, blank=True,
+        help_text="Date de clôture proposée par le mentor (modifiable par l'AP/APC avant confirmation)"
+    )
     cloture_message_demandee = models.TextField(
         blank=True, help_text="Message pour le jeune soumis par le mentor"
     )
@@ -168,13 +172,13 @@ class Mentorat(models.Model):
             mentor.disponibilite_reelle = max(0, mentor.disponibilite_reelle - 1)
             mentor.save(update_fields=['disponibilite_reelle'])
 
-    def cloturer(self, reason="", statut='CLOSED'):
+    def cloturer(self, reason="", statut='CLOSED', closed_at=None):
         if self.status in ('CLOSED', 'ABORTED'):
             return
         was_active = self.status == 'ACTIVE'
         self.status = statut
         self.closure_reason = reason
-        self.closed_at = timezone.now().date()
+        self.closed_at = closed_at or timezone.now().date()
         self.save()
 
         # Libère une place uniquement si le mentorat était ACTIVE
