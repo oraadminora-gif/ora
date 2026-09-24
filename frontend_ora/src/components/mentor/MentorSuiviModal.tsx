@@ -252,9 +252,9 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
   const [objectif,      setObjectif]      = useState(mentorat.objectif_mentor);
   const [bilan,         setBilan]         = useState(mentorat.bilan_suivi);
 
-  // Clôture
+  // Clôture — pas de date ici : ce n'est qu'une DEMANDE, la date effective
+  // de clôture est fixée automatiquement quand l'AP/APC la confirme.
   const [closureCode,   setClosureCode]   = useState('');
-  const [closedAt,      setClosedAt]      = useState('');
 
   // UI
   const [saving,   setSaving]   = useState(false);
@@ -461,35 +461,15 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5" /> Demande de clôture
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Raison de clôture *</label>
-                    <select value={closureCode} onChange={e => setClosureCode(e.target.value)} className={INPUT}>
-                      <option value="">— Choisir une raison —</option>
-                      {mentorat.closure_reason_choices.map(c => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Date de clôture *
-                      {closureCode && !closedAt && (
-                        <span className="ml-1 text-amber-500 font-normal normal-case">(requise)</span>
-                      )}
-                    </label>
-                    <input
-                      type="date"
-                      value={closedAt}
-                      onChange={e => setClosedAt(e.target.value)}
-                      disabled={!closureCode}
-                      className={`${INPUT} disabled:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed`}
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Raison de clôture *</label>
+                  <select value={closureCode} onChange={e => setClosureCode(e.target.value)} className={INPUT}>
+                    <option value="">— Choisir une raison —</option>
+                    {mentorat.closure_reason_choices.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
                 </div>
-                {closureCode && !closedAt && (
-                  <p className="text-xs text-amber-600">Sélectionnez également une date de clôture.</p>
-                )}
                 {clotError && (
                   <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{clotError}</p>
                 )}
@@ -525,7 +505,7 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
               </button>
 
               {!isCloturePending ? (
-                <button onClick={handleCloture} disabled={clotSaving || !closureCode || !closedAt}
+                <button onClick={handleCloture} disabled={clotSaving || !closureCode}
                   className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition-all">
                   {clotSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                   Demande de clôture
