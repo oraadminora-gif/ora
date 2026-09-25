@@ -575,14 +575,16 @@ function DemandesList({
               {new Date(d.request_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
 
-            {/* Actions */}
+            {/* Actions — désactivées tant que le statut n'est pas "Nouveau" */}
             <div className="flex gap-2 mt-3">
-              <button onClick={() => onRefuser(d)}
-                className="flex-1 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5">
+              <button onClick={() => onRefuser(d)} disabled={d.status !== 'NEW'}
+                title={d.status !== 'NEW' ? 'Disponible uniquement pour une demande au statut "Nouveau"' : undefined}
+                className="flex-1 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                 <XCircle className="w-4 h-4" />Refuser la demande
               </button>
-              <button onClick={() => onRerouter(d)}
-                className="flex-1 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5">
+              <button onClick={() => onRerouter(d)} disabled={d.status !== 'NEW'}
+                title={d.status !== 'NEW' ? 'Disponible uniquement pour une demande au statut "Nouveau"' : undefined}
+                className="flex-1 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                 <ArrowRightLeft className="w-4 h-4" />Transférer
               </button>
             </div>
