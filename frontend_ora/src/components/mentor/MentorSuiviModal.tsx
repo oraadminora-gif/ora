@@ -373,7 +373,7 @@ export function MentorSuiviModal({ mentorat, onClose, onSaved }: Props) {
                   <input type="date" value={expectedEnd} onChange={e => setExpectedEnd(e.target.value)} className={INPUT} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Date du dernier contact</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">Date dernier contact AP/Mentor</label>
                   <input type="date" value={dernierContact} onChange={e => setDernierContact(e.target.value)}
                     max={new Date().toISOString().slice(0, 10)} className={INPUT} />
                 </div>
