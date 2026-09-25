@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Pencil, X, Loader2, CheckCircle, MapPin, Mail, Phone, Building2, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../services/api';
+import { sanitizePhoneInput } from '../../utils/phone';
 import type { MentorInfo, Department } from '../../pages/member/mentor/MentorDashboard';
 
 interface ApiError { response?: { data?: { error?: string } } }
@@ -37,7 +38,12 @@ export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: name === 'department_id' ? (value === '' ? '' : parseInt(value, 10)) : value }));
+    setForm(prev => ({
+      ...prev,
+      [name]: name === 'department_id' ? (value === '' ? '' : parseInt(value, 10))
+        : name === 'phone' ? sanitizePhoneInput(value)
+        : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,13 +169,14 @@ export function MentorProfileCard({ mentor, onUpdate }: MentorProfileCardProps) 
 
               {[
                 { name: 'email',       label: 'Email',        type: 'email', value: form.email,       placeholder: '' },
-                { name: 'phone',       label: 'Téléphone',    type: 'tel',   value: form.phone,       placeholder: '06 XX XX XX XX' },
+                { name: 'phone',       label: 'Téléphone',    type: 'tel',   value: form.phone,       placeholder: '06 XX XX XX XX', maxLength: 10, inputMode: 'numeric' as const },
                 { name: 'city',        label: 'Ville',        type: 'text',  value: form.city,        placeholder: 'Paris, Lyon...' },
                 { name: 'code_postal', label: 'Code postal',  type: 'text',  value: form.code_postal, placeholder: '75001' },
               ].map(f => (
                 <div key={f.name}>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">{f.label}</label>
                   <input type={f.type} name={f.name} value={f.value} onChange={handleChange} placeholder={f.placeholder}
+                    maxLength={f.maxLength} inputMode={f.inputMode}
                     className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue transition-all"
                   />
                 </div>

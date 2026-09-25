@@ -1,6 +1,7 @@
 // src/pages/member/cn/CNConfiguration.tsx
 import { useState, useEffect } from 'react';
 import api from '../../../services/api';
+import { sanitizePhoneInput } from '../../../utils/phone';
 import {
   Users, UserPlus, Shield, Search,
   CheckCircle, XCircle, ToggleLeft, ToggleRight,
@@ -207,8 +208,8 @@ function AddMemberModal({ onClose, onCreated }: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Téléphone</label>
-              <input className={F} value={form.phone} placeholder="optionnel"
-                onChange={e => setForm({ ...form, phone: e.target.value })} />
+              <input type="tel" className={F} value={form.phone} placeholder="optionnel" maxLength={10} inputMode="numeric"
+                onChange={e => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })} />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Ville</label>
@@ -673,8 +674,8 @@ function ProfilTab() {
               <label className="block text-xs font-semibold text-slate-600 mb-1">Téléphone</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input className={`${F} pl-9`} value={form.phone} placeholder="optionnel"
-                  onChange={e => setForm({ ...form, phone: e.target.value })} />
+                <input type="tel" className={`${F} pl-9`} value={form.phone} placeholder="optionnel" maxLength={10} inputMode="numeric"
+                  onChange={e => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })} />
               </div>
             </div>
             <div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { sanitizePhoneInput } from '../utils/phone';
 import {
   CheckCircle, AlertCircle, MapPin, Loader2,
   User, GraduationCap, MessageSquare, ShieldCheck, FileText,
@@ -237,8 +238,8 @@ export function ApprenticeRegistration() {
                   onChange={set('email')} className={INPUT} />
               </Field>
               <Field label="Téléphone *">
-                <input type="tel" required placeholder="06 00 00 00 00" value={formData.phone}
-                  onChange={set('phone')} className={INPUT} />
+                <input type="tel" required placeholder="06 00 00 00 00" value={formData.phone} maxLength={10} inputMode="numeric"
+                  onChange={e => setFormData(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))} className={INPUT} />
               </Field>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">

@@ -2,6 +2,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { sanitizePhoneInput } from '../utils/phone';
 import {
   CheckCircle, AlertCircle, MapPin, Info, ChevronRight,
 } from 'lucide-react';
@@ -183,7 +184,8 @@ export function MentorRegistration() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
-                <input type="tel" value={form.phone} onChange={set('phone')} placeholder="06 XX XX XX XX" className={INPUT} />
+                <input type="tel" value={form.phone} maxLength={10} inputMode="numeric"
+                  onChange={e => setForm(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))} placeholder="06 XX XX XX XX" className={INPUT} />
               </div>
             </div>
           </section>

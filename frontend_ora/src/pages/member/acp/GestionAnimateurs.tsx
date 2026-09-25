@@ -1,6 +1,7 @@
 // src/pages/member/acp/GestionAnimateurs.tsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../../services/api';
+import { sanitizePhoneInput } from '../../../utils/phone';
 import {
   Plus, Search, Loader2, AlertCircle, Pencil, X,
   CheckCircle, UserX, Shield, Key, Copy,
@@ -181,7 +182,8 @@ function APModal({
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Téléphone">
-              <input value={form.phone} onChange={set('phone')} className={INPUT} placeholder="06 xx xx xx xx" />
+              <input type="tel" value={form.phone} maxLength={10} inputMode="numeric"
+                onChange={e => setForm(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))} className={INPUT} placeholder="06 xx xx xx xx" />
             </Field>
             <Field label="Ville">
               <input value={form.city} onChange={set('city')} className={INPUT} placeholder="Paris" />

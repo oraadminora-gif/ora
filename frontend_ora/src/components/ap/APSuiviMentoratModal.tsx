@@ -6,6 +6,7 @@ import {
   Bell,
 } from 'lucide-react';
 import api from '../../services/api';
+import { sanitizePhoneInput } from '../../utils/phone';
 
 interface Choice { value: string; label: string; }
 
@@ -241,7 +242,8 @@ function JeuneEditor({ mentoratId, initial, onUpdate }: {
         </div>
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Téléphone</label>
-          <input type="tel" value={form.phone} onChange={set('phone')} className={INPUT} />
+          <input type="tel" value={form.phone} maxLength={10} inputMode="numeric"
+            onChange={e => setForm(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))} className={INPUT} />
         </div>
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Code postal</label>

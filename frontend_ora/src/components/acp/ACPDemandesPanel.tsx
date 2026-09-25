@@ -7,6 +7,7 @@ import {
   Mail, Phone, User, Download, Calendar, XCircle,
 } from 'lucide-react';
 import api from '../../services/api';
+import { sanitizePhoneInput } from '../../utils/phone';
 import type { ACPDemande } from '../../pages/member/acp/ACPDashboard.types';
 
 interface Props {
@@ -156,7 +157,8 @@ function NouvelleDemandeModal({ onClose, onSuccess }: {
               </div>
               <div>
                 <label className={labelCls}>Téléphone</label>
-                <input type="tel" value={form.phone} onChange={set('phone')} className={inputCls} placeholder="06 xx xx xx xx" />
+                <input type="tel" value={form.phone} maxLength={10} inputMode="numeric"
+                  onChange={e => setForm(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))} className={inputCls} placeholder="06 xx xx xx xx" />
               </div>
               <div>
                 <label className={labelCls}>Date de naissance</label>

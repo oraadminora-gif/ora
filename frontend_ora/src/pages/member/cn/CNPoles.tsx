@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import api from '../../../services/api';
+import { sanitizePhoneInput } from '../../../utils/phone';
 import {
   MapPin,
   Users,
@@ -563,9 +564,11 @@ function PoleModal({ pole, departments, onClose, onSave }: {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone de contact</label>
             <input
-              type="text"
+              type="tel"
               value={formData.contact_phone}
-              onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+              maxLength={10}
+              inputMode="numeric"
+              onChange={(e) => setFormData({ ...formData, contact_phone: sanitizePhoneInput(e.target.value) })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-ora-blue"
               placeholder="optionnel"
             />

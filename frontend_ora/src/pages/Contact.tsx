@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Send, CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import api from '../services/api';
+import { sanitizePhoneInput } from '../utils/phone';
 
 export function Contact() {
   const [loading, setLoading] = useState(false);
@@ -101,7 +102,8 @@ export function Contact() {
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Téléphone *">
-                  <input type="tel" required value={formData.phone} onChange={set('phone')}
+                  <input type="tel" required value={formData.phone} maxLength={10} inputMode="numeric"
+                    onChange={e => setFormData(prev => ({ ...prev, phone: sanitizePhoneInput(e.target.value) }))}
                     placeholder="06 00 00 00 00"
                     className={INPUT} />
                 </Field>
