@@ -30,14 +30,13 @@ PROBLEMATIQUES_CHOICES = [
     ('ORIENTATION',     'Orientation'),
     ('PB_ADMIN',        'Pb Administratifs'),
     ('PB_FINANCES',     'Pb Financiers – Gérer Budget'),
-    ('PB_PSYCHO',       'Pb Psychologiques'),
     ('PREP_DOSSIER',    'Prép. Dossier Professionnel'),
     ('REL_EMPLOYEUR',   'Relations avec Employeur'),
     ('RECH_CONTRAT',    'Recherche Contrat Apprentissage'),
     ('SALAIRE',         'Salaire / respect des conventions'),
     ('SOUTIEN_MORAL',   'Soutien Moral'),
     ('SOUTIEN_SCOL',    'Soutien Scolaire'),
-    ('ADDICTIONS',      'Addictions'),
+    ('AUTRE',           'Autre(s)'),
 ]
 
 

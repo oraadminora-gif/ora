@@ -27,6 +27,7 @@ PROBLEMATIQUE_LABELS = {
     'REL_EMPLOYEUR': 'Rel. Employeur', 'RECH_CONTRAT': 'Rech. Contrat',
     'SALAIRE': 'Salaire', 'SOUTIEN_MORAL': 'Soutien Moral',
     'SOUTIEN_SCOL': 'Soutien Scolaire', 'ADDICTIONS': 'Addictions',
+    'AUTRE': 'Autre(s)',
 }
 
 
