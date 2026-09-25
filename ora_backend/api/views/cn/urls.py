@@ -1,6 +1,6 @@
 from django.urls import path
 from .dashboard     import CNDashboardView
-from .animateurs    import CNAnimateursView, CNAnimateurDetailView
+from .animateurs    import CNAnimateursView, CNAnimateurDetailView, CNCheckEmailView
 from .annuaire      import CNAnnuaireView
 from .membres       import CNMembresView, CNMembreDetailView, CNMembreMeView
 from .implantations import CNImplantationsView
@@ -17,8 +17,10 @@ urlpatterns = [
     path('animateurs/export-csv/',  ExportAnimateursNationalCsvView.as_view(),  name='cn-animateurs-export-csv'),
     path('dashboard/',           CNDashboardView.as_view(),       name='cn-dashboard'),
     path('implantations/',       CNImplantationsView.as_view(),   name='cn-implantations'),
-    path('animateurs/',          CNAnimateursView.as_view(),      name='cn-animateurs'),
-    path('animateurs/<int:pk>/', CNAnimateurDetailView.as_view(), name='cn-animateur-detail'),
+    path('animateurs/',              CNAnimateursView.as_view(),      name='cn-animateurs'),
+    # ordre important : 'check-email' avant '<int:pk>'
+    path('animateurs/check-email/',  CNCheckEmailView.as_view(),      name='cn-animateur-check-email'),
+    path('animateurs/<int:pk>/',     CNAnimateurDetailView.as_view(), name='cn-animateur-detail'),
     path('annuaire/',            CNAnnuaireView.as_view(),        name='cn-annuaire'),
     path('retribution/',         RetributionView.as_view(),       name='cn-retribution'),
     # ordre important : 'me' avant '<int:pk>'

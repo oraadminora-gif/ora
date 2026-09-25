@@ -92,6 +92,18 @@ function TempPasswordDialog({ name, email, password, onClose }: {
 // ─────────────────────────────────────────────────────────────
 // MODALE CREATE / EDIT
 // ─────────────────────────────────────────────────────────────
+interface EmailCheckResult {
+  exists: boolean;
+  first_name?: string;
+  last_name?: string;
+  roles?: string[];
+  has_animateur_profile?: boolean;
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  MENTOR: 'Mentor', AP: 'Animateur de Pôle', ACP: 'Coordinateur de Pôle', CN: 'Comité National',
+};
+
 function AnimModal({
   mode, anim, poles, onClose, onSaved,
 }: {
@@ -99,13 +111,15 @@ function AnimModal({
   anim: Animateur | null;
   poles: Pole[];
   onClose: () => void;
-  onSaved: (a: Animateur, tempPassword?: string) => void;
+  onSaved: (a: Animateur, tempPassword?: string, linkedExisting?: boolean) => void;
 }) {
   const [form, setForm]             = useState<AnimForm>(EMPTY_FORM);
   const [associations, setAssocs]   = useState<Association[]>([]);
   const [loadingAssocs, setLoadingA]= useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState<string | null>(null);
+  const [emailCheck, setEmailCheck] = useState<EmailCheckResult | null>(null);
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (mode === 'edit' && anim) {
@@ -145,6 +159,21 @@ function AnimModal({
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }));
 
+  // Vérifie si l'email saisi correspond déjà à un compte (ex. un mentor)
+  // pour proposer d'y rattacher le nouveau rôle Animateur.
+  useEffect(() => {
+    if (mode !== 'create') return;
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    const email = form.email.trim();
+    if (!email || !email.includes('@')) { setEmailCheck(null); return; }
+    emailCheckTimer.current = setTimeout(() => {
+      api.get<EmailCheckResult>('/cn/animateurs/check-email/', { params: { email } })
+        .then(res => setEmailCheck(res.data))
+        .catch(() => setEmailCheck(null));
+    }, 500);
+    return () => { if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current); };
+  }, [form.email, mode]);
+
   const handlePoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const pid = e.target.value;
     setForm(prev => ({ ...prev, pole_id: pid, association_id: '' }));
@@ -164,7 +193,7 @@ function AnimModal({
       };
       if (mode === 'create') {
         const res = await api.post('/cn/animateurs/', payload);
-        onSaved(res.data, res.data.temp_password);
+        onSaved(res.data, res.data.temp_password, res.data.linked_existing_account);
       } else {
         const res = await api.patch(`/cn/animateurs/${anim!.id}/`, payload);
         onSaved(res.data);
@@ -205,6 +234,21 @@ function AnimModal({
               className={`${INPUT} ${mode === 'edit' ? 'opacity-60 cursor-not-allowed' : ''}`}
               placeholder="marie.dupont@email.fr" />
           </Field>
+
+          {mode === 'create' && emailCheck?.exists && (
+            emailCheck.has_animateur_profile ? (
+              <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                {emailCheck.first_name} {emailCheck.last_name} a déjà un profil Animateur avec cet email.
+              </p>
+            ) : (
+              <p className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+                {emailCheck.first_name} {emailCheck.last_name} a déjà un compte
+                {emailCheck.roles?.length ? ` (${emailCheck.roles.map(r => ROLE_LABELS[r] ?? r).join(', ')})` : ''}.
+                En validant, {emailCheck.roles?.length ? 'elle' : 'cette personne'} recevra en plus le rôle Animateur
+                sur le même compte — un seul identifiant/mot de passe pour tous ses rôles.
+              </p>
+            )
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Téléphone">
@@ -392,7 +436,7 @@ export function GestionAnimateursNational() {
 
   const tc = meta?.total_counts;
 
-  const handleSaved = (saved: Animateur, tempPassword?: string) => {
+  const handleSaved = (saved: Animateur, tempPassword?: string, linkedExisting?: boolean) => {
     setAnimateurs(prev => {
       const idx = prev.findIndex(a => a.id === saved.id);
       if (idx >= 0) { const next = [...prev]; next[idx] = saved; return next; }
@@ -401,6 +445,9 @@ export function GestionAnimateursNational() {
     setModalMode(null);
     if (tempPassword) {
       setTempPasswordInfo({ name: `${saved.first_name} ${saved.last_name}`, email: saved.email, password: tempPassword });
+    } else if (linkedExisting) {
+      setSuccessMsg(`Rôle Animateur ajouté au compte existant de ${saved.first_name} ${saved.last_name}.`);
+      setTimeout(() => setSuccessMsg(null), 4000);
     } else {
       setSuccessMsg('Animateur mis à jour.');
       setTimeout(() => setSuccessMsg(null), 4000);

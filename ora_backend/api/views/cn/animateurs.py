@@ -21,6 +21,21 @@ def _generate_temp_password(length=12):
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
+def _user_roles_summary(user):
+    """Rôles déjà détenus par ce compte (voir CustomTokenObtainPairSerializer)."""
+    roles = []
+    if hasattr(user, 'mentor'):
+        roles.append('MENTOR')
+    if hasattr(user, 'animateur'):
+        if user.animateur.is_acp:
+            roles.append('ACP')
+        if user.animateur.is_ap:
+            roles.append('AP')
+    if hasattr(user, 'cn_member'):
+        roles.append('CN')
+    return roles
+
+
 def _serialize_animateur(a):
     return {
         "id":               a.id,
@@ -43,6 +58,32 @@ def _serialize_animateur(a):
 
 PAGE_SIZE_DEFAULT = 25
 PAGE_SIZE_MAX     = 100
+
+
+class CNCheckEmailView(APIView):
+    """
+    GET /api/cn/animateurs/check-email/?email=...
+    Indique si un compte existe déjà pour cet email, afin de proposer d'y
+    rattacher un nouveau rôle Animateur plutôt que d'échouer à la création.
+    """
+    permission_classes = [IsAuthenticated, IsCN]
+
+    def get(self, request):
+        email = request.query_params.get('email', '').strip().lower()
+        if not email:
+            return Response({"exists": False})
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"exists": False})
+
+        return Response({
+            "exists":                 True,
+            "first_name":             user.first_name,
+            "last_name":              user.last_name,
+            "roles":                  _user_roles_summary(user),
+            "has_animateur_profile":  hasattr(user, 'animateur'),
+        })
 
 
 class CNAnimateursView(APIView):
@@ -122,9 +163,10 @@ class CNAnimateursView(APIView):
             )
 
         email = data['email'].strip().lower()
-        if User.objects.filter(email=email).exists():
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user and hasattr(existing_user, 'animateur'):
             return Response(
-                {"error": "Un compte avec cet email existe déjà"},
+                {"error": "Cette personne a déjà un profil Animateur."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -145,13 +187,17 @@ class CNAnimateursView(APIView):
         is_acp = bool(data.get('is_acp', False))
         is_ap  = bool(data.get('is_ap', False))
 
-        temp_password = _generate_temp_password()
-        user = User.objects.create_user(
-            email=email,
-            password=temp_password,
-            first_name=first_name,
-            last_name=last_name,
-        )
+        temp_password = None
+        if existing_user:
+            user = existing_user
+        else:
+            temp_password = _generate_temp_password()
+            user = User.objects.create_user(
+                email=email,
+                password=temp_password,
+                first_name=first_name,
+                last_name=last_name,
+            )
 
         animateur = Animateur.objects.create(
             user=user,
@@ -167,10 +213,12 @@ class CNAnimateursView(APIView):
             is_active=True,
         )
 
-        return Response(
-            {**_serialize_animateur(animateur), "temp_password": temp_password},
-            status=status.HTTP_201_CREATED,
-        )
+        response_data = {**_serialize_animateur(animateur)}
+        if temp_password:
+            response_data["temp_password"] = temp_password
+        else:
+            response_data["linked_existing_account"] = True
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class CNAnimateurDetailView(APIView):

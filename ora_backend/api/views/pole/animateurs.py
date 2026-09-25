@@ -20,6 +20,21 @@ def _generate_temp_password(length=12):
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
+def _user_roles_summary(user):
+    """Rôles déjà détenus par ce compte (voir CustomTokenObtainPairSerializer)."""
+    roles = []
+    if hasattr(user, 'mentor'):
+        roles.append('MENTOR')
+    if hasattr(user, 'animateur'):
+        if user.animateur.is_acp:
+            roles.append('ACP')
+        if user.animateur.is_ap:
+            roles.append('AP')
+    if hasattr(user, 'cn_member'):
+        roles.append('CN')
+    return roles
+
+
 def _serialize_ap(ap):
     return {
         "id":               ap.id,
@@ -36,6 +51,32 @@ def _serialize_ap(ap):
         "is_ap":            ap.is_ap,
         "role_label":       ("APC/AP" if (ap.is_acp and ap.is_ap) else ("APC" if ap.is_acp else "AP")),
     }
+
+
+class PoleCheckEmailView(APIView):
+    """
+    GET /pole/animateurs/check-email/?email=...
+    Indique si un compte existe déjà pour cet email, afin de proposer d'y
+    rattacher un nouveau rôle Animateur plutôt que d'échouer à la création.
+    """
+    permission_classes = [IsAuthenticated, IsACP]
+
+    def get(self, request):
+        email = request.query_params.get('email', '').strip().lower()
+        if not email:
+            return Response({"exists": False})
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"exists": False})
+
+        return Response({
+            "exists":                 True,
+            "first_name":             user.first_name,
+            "last_name":              user.last_name,
+            "roles":                  _user_roles_summary(user),
+            "has_animateur_profile":  hasattr(user, 'animateur'),
+        })
 
 
 class PoleAnimateursView(APIView):
@@ -78,10 +119,11 @@ class PoleAnimateursView(APIView):
 
         email = data['email'].strip().lower()
 
-        # Email déjà utilisé ?
-        if User.objects.filter(email=email).exists():
+        # Email déjà utilisé par un animateur existant ?
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user and hasattr(existing_user, 'animateur'):
             return Response(
-                {"error": "Un compte avec cet email existe déjà"},
+                {"error": "Cette personne a déjà un profil Animateur."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -96,14 +138,18 @@ class PoleAnimateursView(APIView):
         first_name = data['first_name'].strip()
         last_name  = data['last_name'].strip()
 
-        # Crée le compte User
-        temp_password = _generate_temp_password()
-        user = User.objects.create_user(
-            email=email,
-            password=temp_password,
-            first_name=first_name,
-            last_name=last_name,
-        )
+        # Crée le compte User (ou réutilise celui d'un mentor existant)
+        temp_password = None
+        if existing_user:
+            user = existing_user
+        else:
+            temp_password = _generate_temp_password()
+            user = User.objects.create_user(
+                email=email,
+                password=temp_password,
+                first_name=first_name,
+                last_name=last_name,
+            )
 
         # Crée l'Animateur (AP)
         ap = Animateur.objects.create(
@@ -120,10 +166,12 @@ class PoleAnimateursView(APIView):
             is_active=True,
         )
 
-        return Response(
-            {**_serialize_ap(ap), "temp_password": temp_password},
-            status=status.HTTP_201_CREATED,
-        )
+        response_data = {**_serialize_ap(ap)}
+        if temp_password:
+            response_data["temp_password"] = temp_password
+        else:
+            response_data["linked_existing_account"] = True
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class PoleAnimateurDetailView(APIView):

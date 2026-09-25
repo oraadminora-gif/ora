@@ -1,7 +1,7 @@
 from django.urls import path
 from .matching       import MatchingSuggestionsView, AssignMentorView, AnnulerAffectationView
 from .mentors        import PoleMentorsView, PoleMentorDetailView
-from .animateurs     import PoleAnimateursView, PoleAnimateurDetailView
+from .animateurs     import PoleAnimateursView, PoleAnimateurDetailView, PoleCheckEmailView
 from .mentorats      import PoleMentoratListView, PoleMentoratDetailView
 from .export_csv     import ExportMentoratsCsvView
 from .requests       import PendingRequestsView, RerouterDemandeView, RefuserDemandeView, SetEtablissementDemandeView, CreateDemandeView
@@ -24,6 +24,8 @@ urlpatterns = [
 
     # ── Animateurs (APs) ─────────────────────────────────────
     path('animateurs/',                    PoleAnimateursView.as_view(),      name='pole-animateurs'),
+    # ordre important : 'check-email' avant '<int:animateur_id>'
+    path('animateurs/check-email/',        PoleCheckEmailView.as_view(),      name='pole-animateur-check-email'),
     path('animateurs/<int:animateur_id>/', PoleAnimateurDetailView.as_view(), name='pole-animateur-detail'),
 
     # ── Mentorats ─────────────────────────────────────────────
