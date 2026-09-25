@@ -709,7 +709,7 @@ export function APSuiviMentoratModal({ mentoratId, onClose, onSaved, canReassign
                       disabled={isClosed} className={INPUT} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Dernier contact</label>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Date dernier contact AP/Mentor</label>
                     <input type="date" value={dernierContact} onChange={e => setDernierContact(e.target.value)}
                       disabled={isClosed} max={new Date().toISOString().split('T')[0]} className={INPUT} />
                   </div>

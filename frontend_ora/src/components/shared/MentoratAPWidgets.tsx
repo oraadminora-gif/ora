@@ -455,7 +455,7 @@ export function APMentoratSuiviModal({
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Dernier contact</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date dernier contact AP/Mentor</label>
                 <input type="date" value={data.dernier_contact ?? ''} onChange={e => setData({ ...data, dernier_contact: e.target.value })} className={INPUT_CLS} />
               </div>
               <div>
