@@ -245,8 +245,12 @@ class CreateDemandeView(APIView):
         needs_description = (data.get('needs_description') or '').strip()
 
         if not first_name or not last_name or not needs_description:
+            missing_labels = []
+            if not first_name: missing_labels.append('Prénom')
+            if not last_name: missing_labels.append('Nom')
+            if not needs_description: missing_labels.append('Description du besoin')
             return Response(
-                {"error": "Champs requis : first_name, last_name, needs_description"},
+                {"error": f"Champs requis : {', '.join(missing_labels)}"},
                 status=400,
             )
 

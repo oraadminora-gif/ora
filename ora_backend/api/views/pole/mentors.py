@@ -18,6 +18,14 @@ def _generate_temp_password(length=12):
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 
+FIELD_LABELS = {
+    'first_name':      'Prénom',
+    'last_name':       'Nom',
+    'email':           'Email',
+    'association_id':  'Association',
+}
+
+
 def _serialize_mentor(m):
     return {
         "id":              m.id,
@@ -114,7 +122,7 @@ class PoleMentorsView(APIView):
         missing = [f for f in required if not data.get(f)]
         if missing:
             return Response(
-                {"error": f"Champs requis : {', '.join(missing)}"},
+                {"error": f"Champs requis : {', '.join(FIELD_LABELS.get(f, f) for f in missing)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

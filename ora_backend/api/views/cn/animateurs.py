@@ -21,6 +21,15 @@ def _generate_temp_password(length=12):
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
+FIELD_LABELS = {
+    'first_name':      'Prénom',
+    'last_name':       'Nom',
+    'email':           'Email',
+    'association_id':  'Association',
+    'pole_id':         'Pôle',
+}
+
+
 def _user_roles_summary(user):
     """Rôles déjà détenus par ce compte (voir CustomTokenObtainPairSerializer)."""
     roles = []
@@ -158,7 +167,7 @@ class CNAnimateursView(APIView):
         missing = [f for f in required if not data.get(f)]
         if missing:
             return Response(
-                {"error": f"Champs requis : {', '.join(missing)}"},
+                {"error": f"Champs requis : {', '.join(FIELD_LABELS.get(f, f) for f in missing)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

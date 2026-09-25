@@ -20,6 +20,14 @@ def _generate_temp_password(length=12):
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
+FIELD_LABELS = {
+    'first_name':      'Prénom',
+    'last_name':       'Nom',
+    'email':           'Email',
+    'association_id':  'Association',
+}
+
+
 def _user_roles_summary(user):
     """Rôles déjà détenus par ce compte (voir CustomTokenObtainPairSerializer)."""
     roles = []
@@ -113,7 +121,7 @@ class PoleAnimateursView(APIView):
         missing = [f for f in required if not data.get(f)]
         if missing:
             return Response(
-                {"error": f"Champs requis : {', '.join(missing)}"},
+                {"error": f"Champs requis : {', '.join(FIELD_LABELS.get(f, f) for f in missing)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -127,13 +135,12 @@ class PoleAnimateursView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Association dans le pôle
         try:
             association = Association.objects.get(
-                id=data['association_id'], pole_id=pole_id, is_active=True
+                id=data['association_id'], is_active=True
             )
         except Association.DoesNotExist:
-            return Response({"error": "Association introuvable dans ce pôle"}, status=400)
+            return Response({"error": "Association introuvable"}, status=400)
 
         first_name = data['first_name'].strip()
         last_name  = data['last_name'].strip()
@@ -203,14 +210,13 @@ class PoleAnimateurDetailView(APIView):
 
         data = request.data
 
-        # Association (vérifier pôle)
         if 'association_id' in data:
             try:
                 ap.association = Association.objects.get(
-                    id=data['association_id'], pole_id=pole_id, is_active=True
+                    id=data['association_id'], is_active=True
                 )
             except Association.DoesNotExist:
-                return Response({"error": "Association introuvable dans ce pôle"}, status=400)
+                return Response({"error": "Association introuvable"}, status=400)
 
         # Champs simples (email non modifiable)
         for field in ('first_name', 'last_name', 'phone', 'city'):
