@@ -590,7 +590,7 @@ export function APMentoratSuiviModal({
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span>💰</span> Financements
             </h3>
-            {financements.length === 0 && !addingF && (
+            {financements.length === 0 && (
               <p className="text-xs text-slate-400 italic">Aucun financeur associé</p>
             )}
             <div className="space-y-1.5">
@@ -611,11 +611,11 @@ export function APMentoratSuiviModal({
                 </div>
               ))}
             </div>
-            {addingF ? (
+            {financements.length === 0 && (addingF ? (
               <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <select value={selFId} onChange={e => setSelFId(e.target.value)} className={INPUT_CLS}>
                   <option value="">— Choisir un financeur —</option>
-                  {fOptions.filter(o => !financements.find(i => i.financement_id === o.id)).map(o => (
+                  {fOptions.map(o => (
                     <option key={o.id} value={o.id}>{o.nom} ({o.code})</option>
                   ))}
                 </select>
@@ -635,7 +635,7 @@ export function APMentoratSuiviModal({
                 className="flex items-center gap-1.5 text-xs font-semibold text-ora-blue hover:underline">
                 <Plus className="w-3.5 h-3.5" /> Ajouter un financeur
               </button>
-            )}
+            ))}
           </section>
 
           {/* ── Actions ── */}

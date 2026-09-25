@@ -1493,6 +1493,20 @@ class APMentoratFinancementsView(APIView):
             financement = Financement.objects.get(pk=financement_id)
         except Financement.DoesNotExist:
             return Response({'error': 'Financement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Un seul financeur autorisé par mentorat
+        autre_financeur = (
+            MentoratFinancement.objects
+            .filter(mentorat=mentorat)
+            .exclude(financement=financement)
+            .exists()
+        )
+        if autre_financeur:
+            return Response(
+                {'error': "Un seul financeur est autorisé par mentorat. Retirez d'abord le financeur actuel pour en choisir un autre."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         code_specifique = request.data.get('code_specifique', '').strip()
         mf, created = MentoratFinancement.objects.get_or_create(
             mentorat=mentorat, financement=financement,

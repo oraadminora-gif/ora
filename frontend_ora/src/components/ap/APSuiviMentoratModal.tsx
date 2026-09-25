@@ -405,9 +405,13 @@ function FinanceurSection({ mentoratId }: { mentoratId: number }) {
   const usedIds = new Set(mfs.map(m => m.financement_id));
   const available = fins.filter(f => !usedIds.has(f.id));
 
+  // Un seul financeur autorisé par mentorat : une fois qu'il y en a un,
+  // le formulaire d'ajout disparaît — il faut d'abord le retirer (×).
+  const hasFinanceur = mfs.length > 0;
+
   return (
     <div className="space-y-2">
-      {mfs.length === 0 ? (
+      {!hasFinanceur ? (
         <p className="text-xs text-slate-400 italic">Aucun financeur associé</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
@@ -419,7 +423,7 @@ function FinanceurSection({ mentoratId }: { mentoratId: number }) {
           ))}
         </div>
       )}
-      {!showCreate ? (
+      {hasFinanceur ? null : !showCreate ? (
         <div className="flex gap-2">
           <select value={selected} onChange={e => e.target.value === '__create__' ? (setShowCreate(true), setSelected('')) : setSelected(e.target.value)}
             className="flex-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ora-blue/40 focus:border-ora-blue bg-white">
