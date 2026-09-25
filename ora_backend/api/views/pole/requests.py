@@ -72,6 +72,10 @@ class PendingRequestsView(APIView):
                 f"{pending_mentor.first_name} {pending_mentor.last_name}"
                 if pending_mentor else None
             ),
+            "pending_since": (
+                d.mentorat.created_at.isoformat()
+                if pending_mentor else None
+            ),
         }
 
     @staticmethod

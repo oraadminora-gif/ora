@@ -416,3 +416,41 @@ class AssignMentorView(APIView):
             .order_by('is_acp')  # AP-only avant ACP
             .first()
         )
+
+
+class AnnulerAffectationView(APIView):
+    """
+    ACP : Annule une proposition d'affectation encore en attente de réponse
+    du mentor. Supprime le mentorat PENDING et remet la demande au statut
+    "Nouvelle", libre d'être affectée à un autre mentor.
+    POST /api/pole/matching/annuler/<int:request_id>/
+    """
+    permission_classes = [IsAuthenticated, IsACP, CanMatchRequest]
+
+    @transaction.atomic
+    def post(self, request, request_id):
+        young_request = get_object_or_404(YoungRequest, id=request_id)
+        self.check_object_permissions(request, young_request)
+
+        try:
+            mentorat = Mentorat.objects.select_related('mentor').get(
+                young_request=young_request, status='PENDING'
+            )
+        except Mentorat.DoesNotExist:
+            return Response(
+                {"error": "Aucune proposition d'affectation en attente pour cette demande."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        mentor_name = f"{mentorat.mentor.first_name} {mentorat.mentor.last_name}"
+        # Supprime le mentorat PENDING (cascade : invalide aussi le lien
+        # d'acceptation encore en attente reçu par le mentor).
+        mentorat.delete()
+
+        young_request.status = 'NEW'
+        young_request.save()
+
+        return Response({
+            "success": True,
+            "message": f"Affectation à {mentor_name} annulée. La demande est de nouveau disponible.",
+        })

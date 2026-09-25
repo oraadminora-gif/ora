@@ -1,5 +1,5 @@
 from django.urls import path
-from .matching       import MatchingSuggestionsView, AssignMentorView
+from .matching       import MatchingSuggestionsView, AssignMentorView, AnnulerAffectationView
 from .mentors        import PoleMentorsView, PoleMentorDetailView
 from .animateurs     import PoleAnimateursView, PoleAnimateurDetailView
 from .mentorats      import PoleMentoratListView, PoleMentoratDetailView
@@ -39,6 +39,7 @@ urlpatterns = [
     path('requests/<int:pk>/etablissement/',           SetEtablissementDemandeView.as_view(), name='set-etablissement-demande'),
     path('matching/<int:request_id>/',                 MatchingSuggestionsView.as_view(),     name='matching-suggestions'),
     path('matching/assign/',                           AssignMentorView.as_view(),            name='assign-mentor'),
+    path('matching/annuler/<int:request_id>/',          AnnulerAffectationView.as_view(),      name='annuler-affectation'),
 
     # ── Candidatures Mentors ──────────────────────────────────
     path('candidatures-mentors/',                              PoleCandidaturesMentorsView.as_view(),              name='pole-candidatures-mentors'),

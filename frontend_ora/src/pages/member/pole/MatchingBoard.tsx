@@ -11,6 +11,15 @@ import {
 // Constante module-level pour éviter Date.now() dans le render (impure)
 const NOW_MS = new Date().getTime();
 
+// Délai écoulé depuis une date ISO, ex. "depuis 3 jours" / "depuis aujourd'hui"
+function formatDelai(isoDate: string | null | undefined): string {
+  if (!isoDate) return '';
+  const days = Math.floor((NOW_MS - new Date(isoDate).getTime()) / 86400000);
+  if (days <= 0) return "depuis aujourd'hui";
+  if (days === 1) return 'depuis 1 jour';
+  return `depuis ${days} jours`;
+}
+
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
@@ -39,6 +48,7 @@ interface Demande {
   raison_transfert?: string;
   mentorat_pending?: boolean;
   pending_mentor_name?: string | null;
+  pending_since?: string | null;
 }
 
 interface MentorSuggestion {
@@ -219,13 +229,32 @@ function MatchReasons({ m }: { m: MentorSuggestion }) {
 // ─────────────────────────────────────────────────────────────
 // CARTE DEMANDE (colonne gauche)
 // ─────────────────────────────────────────────────────────────
-function DemandeCard({ demande, selected, onClick }: {
-  demande: Demande; selected: boolean; onClick: () => void;
+function DemandeCard({ demande, selected, onClick, onCancelled }: {
+  demande: Demande; selected: boolean; onClick: () => void; onCancelled: () => void;
 }) {
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(`Annuler l'affectation à ${demande.pending_mentor_name ?? 'ce mentor'} ?\n\nLa demande redeviendra disponible pour une nouvelle affectation.`)) return;
+    setCancelling(true); setCancelError(null);
+    try {
+      await api.post(`/pole/matching/annuler/${demande.id}/`);
+      onCancelled();
+    } catch (err) {
+      const e2 = err as { response?: { data?: { error?: string } } };
+      setCancelError(e2.response?.data?.error ?? "Erreur lors de l'annulation");
+    } finally { setCancelling(false); }
+  };
+
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-xl border transition-all duration-150 ${
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
+      className={`w-full text-left p-4 rounded-xl border transition-all duration-150 cursor-pointer ${
         selected
           ? 'border-ora-blue bg-ora-blue/5 shadow-sm ring-1 ring-ora-blue/20'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
@@ -242,10 +271,23 @@ function DemandeCard({ demande, selected, onClick }: {
       </div>
 
       {demande.mentorat_pending && (
-        <p className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg">
-          <Clock className="w-3.5 h-3.5 shrink-0" />
-          En attente de la réponse de {demande.pending_mentor_name ?? 'ce mentor'}
-        </p>
+        <div className="mb-2 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg px-2 py-1.5 space-y-1.5">
+          <p className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 shrink-0" />
+            En attente de la réponse de {demande.pending_mentor_name ?? 'ce mentor'}
+            {demande.pending_since && ` · ${formatDelai(demande.pending_since)}`}
+          </p>
+          {cancelError && <p className="text-red-500 font-normal">{cancelError}</p>}
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="flex items-center gap-1.5 px-2 py-1 bg-white border border-red-300 text-red-600 rounded-md text-[11px] font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
+          >
+            {cancelling ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+            Annuler l'affectation
+          </button>
+        </div>
       )}
 
       {/* Contact */}
@@ -322,7 +364,7 @@ function DemandeCard({ demande, selected, onClick }: {
       <p className="text-xs text-slate-400 mt-2">
         {new Date(demande.date_demande).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
       </p>
-    </button>
+    </div>
   );
 }
 
@@ -1122,6 +1164,7 @@ export function MatchingBoard() {
                     demande={d}
                     selected={selectedDemande?.id === d.id}
                     onClick={() => handleSelectDemande(d)}
+                    onCancelled={fetchDemandes}
                   />
                 ))}
               </div>
