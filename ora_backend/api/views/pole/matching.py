@@ -36,7 +36,7 @@ En cas de difficulté, n'hésitez pas à contacter votre Animateur d'association
 """
 
 
-def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None):
+def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None, supplement_info: str = ''):
     """Email d'affectation au mentor (To) + AP suivi (Cc) avec liens accept/refuse."""
     try:
         from core.models import AcceptanceMentorat, Animateur as Anim, Mentorat as M
@@ -111,10 +111,18 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None)
                 f"{' — ' + ap.phone if ap.phone else ''}\n"
             )
 
+        supplement_texte = ""
+        if supplement_info and supplement_info.strip():
+            supplement_texte = (
+                f"\nSupplément d'information de la demande :\n"
+                f"  {supplement_info.strip()}\n"
+            )
+
         corps_mentor = (
             f"Bonjour {mentor.first_name} {mentor.last_name},\n\n"
             f"Voici une demande d'un jeune et les informations qu'il a laissées à l'inscription :\n\n"
-            f"· {champs_texte}\n\n"
+            f"· {champs_texte}\n"
+            f"{supplement_texte}\n"
             f"Je te l'affecte aujourd'hui par ce message. Je te remercie d'en prendre connaissance "
             f"et de bien vouloir en accuser bonne réception.\n\n"
             f"Ce présent mail et ta réponse constituent à partir d'aujourd'hui ton contrat de mission "
@@ -342,7 +350,7 @@ class AssignMentorView(APIView):
         acp_animateur = getattr(request.user, 'animateur', None)
         threading.Thread(
             target=_send_mentorat_emails,
-            args=(mentorat.id, acp_animateur.id if acp_animateur else None),
+            args=(mentorat.id, acp_animateur.id if acp_animateur else None, justification),
             daemon=True,
         ).start()
 

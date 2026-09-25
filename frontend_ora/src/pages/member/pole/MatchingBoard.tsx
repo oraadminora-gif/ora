@@ -543,11 +543,10 @@ function ManualMentorCard({ mentor, selected, onClick }: {
 // ─────────────────────────────────────────────────────────────
 // PANEL AP — sélection de l'AP qui accompagnera le mentorat
 // ─────────────────────────────────────────────────────────────
-function APSelector({ animateurs, selectedApId, onSelect, required }: {
+function APSelector({ animateurs, selectedApId, onSelect }: {
   animateurs: Animateur[];
   selectedApId: number | null;
   onSelect: (id: number | null) => void;
-  required?: boolean;
 }) {
   if (animateurs.length === 0) {
     return (
@@ -559,21 +558,9 @@ function APSelector({ animateurs, selectedApId, onSelect, required }: {
   return (
     <div className="space-y-1.5">
       <p className="text-xs font-semibold text-slate-600">
-        Animateur accompagnateur{required ? ' *' : ' (optionnel — auto-assigné si absent)'}
+        Choisir l'Animateur Accompagnateur *
       </p>
       <div className="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto">
-        {!required && (
-          <button
-            onClick={() => onSelect(null)}
-            className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
-              selectedApId === null
-                ? 'border-slate-400 bg-slate-100 text-slate-700 font-semibold'
-                : 'border-slate-200 bg-white hover:border-slate-300 text-slate-400'
-            }`}
-          >
-            Auto (par association du mentor)
-          </button>
-        )}
         {animateurs.map(ap => (
           <button
             key={ap.id}
@@ -653,7 +640,7 @@ function FinanceurSelector({ value, onChange }: {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-slate-600">Financeur (optionnel)</p>
+      <p className="text-xs font-semibold text-slate-600">Financeur</p>
 
       {loading ? (
         <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -921,8 +908,7 @@ export function MatchingBoard() {
   const [assignError, setAssignError]           = useState<string | null>(null);
   const [assignSuccess, setAssignSuccess]       = useState<string | null>(null);
 
-  // AP sélection manuelle (quand NO_AP_AVAILABLE)
-  const [needApSelection, setNeedApSelection]   = useState(false);
+  // AP — sélection manuelle obligatoire, toujours visible
   const [animateurs, setAnimateurs]             = useState<Animateur[]>([]);
   const [selectedApId, setSelectedApId]         = useState<number | null>(null);
   const [selectedFinanceurId, setSelectedFinanceurId] = useState<number | null>(null);
@@ -991,7 +977,6 @@ export function MatchingBoard() {
     setSuggestions(null);
     setSuggestionMode('ai');
     setManualSearch('');
-    setNeedApSelection(false);
     setSelectedApId(null);
     setLoadingSugg(true);
     fetchAnimateurs(); // Pré-charger les APs pour la sélection
@@ -1024,7 +1009,6 @@ export function MatchingBoard() {
     if (!selectedDemande || !selectedMentorId) return;
     setAssigning(true);
     setAssignError(null);
-    setNeedApSelection(false);
 
     try {
       const payload: Record<string, unknown> = {
@@ -1060,8 +1044,6 @@ export function MatchingBoard() {
       const e = err as ApiError;
       const errData = e.response?.data;
       if (errData?.code === 'NO_AP_AVAILABLE') {
-        setNeedApSelection(true);
-        fetchAnimateurs();
         setAssignError(`Aucun AP dans l'association de ce mentor. Choisissez-en un manuellement.`);
       } else {
         setAssignError(errData?.error ?? errData?.message ?? "Erreur lors de l'assignation");
@@ -1077,7 +1059,6 @@ export function MatchingBoard() {
     setSuggestions(null);
     setSelectedMentorId(null);
     setAssignError(null);
-    setNeedApSelection(false);
     setSelectedApId(null);
     setSuggestionMode('ai');
   };
@@ -1306,7 +1287,6 @@ export function MatchingBoard() {
                         onClick={() => {
                           setSelectedMentorId(prev => prev === m.mentor_id ? null : m.mentor_id);
                           setAssignError(null);
-                          setNeedApSelection(false);
                           setSelectedApId(null);
                         }}
                       />
@@ -1345,7 +1325,6 @@ export function MatchingBoard() {
                               if (m.est_sature) return;
                               setSelectedMentorId(prev => prev === m.id ? null : m.id);
                               setAssignError(null);
-                              setNeedApSelection(false);
                               setSelectedApId(null);
                             }}
                           />
@@ -1358,12 +1337,11 @@ export function MatchingBoard() {
                 {/* ── Zone confirmation ── */}
                 {selectedMentorId && (
                   <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/50 space-y-3">
-                    {/* Sélection AP — toujours visible */}
+                    {/* Sélection AP — toujours visible, obligatoire */}
                     <APSelector
                       animateurs={animateurs}
                       selectedApId={selectedApId}
                       onSelect={setSelectedApId}
-                      required={needApSelection}
                     />
 
                     <FinanceurSelector
@@ -1374,7 +1352,7 @@ export function MatchingBoard() {
                     <textarea
                       value={justification}
                       onChange={e => setJustification(e.target.value)}
-                      placeholder="Justification du choix (optionnel)…"
+                      placeholder="Supplément d'information de la demande…"
                       rows={2}
                       className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue resize-none"
                     />
@@ -1387,14 +1365,15 @@ export function MatchingBoard() {
 
                     <div className="flex items-center justify-between gap-3">
                       <button
-                        onClick={() => { setSelectedMentorId(null); setAssignError(null); setNeedApSelection(false); setSelectedApId(null); setSelectedFinanceurId(null); }}
+                        onClick={() => { setSelectedMentorId(null); setAssignError(null); setSelectedApId(null); setSelectedFinanceurId(null); }}
                         className="text-sm text-slate-500 hover:text-slate-700 px-3 py-2"
                       >
                         Annuler
                       </button>
                       <button
                         onClick={handleAssign}
-                        disabled={assigning || (needApSelection && !selectedApId)}
+                        disabled={assigning || !selectedApId}
+                        title={!selectedApId ? "Choisissez l'Animateur Accompagnateur pour continuer" : undefined}
                         className="flex items-center gap-2 px-5 py-2.5 bg-ora-blue text-white text-sm font-bold rounded-xl hover:bg-ora-blue/90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm shadow-ora-blue/20"
                       >
                         {assigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
