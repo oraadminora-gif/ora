@@ -80,8 +80,8 @@ export function ACPDashboard() {
       {/* ── Contenu principal ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
-        {/* Associations (3/5) */}
-        <div className="xl:col-span-3 space-y-4">
+        {/* Associations (2/5) */}
+        <div className="xl:col-span-2 space-y-4">
           {/* Header section */}
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
@@ -102,7 +102,7 @@ export function ACPDashboard() {
               <p className="text-sm font-semibold text-slate-400">Aucune association dans ce pôle</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {associations.map(asso => (
                 <ACPAssociationCard key={asso.id} association={asso} />
               ))}
@@ -110,8 +110,8 @@ export function ACPDashboard() {
           )}
         </div>
 
-        {/* Demandes (2/5) */}
-        <div className="xl:col-span-2">
+        {/* Demandes (3/5) */}
+        <div className="xl:col-span-3">
           <ACPDemandesPanel
             demandes={demandes_en_attente}
             poleId={coordinateur.pole.id}
