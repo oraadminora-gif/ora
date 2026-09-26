@@ -59,8 +59,11 @@ class CNAnnuaireView(APIView):
         # ── Animateurs ────────────────────────────────────────────────────────
         animateurs_data = []
         if role in ('', 'ACP', 'AP'):
+            # Exclut les fiches désactivées définitivement (anonymisées) —
+            # elles ne doivent jamais apparaître dans l'annuaire.
             anim_qs = (
                 Animateur.objects
+                .filter(archived_at__isnull=True)
                 .select_related('pole', 'association')
                 .order_by('pole__name', 'last_name')
             )

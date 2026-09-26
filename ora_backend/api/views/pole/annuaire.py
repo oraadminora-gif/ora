@@ -26,9 +26,11 @@ class PoleAnnuaireView(APIView):
         search = request.query_params.get('search', '').strip()
 
         # ── Animateurs (ACP + APs) ────────────────────────────
+        # Exclut les fiches désactivées définitivement (anonymisées) —
+        # elles ne doivent jamais apparaître dans l'annuaire.
         anim_qs = (
             Animateur.objects
-            .filter(pole=pole)
+            .filter(pole=pole, archived_at__isnull=True)
             .select_related('association')
             .order_by('-is_acp', 'last_name', 'first_name')
         )
@@ -56,7 +58,7 @@ class PoleAnnuaireView(APIView):
         # ── Mentors ───────────────────────────────────────────
         mentor_qs = (
             Mentor.objects
-            .filter(pole=pole)
+            .filter(pole=pole, archived_at__isnull=True)
             .select_related('association', 'department')
             .order_by('last_name', 'first_name')
         )

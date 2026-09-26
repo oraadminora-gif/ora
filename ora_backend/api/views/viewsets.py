@@ -53,13 +53,15 @@ class PoleViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_403_FORBIDDEN
                 )
         
-        associations_count = Animateur.objects.filter(pole=pole).count()
+        # Exclut les fiches désactivées définitivement (anonymisées) des
+        # compteurs — elles ne doivent pas être comptées comme des comptes.
+        associations_count = Animateur.objects.filter(pole=pole, archived_at__isnull=True).count()
         total_youngs = YoungRequest.objects.filter(pole=pole).count()
         active_mentorships = Mentorat.objects.filter(pole=pole, status='active').count()
         completed_mentorships = Mentorat.objects.filter(pole=pole, status='completed').count()
         pending_matches = YoungRequest.objects.filter(pole=pole, status='pending').count()
         alert_count = Mentorat.objects.filter(pole=pole, alerte_rouge=True).count()
-        mentors_total = Mentor.objects.filter(pole=pole).count()
+        mentors_total = Mentor.objects.filter(pole=pole, archived_at__isnull=True).count()
         mentors_active = Mentor.objects.filter(pole=pole, disponibilite_reelle__gt=0, is_active=True).count()
         
         recent_activities = []
@@ -73,7 +75,11 @@ class PoleViewSet(viewsets.ModelViewSet):
                 'user_name': 'Système'
             })
         
-        recent_mentorats = Mentorat.objects.filter(pole=pole).order_by('-created_at')[:5]
+        # Exclut les mentorats dont le mentor est désactivé définitivement —
+        # son nom est anonymisé et ne doit pas apparaître dans l'activité récente.
+        recent_mentorats = Mentorat.objects.filter(
+            pole=pole, mentor__archived_at__isnull=True
+        ).order_by('-created_at')[:5]
         for mentorat in recent_mentorats:
             mentor_name = f"{mentorat.mentor.first_name} {mentorat.mentor.last_name}" if mentorat.mentor else 'Inconnu'
             young_name = f"{mentorat.young_request.first_name} {mentorat.young_request.last_name}" if mentorat.young_request else 'Inconnu'
