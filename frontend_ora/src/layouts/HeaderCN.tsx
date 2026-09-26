@@ -1,8 +1,8 @@
 // src/layouts/HeaderCN.tsx
 import { useState, useRef, useEffect } from 'react';
 import {
-  LogOut, Bell, Users, BarChart3, Settings, Shield,
-  BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown, GraduationCap,
+  LogOut, Bell, BarChart3, Settings, Shield,
+  BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown,
   Mail,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,12 +39,9 @@ export function HeaderCN() {
   if (!user) return null;
 
   const adminRoutes = [
-    { to: '/member/cn/retribution',  icon: <DollarSign className="w-4 h-4" />,     label: 'Rétribution' },
-    { to: '/member/cn/mentors',      icon: <Users className="w-4 h-4" />,           label: 'Mentors' },
     { to: '/member/cn/messages',     icon: <Mail className="w-4 h-4" />,            label: 'Messages', badge: unreadCount },
-    { to: '/member/cn/poles',        icon: <BarChart3 className="w-4 h-4" />,       label: 'Pôles' },
-    { to: '/member/cn/animateurs',   icon: <GraduationCap className="w-4 h-4" />,   label: 'Animateurs' },
     { to: '/member/cn/configuration',icon: <Settings className="w-4 h-4" />,        label: 'Configuration' },
+    { to: '/member/cn/retribution',  icon: <DollarSign className="w-4 h-4" />,     label: 'Rétribution' },
   ];
 
   const adminActive = adminRoutes.some(r => location.pathname.startsWith(r.to));
@@ -85,9 +82,17 @@ export function HeaderCN() {
           <NavLink
             to="/member/cn/kpis"
             icon={<TrendingUp className="w-4 h-4" />}
-            label="KPIs"
+            label="KPIs Nationaux"
             active={location.pathname === '/member/cn/kpis'}
           />
+          {fullAccess && (
+            <NavLink
+              to="/member/cn/poles"
+              icon={<BarChart3 className="w-4 h-4" />}
+              label="Gestion Pôles"
+              active={location.pathname.startsWith('/member/cn/poles')}
+            />
+          )}
 
           {/* Dropdown Administration (accès complet uniquement) */}
           {fullAccess && (

@@ -186,11 +186,11 @@ const menuItems: MenuItem[] = [
   { label: 'Implantations',      path: '/member/cn/implantations', roles: ['ACP'],     icon: <Globe size={18} /> },
   // CN
   { label: 'KPIs Nationaux',      path: '/member/cn/kpis',          roles: ['CN'], icon: <BarChart2 size={18} /> },
-  { label: 'Gestion mentors',     path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
-  { label: 'Gestion pôles',       path: '/member/cn/poles',         roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
-  { label: 'Gestion animateurs',  path: '/member/cn/animateurs',    roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
-  { label: 'Annuaire ORA',        path: '/member/cn/annuaire',      roles: ['CN'], icon: <BookOpen size={18} /> },
+  { label: 'Gestion Pôles',       path: '/member/cn/poles',         roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
+  { label: 'Annuaire',            path: '/member/cn/annuaire',      roles: ['CN'], icon: <BookOpen size={18} /> },
   { label: 'Implantations',       path: '/member/cn/implantations', roles: ['CN'], icon: <MapPin size={18} /> },
+  { label: 'Gestion mentors',     path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Gestion APs',         path: '/member/cn/animateurs',    roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
   { label: 'Configuration',       path: '/member/cn/configuration', roles: ['CN'], icon: <Settings size={18} />, requiresFullAccess: true },
 ];
 
