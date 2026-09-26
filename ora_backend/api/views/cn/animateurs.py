@@ -4,6 +4,7 @@ import string
 
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -62,6 +63,12 @@ def _serialize_animateur(a):
         "is_ap":            a.is_ap,
         "is_active":        a.is_active,
         "has_account":      a.user_id is not None,
+        "archived_at":      a.archived_at.isoformat() if a.archived_at else None,
+        "archived_reason":  a.archived_reason,
+        "archived_original_name": (
+            f"{(a.archived_original_data or {}).get('first_name', '')} "
+            f"{(a.archived_original_data or {}).get('last_name', '')}"
+        ).strip() if a.archived_at else None,
     }
 
 
@@ -106,6 +113,7 @@ class CNAnimateursView(APIView):
         pole_id   = request.query_params.get('pole_id', '')
         role      = request.query_params.get('role', '').upper()
         is_active = request.query_params.get('is_active', '')   # 'true'|'false'|''
+        archived  = request.query_params.get('archived') == 'true'
         search    = request.query_params.get('search', '').strip()
         try:
             page      = max(1, int(request.query_params.get('page', 1)))
@@ -125,6 +133,7 @@ class CNAnimateursView(APIView):
             'with_account': base_qs.filter(user__isnull=False).count(),
             'actifs':       base_qs.filter(is_active=True).count(),
             'inactifs':     base_qs.filter(is_active=False).count(),
+            'archives':     base_qs.filter(archived_at__isnull=False).count(),
         }
 
         # ── Filtrage complet ────────────────────────────────────────────────
@@ -135,17 +144,31 @@ class CNAnimateursView(APIView):
         elif role == 'AP':
             qs = qs.filter(is_ap=True)
 
-        if is_active == 'true':
+        if archived:
+            # Isole les animateurs désactivés définitivement — sinon ils se
+            # perdent, anonymisés et indiscernables, parmi tous les autres.
+            qs = qs.filter(archived_at__isnull=False)
+        elif is_active == 'true':
             qs = qs.filter(is_active=True)
         elif is_active == 'false':
             qs = qs.filter(is_active=False)
 
         if search:
-            qs = qs.filter(
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search)  |
-                Q(email__icontains=search)
-            )
+            if archived:
+                # Les champs réels sont anonymisés : on recherche aussi dans
+                # le snapshot des données d'origine (nom, email d'avant).
+                qs = qs.filter(
+                    Q(archived_original_data__first_name__icontains=search) |
+                    Q(archived_original_data__last_name__icontains=search)  |
+                    Q(archived_original_data__email__icontains=search)      |
+                    Q(pole__name__icontains=search)
+                )
+            else:
+                qs = qs.filter(
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search)  |
+                    Q(email__icontains=search)
+                )
 
         total  = qs.count()
         offset = (page - 1) * page_size
@@ -275,9 +298,49 @@ class CNAnimateurDetailView(APIView):
             animateur.is_ap = bool(data['is_ap'])
 
         if 'is_active' in data:
-            animateur.is_active = bool(data['is_active'])
+            new_active = bool(data['is_active'])
+            if animateur.archived_at and new_active:
+                return Response(
+                    {"error": "Cet animateur a été désactivé définitivement — utilisez plutôt \"Restaurer\"."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            animateur.is_active = new_active
             if animateur.user_id:
                 User.objects.filter(id=animateur.user_id).update(is_active=animateur.is_active)
 
         animateur.save()
+        return Response(_serialize_animateur(animateur))
+
+
+class CNAnimateurRestaurerView(APIView):
+    """
+    POST /api/cn/animateurs/{pk}/restaurer/
+    Annule une désactivation définitive : recopie le snapshot pris au
+    moment de l'archivage, réactive l'animateur et son compte de connexion.
+    """
+    permission_classes = [IsAuthenticated, IsCN]
+
+    @transaction.atomic
+    def post(self, request, pk):
+        animateur = get_object_or_404(Animateur, id=pk)
+        if not animateur.archived_at:
+            return Response(
+                {"error": "Cet animateur n'a pas été désactivé définitivement."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        snapshot = animateur.archived_original_data or {}
+        for field in ('first_name', 'last_name', 'email', 'phone', 'city'):
+            if field in snapshot:
+                setattr(animateur, field, snapshot[field])
+
+        animateur.archived_at = None
+        animateur.archived_reason = ''
+        animateur.archived_original_data = None
+        animateur.is_active = True
+        animateur.save()
+
+        if animateur.user_id:
+            User.objects.filter(id=animateur.user_id).update(is_active=True)
+
         return Response(_serialize_animateur(animateur))

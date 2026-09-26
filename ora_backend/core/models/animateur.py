@@ -44,6 +44,19 @@ class Animateur(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Désactivation définitive (départ définitif, décès...) : anonymise la
+    # fiche (disparaît des annuaires/KPI) sans supprimer la ligne, restaurable
+    # uniquement par le CN.
+    archived_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Désactivation définitive : la fiche a été anonymisée à cette date"
+    )
+    archived_reason = models.CharField(max_length=255, blank=True, default='')
+    archived_original_data = models.JSONField(
+        null=True, blank=True,
+        help_text="Snapshot des données personnelles avant anonymisation (restauration CN uniquement)"
+    )
+
     class Meta:
         db_table = 'animateurs'
         ordering = ['last_name', 'first_name']

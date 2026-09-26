@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import { sanitizePhoneInput } from '../../../utils/phone';
 import {
   Plus, Search, Loader2, AlertCircle, Pencil, X,
-  CheckCircle, UserX, Shield, Key, Copy,
+  CheckCircle, UserX, Shield, Key, Copy, Ban,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -15,6 +15,7 @@ interface Animateur {
   email: string; phone: string; city: string;
   association: string; association_id: number;
   is_active: boolean;
+  archived_at: string | null; archived_reason: string;
 }
 interface Association { id: number; name: string; code: string; }
 
@@ -84,6 +85,89 @@ function TempPasswordDialog({ name, email, password, onClose }: {
           className="w-full py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all">
           J'ai noté les identifiants
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DÉSACTIVATION DÉFINITIVE (départ définitif, décès...) — anonymise la
+// fiche mais ne la supprime pas. Irréversible depuis cet écran :
+// confirmation renforcée (saisir le nom de l'AP).
+// ─────────────────────────────────────────────────────────────
+function ArchiveModal({ ap, onClose, onArchived }: {
+  ap: Animateur;
+  onClose: () => void;
+  onArchived: (a: Animateur) => void;
+}) {
+  const [reason, setReason] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const confirmed = confirmText.trim().toLowerCase() === ap.name.trim().toLowerCase();
+
+  const handleConfirm = async () => {
+    if (!confirmed) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await api.patch(`/pole/animateurs/${ap.id}/`, { archive: true, archive_reason: reason.trim() });
+      onArchived(res.data);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? 'Erreur lors de la désactivation définitive.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 mx-auto">
+          <Ban className="w-7 h-7 text-red-600" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-base font-bold text-slate-900">Désactiver définitivement {ap.name} ?</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Action <strong>irréversible</strong> — pour un AP qui n'exercera plus jamais (départ définitif, décès).
+            Sa fiche sera anonymisée (nom, email, téléphone effacés) et il disparaîtra des annuaires et des KPI.
+          </p>
+        </div>
+
+        {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>}
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Motif (optionnel)</label>
+          <select value={reason} onChange={e => setReason(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-white">
+            <option value="">— Sélectionner —</option>
+            <option value="Décès">Décès</option>
+            <option value="Départ définitif">Départ définitif</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+            Pour confirmer, saisissez « {ap.name} »
+          </label>
+          <input value={confirmText} onChange={e => setConfirmText(e.target.value)}
+            placeholder={ap.name}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" />
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all">
+            Annuler
+          </button>
+          <button onClick={handleConfirm} disabled={!confirmed || submitting}
+            className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {submitting ? 'Désactivation…' : 'Désactiver définitivement'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -289,6 +373,7 @@ export function GestionAnimateurs() {
   const [editingAP, setEditingAP]       = useState<Animateur | null>(null);
   const [successMsg, setSuccessMsg]     = useState<string | null>(null);
   const [tempPasswordInfo, setTempPasswordInfo] = useState<{ name: string; email: string; password: string } | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Animateur | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -336,6 +421,14 @@ export function GestionAnimateurs() {
       setSuccessMsg(`${ap.name} désactivé.`);
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch { setError('Erreur lors de la désactivation'); }
+  };
+
+  const handleArchived = (updated: Animateur) => {
+    const originalName = archiveTarget?.name ?? "L'AP";
+    setAps(prev => prev.map(a => a.id === updated.id ? updated : a));
+    setArchiveTarget(null);
+    setSuccessMsg(`${originalName} a été désactivé définitivement.`);
+    setTimeout(() => setSuccessMsg(null), 4000);
   };
 
   return (
@@ -411,24 +504,40 @@ export function GestionAnimateurs() {
                   <td className="px-4 py-3 hidden md:table-cell text-sm text-slate-600">{ap.association}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-500">{ap.city || '—'}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${ap.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
-                      <Shield className="w-2.5 h-2.5" />
-                      {ap.is_active ? 'Actif' : 'Inactif'}
-                    </span>
+                    {ap.archived_at ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100"
+                        title={`Désactivé définitivement le ${new Date(ap.archived_at).toLocaleDateString('fr-FR')}${ap.archived_reason ? ` — ${ap.archived_reason}` : ''}`}>
+                        <Ban className="w-2.5 h-2.5" />
+                        Désactivé définitivement
+                      </span>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${ap.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                        <Shield className="w-2.5 h-2.5" />
+                        {ap.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => { setEditingAP(ap); setModalMode('edit'); }}
-                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      {ap.is_active && (
-                        <button onClick={() => handleDeactivate(ap)}
-                          className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
-                          <UserX className="w-3.5 h-3.5" />
+                    {ap.archived_at ? (
+                      <p className="text-center text-[11px] text-slate-300 italic">Fiche archivée</p>
+                    ) : (
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => { setEditingAP(ap); setModalMode('edit'); }}
+                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
-                      )}
-                    </div>
+                        {ap.is_active && (
+                          <button onClick={() => handleDeactivate(ap)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
+                            <UserX className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button onClick={() => setArchiveTarget(ap)}
+                          className="p-1.5 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500" title="Désactiver définitivement">
+                          <Ban className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -445,6 +554,13 @@ export function GestionAnimateurs() {
           associations={associations}
           onClose={() => setModalMode(null)}
           onSaved={handleSaved}
+        />
+      )}
+      {archiveTarget && (
+        <ArchiveModal
+          ap={archiveTarget}
+          onClose={() => setArchiveTarget(null)}
+          onArchived={handleArchived}
         />
       )}
       {tempPasswordInfo && (

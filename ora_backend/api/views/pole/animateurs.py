@@ -3,6 +3,7 @@ import secrets
 import string
 
 from django.db import transaction
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -58,6 +59,8 @@ def _serialize_ap(ap):
         "is_acp":           ap.is_acp,
         "is_ap":            ap.is_ap,
         "role_label":       ("APC/AP" if (ap.is_acp and ap.is_ap) else ("APC" if ap.is_acp else "AP")),
+        "archived_at":      ap.archived_at.isoformat() if ap.archived_at else None,
+        "archived_reason":  ap.archived_reason,
     }
 
 
@@ -209,6 +212,39 @@ class PoleAnimateurDetailView(APIView):
             return err
 
         data = request.data
+
+        # ── Désactivation définitive (départ définitif, décès...) ───────────
+        # Anonymise la fiche : disparaît des annuaires/KPI (déjà filtrés
+        # is_active=True) sans supprimer la ligne — restaurable par le CN.
+        if data.get('archive'):
+            if ap.archived_at:
+                return Response({"error": "Cet AP est déjà désactivé définitivement."}, status=400)
+
+            ap.archived_original_data = {
+                'first_name': ap.first_name,
+                'last_name':  ap.last_name,
+                'email':      ap.email,
+                'phone':      ap.phone,
+                'city':       ap.city,
+            }
+            ap.archived_reason = (data.get('archive_reason') or '').strip()
+            ap.archived_at = timezone.now()
+            ap.first_name = 'Animateur'
+            ap.last_name = 'archivé'
+            ap.email = f'animateur-archive-{ap.id}@ora.invalid'
+            ap.phone = ''
+            ap.city = ''
+            ap.is_active = False
+            ap.save()
+            if ap.user_id:
+                User.objects.filter(id=ap.user_id).update(is_active=False)
+            return Response(_serialize_ap(ap))
+
+        if 'is_active' in data and ap.archived_at and bool(data['is_active']):
+            return Response(
+                {"error": "Cet AP a été désactivé définitivement et ne peut pas être réactivé depuis cet écran."},
+                status=400,
+            )
 
         if 'association_id' in data:
             try:
