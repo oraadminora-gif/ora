@@ -278,6 +278,8 @@ class CNAnimateurDetailView(APIView):
         if data.get('archive'):
             if animateur.archived_at:
                 return Response({"error": "Cet animateur est déjà désactivé définitivement."}, status=400)
+            if not (data.get('archive_reason') or '').strip():
+                return Response({"error": "Le motif de désactivation définitive est obligatoire."}, status=400)
             if animateur.mentorats_suivis.filter(status__in=['ACTIVE', 'PENDING']).exists():
                 return Response(
                     {"error": "Impossible de désactiver cet animateur : il a un mentorat en cours. Clôturez-le d'abord."},

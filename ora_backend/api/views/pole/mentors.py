@@ -282,6 +282,8 @@ class PoleMentorDetailView(APIView):
                 )
             if mentor.archived_at:
                 return Response({"error": "Ce mentor est déjà désactivé définitivement."}, status=400)
+            if not (data.get('archive_reason') or '').strip():
+                return Response({"error": "Le motif de désactivation définitive est obligatoire."}, status=400)
             if _has_mentorat_en_cours(mentor):
                 return Response(
                     {"error": "Impossible de désactiver ce mentor : il a un mentorat en cours. Clôturez-le d'abord."},

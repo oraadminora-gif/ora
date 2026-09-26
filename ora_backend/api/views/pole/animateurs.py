@@ -224,6 +224,8 @@ class PoleAnimateurDetailView(APIView):
         if data.get('archive'):
             if ap.archived_at:
                 return Response({"error": "Cet AP est déjà désactivé définitivement."}, status=400)
+            if not (data.get('archive_reason') or '').strip():
+                return Response({"error": "Le motif de désactivation définitive est obligatoire."}, status=400)
             if _has_mentorat_en_cours(ap):
                 return Response(
                     {"error": "Impossible de désactiver cet AP : il a un mentorat en cours. Clôturez-le d'abord."},

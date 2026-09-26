@@ -127,7 +127,7 @@ function ArchiveModal({ mentor, onClose, onArchived }: {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const confirmed = confirmText.trim().toLowerCase() === mentor.name.trim().toLowerCase();
+  const confirmed = reason !== '' && confirmText.trim().toLowerCase() === mentor.name.trim().toLowerCase();
 
   const handleConfirm = async () => {
     if (!confirmed) return;
@@ -162,7 +162,7 @@ function ArchiveModal({ mentor, onClose, onArchived }: {
         {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>}
 
         <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Motif (optionnel)</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Motif</label>
           <select value={reason} onChange={e => setReason(e.target.value)}
             className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-white">
             <option value="">— Sélectionner —</option>
