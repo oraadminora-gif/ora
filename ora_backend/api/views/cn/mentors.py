@@ -150,6 +150,11 @@ class CNMenteurDetailView(APIView):
                     {"error": "Ce mentor a été désactivé définitivement — utilisez plutôt \"Restaurer\"."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            if not new_active and mentor.mentorats.filter(status__in=['ACTIVE', 'PENDING']).exists():
+                return Response(
+                    {"error": "Impossible de désactiver ce mentor : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             mentor.is_active = new_active
             mentor.save(update_fields=['is_active'])
         return Response(_serialize_mentor(mentor))

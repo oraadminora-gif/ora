@@ -474,7 +474,10 @@ export function GestionAnimateursNational() {
       } : prev);
       setSuccessMsg(`${a.first_name} ${a.last_name} ${newValue ? 'réactivé' : 'désactivé'}.`);
       setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError(`Erreur lors de la ${newValue ? 'réactivation' : 'désactivation'}`); }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? `Erreur lors de la ${newValue ? 'réactivation' : 'désactivation'}`);
+    }
   };
 
   // Restaurer un animateur désactivé définitivement

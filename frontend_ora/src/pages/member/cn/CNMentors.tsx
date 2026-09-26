@@ -146,7 +146,10 @@ export function CNMentors() {
           inactifs: prev.total_counts.inactifs + (mentor.is_active ? 1 : -1),
         },
       } : prev);
-    } catch { /* silencieux */ } finally {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      alert(e?.response?.data?.error ?? 'Erreur lors de la mise à jour du statut.');
+    } finally {
       setTogglingId(null);
     }
   };

@@ -304,6 +304,11 @@ class CNAnimateurDetailView(APIView):
                     {"error": "Cet animateur a été désactivé définitivement — utilisez plutôt \"Restaurer\"."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            if not new_active and animateur.mentorats_suivis.filter(status__in=['ACTIVE', 'PENDING']).exists():
+                return Response(
+                    {"error": "Impossible de désactiver cet animateur : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             animateur.is_active = new_active
             if animateur.user_id:
                 User.objects.filter(id=animateur.user_id).update(is_active=animateur.is_active)

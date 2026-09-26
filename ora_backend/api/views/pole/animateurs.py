@@ -29,6 +29,11 @@ FIELD_LABELS = {
 }
 
 
+def _has_mentorat_en_cours(ap):
+    """Un mentorat actif ou en attente de réponse bloque toute désactivation."""
+    return ap.mentorats_suivis.filter(status__in=['ACTIVE', 'PENDING']).exists()
+
+
 def _user_roles_summary(user):
     """Rôles déjà détenus par ce compte (voir CustomTokenObtainPairSerializer)."""
     roles = []
@@ -219,6 +224,11 @@ class PoleAnimateurDetailView(APIView):
         if data.get('archive'):
             if ap.archived_at:
                 return Response({"error": "Cet AP est déjà désactivé définitivement."}, status=400)
+            if _has_mentorat_en_cours(ap):
+                return Response(
+                    {"error": "Impossible de désactiver cet AP : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=400,
+                )
 
             ap.archived_original_data = {
                 'first_name': ap.first_name,
@@ -260,7 +270,13 @@ class PoleAnimateurDetailView(APIView):
                 setattr(ap, field, str(data[field]).strip())
 
         if 'is_active' in data:
-            ap.is_active = bool(data['is_active'])
+            new_active = bool(data['is_active'])
+            if not new_active and _has_mentorat_en_cours(ap):
+                return Response(
+                    {"error": "Impossible de désactiver cet AP : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=400,
+                )
+            ap.is_active = new_active
             # Sync sur le User lié
             if ap.user_id:
                 User.objects.filter(id=ap.user_id).update(is_active=ap.is_active)

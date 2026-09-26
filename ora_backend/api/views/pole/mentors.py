@@ -28,6 +28,11 @@ FIELD_LABELS = {
 }
 
 
+def _has_mentorat_en_cours(mentor):
+    """Un mentorat actif ou en attente de réponse bloque toute désactivation."""
+    return mentor.mentorats.filter(status__in=['ACTIVE', 'PENDING']).exists()
+
+
 def _serialize_mentor(m):
     return {
         "id":              m.id,
@@ -277,6 +282,11 @@ class PoleMentorDetailView(APIView):
                 )
             if mentor.archived_at:
                 return Response({"error": "Ce mentor est déjà désactivé définitivement."}, status=400)
+            if _has_mentorat_en_cours(mentor):
+                return Response(
+                    {"error": "Impossible de désactiver ce mentor : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=400,
+                )
 
             mentor.archived_original_data = {
                 'first_name':   mentor.first_name,
@@ -358,6 +368,11 @@ class PoleMentorDetailView(APIView):
 
         if 'is_active' in data:
             new_active = bool(data['is_active'])
+            if not new_active and _has_mentorat_en_cours(mentor):
+                return Response(
+                    {"error": "Impossible de désactiver ce mentor : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=400,
+                )
             if mentor.is_active != new_active:
                 mentor.is_active = new_active
                 if not new_active:

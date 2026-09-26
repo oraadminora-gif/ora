@@ -583,7 +583,10 @@ export function GestionMentors() {
       setMentors(prev => prev.map(x => x.id === m.id ? res.data : x));
       setSuccessMsg(`${m.name} ${m.is_active ? 'désactivé' : 'réactivé'}.`);
       setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError(`Erreur lors de la ${m.is_active ? 'désactivation' : 'réactivation'}`); }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? `Erreur lors de la ${m.is_active ? 'désactivation' : 'réactivation'}`);
+    }
   };
 
   const handleArchived = (updated: Mentor) => {

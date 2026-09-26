@@ -426,7 +426,10 @@ export function GestionAnimateurs() {
       setAps(prev => prev.map(a => a.id === ap.id ? res.data : a));
       setSuccessMsg(`${ap.name} désactivé.`);
       setTimeout(() => setSuccessMsg(null), 4000);
-    } catch { setError('Erreur lors de la désactivation'); }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? 'Erreur lors de la désactivation');
+    }
   };
 
   const handleArchived = (updated: Animateur) => {
