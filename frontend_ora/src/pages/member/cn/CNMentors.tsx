@@ -28,12 +28,13 @@ interface Mentor {
   max_capacity: number;
   archived_at: string | null;
   archived_reason: string;
+  archived_original_name: string | null;
 }
 
 interface MentorMeta {
   total_counts: {
     all: number; actifs: number; inactifs: number;
-    formes: number; disponibles: number;
+    formes: number; disponibles: number; archives: number;
   };
   count: number;
   page: number;
@@ -41,7 +42,7 @@ interface MentorMeta {
   has_next: boolean;
 }
 
-type ActiveFilter = 'all' | 'actifs' | 'inactifs';
+type ActiveFilter = 'all' | 'actifs' | 'inactifs' | 'archives';
 
 const PAGE_SIZE = 25;
 
@@ -95,8 +96,9 @@ export function CNMentors() {
     if (page === 1) setLoading(true); else setLoadingMore(true);
     try {
       const params: Record<string, string | number> = { page, page_size: PAGE_SIZE };
-      if (isActive === 'actifs')   params.is_active = 'true';
-      if (isActive === 'inactifs') params.is_active = 'false';
+      if (isActive === 'actifs')    params.is_active = 'true';
+      if (isActive === 'inactifs')  params.is_active = 'false';
+      if (isActive === 'archives')  params.archived = 'true';
       if (q)     params.search = q;
       if (assoc) params.association_id = assoc;
 
@@ -199,12 +201,13 @@ export function CNMentors() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <StatCard icon={<Users className="w-5 h-5" />}        label="Total"       value={tc?.all        ?? 0} color="blue" />
         <StatCard icon={<CheckCircle className="w-5 h-5" />}  label="Actifs"      value={tc?.actifs     ?? 0} color="green" />
         <StatCard icon={<XCircle className="w-5 h-5" />}      label="Inactifs"    value={tc?.inactifs   ?? 0} color="red" />
         <StatCard icon={<GraduationCap className="w-5 h-5" />} label="Formés"     value={tc?.formes     ?? 0} color="purple" />
         <StatCard icon={<UserCheck className="w-5 h-5" />}    label="Disponibles" value={tc?.disponibles ?? 0} color="orange" />
+        <StatCard icon={<Ban className="w-5 h-5" />}          label="Archivés"    value={tc?.archives   ?? 0} color="red" />
       </div>
 
       {/* Filtres */}
@@ -214,7 +217,7 @@ export function CNMentors() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Nom, email, ville, pôle…"
+            placeholder={activeFilter === 'archives' ? 'Nom d\'origine, email d\'origine, pôle…' : 'Nom, email, ville, pôle…'}
             value={searchInput}
             onChange={e => handleSearchChange(e.target.value)}
             className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-ora-blue focus:border-transparent"
@@ -236,22 +239,22 @@ export function CNMentors() {
           </select>
         </div>
 
-        {/* Filtre actif / inactif */}
+        {/* Filtre actif / inactif / archivés */}
         <div className="flex gap-1.5 shrink-0">
-          {(['all', 'actifs', 'inactifs'] as ActiveFilter[]).map(f => (
+          {(['all', 'actifs', 'inactifs', 'archives'] as ActiveFilter[]).map(f => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeFilter === f
-                  ? 'bg-ora-blue text-white'
+                  ? f === 'archives' ? 'bg-red-600 text-white' : 'bg-ora-blue text-white'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              {f === 'all' ? 'Tous' : f === 'actifs' ? 'Actifs' : 'Inactifs'}
+              {f === 'all' ? 'Tous' : f === 'actifs' ? 'Actifs' : f === 'inactifs' ? 'Inactifs' : 'Archivés'}
               {tc && (
-                <span className={`ml-1.5 text-xs ${activeFilter === f ? 'text-blue-200' : 'text-slate-400'}`}>
-                  {f === 'all' ? tc.all : f === 'actifs' ? tc.actifs : tc.inactifs}
+                <span className={`ml-1.5 text-xs ${activeFilter === f ? (f === 'archives' ? 'text-red-200' : 'text-blue-200') : 'text-slate-400'}`}>
+                  {f === 'all' ? tc.all : f === 'actifs' ? tc.actifs : f === 'inactifs' ? tc.inactifs : tc.archives}
                 </span>
               )}
             </button>
@@ -342,24 +345,30 @@ function MentorRow({ mentor, toggling, restoring, onToggle, onRestore }: {
   mentor: Mentor; toggling: boolean; restoring: boolean; onToggle: () => void; onRestore: () => void;
 }) {
   const occupied = mentor.max_capacity - mentor.disponibilite_reelle;
+  // Fiche anonymisée : on réaffiche le nom d'origine (snapshot) pour que
+  // le CN puisse distinguer les mentors archivés entre eux.
+  const displayName = mentor.archived_at && mentor.archived_original_name
+    ? mentor.archived_original_name
+    : `${mentor.first_name} ${mentor.last_name}`;
   return (
     <tr className={`hover:bg-slate-50/50 transition-colors ${!mentor.is_active ? 'opacity-60' : ''}`}>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-xs shrink-0 ${mentor.is_active ? 'bg-ora-blue' : 'bg-slate-300'}`}>
-            {mentor.first_name.charAt(0)}{mentor.last_name.charAt(0)}
+            {displayName.charAt(0)}
           </div>
           <div>
-            <p className="font-semibold text-slate-900 leading-tight">{mentor.first_name} {mentor.last_name}</p>
+            <p className="font-semibold text-slate-900 leading-tight">{displayName}</p>
             {mentor.city && (
               <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
                 <MapPin className="w-3 h-3" />{mentor.city}
               </div>
             )}
             {mentor.archived_at && (
-              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full mt-1"
-                title={`Désactivé définitivement le ${new Date(mentor.archived_at).toLocaleDateString('fr-FR')}${mentor.archived_reason ? ` — ${mentor.archived_reason}` : ''}`}>
-                <Ban className="w-2 h-2" />Désactivé définitivement
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full mt-1">
+                <Ban className="w-2 h-2" />
+                Désactivé le {new Date(mentor.archived_at).toLocaleDateString('fr-FR')}
+                {mentor.archived_reason ? ` — ${mentor.archived_reason}` : ''}
               </span>
             )}
           </div>

@@ -40,6 +40,10 @@ def _serialize_mentor(m):
         "max_capacity":         m.max_capacity,
         "archived_at":          m.archived_at.isoformat() if m.archived_at else None,
         "archived_reason":      m.archived_reason,
+        "archived_original_name": (
+            f"{(m.archived_original_data or {}).get('first_name', '')} "
+            f"{(m.archived_original_data or {}).get('last_name', '')}"
+        ).strip() if m.archived_at else None,
     }
 
 
@@ -59,6 +63,7 @@ class CNMenteursListView(APIView):
     def get(self, request):
         search    = request.query_params.get('search', '').strip()
         is_active = request.query_params.get('is_active', '')   # 'true'|'false'|''
+        archived  = request.query_params.get('archived') == 'true'
         pole_id   = request.query_params.get('pole_id', '')
         assoc_id  = request.query_params.get('association_id', '')
         try:
@@ -81,24 +86,40 @@ class CNMenteursListView(APIView):
             'inactifs':   base_qs.filter(is_active=False).count(),
             'formes':     base_qs.filter(is_trained=True).count(),
             'disponibles': base_qs.filter(is_active=True, disponibilite_reelle__gt=0).count(),
+            'archives':   base_qs.filter(archived_at__isnull=False).count(),
         }
 
         # ── Filtrage complet ────────────────────────────────────────────────
         qs = base_qs.select_related('pole', 'association').order_by('last_name', 'first_name')
 
-        if is_active == 'true':
+        if archived:
+            # Isole les mentors désactivés définitivement — sinon ils se
+            # perdent parmi tous les autres, anonymisés et indiscernables
+            # sans ce filtre dédié.
+            qs = qs.filter(archived_at__isnull=False)
+        elif is_active == 'true':
             qs = qs.filter(is_active=True)
         elif is_active == 'false':
             qs = qs.filter(is_active=False)
 
         if search:
-            qs = qs.filter(
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search)  |
-                Q(email__icontains=search)       |
-                Q(city__icontains=search)        |
-                Q(pole__name__icontains=search)
-            )
+            if archived:
+                # Les champs réels sont anonymisés : on recherche aussi dans
+                # le snapshot des données d'origine (nom, email d'avant).
+                qs = qs.filter(
+                    Q(archived_original_data__first_name__icontains=search) |
+                    Q(archived_original_data__last_name__icontains=search)  |
+                    Q(archived_original_data__email__icontains=search)      |
+                    Q(pole__name__icontains=search)
+                )
+            else:
+                qs = qs.filter(
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search)  |
+                    Q(email__icontains=search)       |
+                    Q(city__icontains=search)        |
+                    Q(pole__name__icontains=search)
+                )
 
         total  = qs.count()
         offset = (page - 1) * page_size
