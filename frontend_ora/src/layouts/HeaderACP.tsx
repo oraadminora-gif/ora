@@ -1,5 +1,5 @@
 // src/layouts/HeaderACP.tsx
-import { LogOut, Bell, LayoutDashboard, Users, BarChart3, FileText, Crown, Globe, BarChart2 } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BarChart3, FileText, Crown, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -39,18 +39,6 @@ export function HeaderACP() {
             active={location.pathname === '/member/acp/dashboard'}
           />
           <NavLink
-            to="/member/matching"
-            icon={<Users className="w-4 h-4" />}
-            label="Affectation"
-            active={location.pathname === '/member/matching'}
-          />
-          <NavLink
-            to="/member/pole/kpi"
-            icon={<BarChart3 className="w-4 h-4" />}
-            label="KPIs"
-            active={location.pathname === '/member/pole/kpi'}
-          />
-          <NavLink
             to="/member/acp/mentorats"
             icon={<FileText className="w-4 h-4" />}
             label="Suivi mentorats"
@@ -59,20 +47,20 @@ export function HeaderACP() {
           <NavLink
             to="/member/acp/mentors"
             icon={<Crown className="w-4 h-4" />}
-            label="Gestion"
+            label="Gestion mentors"
             active={location.pathname.startsWith('/member/acp/mentors')}
+          />
+          <NavLink
+            to="/member/pole/kpi"
+            icon={<BarChart3 className="w-4 h-4" />}
+            label="KPIs Pôle"
+            active={location.pathname === '/member/pole/kpi'}
           />
           <NavLink
             to="/member/cn/implantations"
             icon={<Globe className="w-4 h-4" />}
             label="Implantations"
             active={location.pathname === '/member/cn/implantations'}
-          />
-          <NavLink
-            to="/member/cn/kpis"
-            icon={<BarChart2 className="w-4 h-4" />}
-            label="KPIs Nationaux"
-            active={location.pathname === '/member/cn/kpis'}
           />
         </nav>
 

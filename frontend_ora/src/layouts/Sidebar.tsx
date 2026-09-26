@@ -177,13 +177,13 @@ const menuItems: MenuItem[] = [
   // ACP — vue pôle complète (inclut accès aux vues AP)
   { label: 'Tableau de bord',    path: '/member/acp/dashboard',  roles: ['ACP'],       icon: <LayoutDashboard size={18} /> },
   { label: 'Affectation',        path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
-  { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },
-  { label: 'Annuaire Pôle',      path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
+  { label: 'Suivi mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
   { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },
   { label: 'Gestion APs',        path: '/member/acp/animateurs', roles: ['ACP'],       icon: <Shield size={18} /> },
-  { label: 'Suivi mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
-  { label: 'Implantations',      path: '/member/cn/implantations', roles: ['ACP'],     icon: <Globe size={18} /> },
+  { label: 'Annuaire Pôle',      path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
+  { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },
   { label: 'KPIs Nationaux',     path: '/member/cn/kpis',          roles: ['ACP'],     icon: <BarChart2 size={18} /> },
+  { label: 'Implantations',      path: '/member/cn/implantations', roles: ['ACP'],     icon: <Globe size={18} /> },
   // CN
   { label: 'KPIs Nationaux',      path: '/member/cn/kpis',          roles: ['CN'], icon: <BarChart2 size={18} /> },
   { label: 'Gestion mentors',     path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
