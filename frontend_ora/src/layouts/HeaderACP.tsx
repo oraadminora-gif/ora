@@ -1,5 +1,5 @@
 // src/layouts/HeaderACP.tsx
-import { LogOut, Bell, LayoutDashboard, BarChart3, FileText, Crown, Globe } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BarChart3, FileText, Crown, Globe, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -37,6 +37,12 @@ export function HeaderACP() {
             icon={<LayoutDashboard className="w-4 h-4" />}
             label="Tableau de bord"
             active={location.pathname === '/member/acp/dashboard'}
+          />
+          <NavLink
+            to="/member/matching"
+            icon={<Users className="w-4 h-4" />}
+            label="Affectation"
+            active={location.pathname === '/member/matching'}
           />
           <NavLink
             to="/member/acp/mentorats"
