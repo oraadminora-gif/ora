@@ -530,13 +530,18 @@ export function GestionMentors() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const filtered = useMemo(() => mentors.filter(m => {
+  // Un mentor désactivé définitivement doit disparaître totalement de cet
+  // écran — il ne doit même pas être compté comme "Inactif" (ça, c'est
+  // réservé à une désactivation simple, réversible).
+  const visibleMentors = useMemo(() => mentors.filter(m => !m.archived_at), [mentors]);
+
+  const filtered = useMemo(() => visibleMentors.filter(m => {
     const matchSearch = !search.trim()
       || `${m.name} ${m.city} ${m.association} ${m.email}`.toLowerCase().includes(search.toLowerCase());
     const matchActive = filterActive === 'all'
       ? true : filterActive === 'active' ? m.is_active : !m.is_active;
     return matchSearch && matchActive;
-  }), [mentors, search, filterActive]);
+  }), [visibleMentors, search, filterActive]);
 
   const handleSaved = (saved: Mentor, tempPassword?: string) => {
     setMentors(prev => {
@@ -590,11 +595,11 @@ export function GestionMentors() {
   };
 
   const stats = useMemo(() => ({
-    total:       mentors.length,
-    actifs:      mentors.filter(m => m.is_active).length,
-    disponibles: mentors.filter(m => m.is_active).reduce((sum, m) => sum + m.disponibilite, 0),
-    formes:      mentors.filter(m => m.is_trained).length,
-  }), [mentors]);
+    total:       visibleMentors.length,
+    actifs:      visibleMentors.filter(m => m.is_active).length,
+    disponibles: visibleMentors.filter(m => m.is_active).reduce((sum, m) => sum + m.disponibilite, 0),
+    formes:      visibleMentors.filter(m => m.is_trained).length,
+  }), [visibleMentors]);
 
   const handleExport = () => {
     const rows = filtered.map(m => ({
@@ -743,12 +748,7 @@ export function GestionMentors() {
                                 <Link2 className="w-2 h-2" />Compte
                               </span>
                             )}
-                            {m.archived_at ? (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full"
-                                title={`Désactivé définitivement le ${new Date(m.archived_at).toLocaleDateString('fr-FR')}${m.archived_reason ? ` — ${m.archived_reason}` : ''}`}>
-                                <Ban className="w-2 h-2" />Désactivé définitivement
-                              </span>
-                            ) : !m.is_active && (
+                            {!m.is_active && (
                               <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">Inactif</span>
                             )}
                           </div>
@@ -774,51 +774,47 @@ export function GestionMentors() {
                       <span className="text-sm font-bold text-violet-600">{m.nb_actifs}</span>
                     </td>
                     <td className="px-4 py-3">
-                      {m.archived_at ? (
-                        <p className="text-center text-[11px] text-slate-300 italic">Fiche archivée</p>
-                      ) : (
-                        <div className="flex items-center justify-center gap-1">
-                          {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
-                          {(!isAP || m.association_id === myAssociationId) && (
-                            <button onClick={() => openEdit(m)}
-                              className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
-                              title="Modifier">
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                          {/* Désactiver / Réactiver */}
-                          {(!isAP || m.association_id === myAssociationId) && (
-                            <button onClick={() => handleToggleActive(m)}
-                              className={`p-1.5 rounded-lg transition-colors ${
-                                m.is_active
-                                  ? 'hover:bg-orange-50 text-slate-400 hover:text-orange-500'
-                                  : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
-                              }`}
-                              title={m.is_active ? 'Désactiver' : 'Réactiver'}>
-                              {m.is_active
-                                ? <UserX className="w-3.5 h-3.5" />
-                                : <UserCheck className="w-3.5 h-3.5" />
-                              }
-                            </button>
-                          )}
-                          {/* Désactiver définitivement — ACP seulement (décès, abandon...) */}
-                          {!isAP && (
-                            <button onClick={() => setArchiveTarget(m)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
-                              title="Désactiver définitivement">
-                              <Ban className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                          {/* Supprimer — ACP seulement (action irréversible) */}
-                          {!isAP && (
-                            <button onClick={() => handleDelete(m)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
-                              title="Supprimer définitivement">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex items-center justify-center gap-1">
+                        {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
+                        {(!isAP || m.association_id === myAssociationId) && (
+                          <button onClick={() => openEdit(m)}
+                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                            title="Modifier">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {/* Désactiver / Réactiver */}
+                        {(!isAP || m.association_id === myAssociationId) && (
+                          <button onClick={() => handleToggleActive(m)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              m.is_active
+                                ? 'hover:bg-orange-50 text-slate-400 hover:text-orange-500'
+                                : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
+                            }`}
+                            title={m.is_active ? 'Désactiver' : 'Réactiver'}>
+                            {m.is_active
+                              ? <UserX className="w-3.5 h-3.5" />
+                              : <UserCheck className="w-3.5 h-3.5" />
+                            }
+                          </button>
+                        )}
+                        {/* Désactiver définitivement — ACP seulement (décès, abandon...) */}
+                        {!isAP && (
+                          <button onClick={() => setArchiveTarget(m)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                            title="Désactiver définitivement">
+                            <Ban className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {/* Supprimer — ACP seulement (action irréversible) */}
+                        {!isAP && (
+                          <button onClick={() => handleDelete(m)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                            title="Supprimer définitivement">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

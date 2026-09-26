@@ -390,10 +390,16 @@ export function GestionAnimateurs() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const filtered = useMemo(() => aps.filter(ap => {
+  // Un AP désactivé définitivement doit disparaître totalement de cet écran
+  // — il ne doit même pas être compté comme "Inactif" (réservé à une
+  // désactivation simple, réversible). L'API l'exclut déjà (is_active=False),
+  // ce filtre protège aussi contre une mise à jour optimiste locale.
+  const visibleAps = useMemo(() => aps.filter(a => !a.archived_at), [aps]);
+
+  const filtered = useMemo(() => visibleAps.filter(ap => {
     if (!search.trim()) return true;
     return `${ap.name} ${ap.email} ${ap.association} ${ap.city}`.toLowerCase().includes(search.toLowerCase());
-  }), [aps, search]);
+  }), [visibleAps, search]);
 
   const handleSaved = (saved: Animateur, tempPassword?: string, linkedExisting?: boolean) => {
     setAps(prev => {
@@ -438,7 +444,7 @@ export function GestionAnimateurs() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Gestion des animateurs</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {aps.filter(a => a.is_active).length} APs actifs dans votre pôle
+            {visibleAps.filter(a => a.is_active).length} APs actifs dans votre pôle
           </p>
         </div>
         <button onClick={() => { setEditingAP(null); setModalMode('create'); }}
@@ -504,40 +510,28 @@ export function GestionAnimateurs() {
                   <td className="px-4 py-3 hidden md:table-cell text-sm text-slate-600">{ap.association}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-sm text-slate-500">{ap.city || '—'}</td>
                   <td className="px-4 py-3 text-center">
-                    {ap.archived_at ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100"
-                        title={`Désactivé définitivement le ${new Date(ap.archived_at).toLocaleDateString('fr-FR')}${ap.archived_reason ? ` — ${ap.archived_reason}` : ''}`}>
-                        <Ban className="w-2.5 h-2.5" />
-                        Désactivé définitivement
-                      </span>
-                    ) : (
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${ap.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
-                        <Shield className="w-2.5 h-2.5" />
-                        {ap.is_active ? 'Actif' : 'Inactif'}
-                      </span>
-                    )}
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${ap.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                      <Shield className="w-2.5 h-2.5" />
+                      {ap.is_active ? 'Actif' : 'Inactif'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    {ap.archived_at ? (
-                      <p className="text-center text-[11px] text-slate-300 italic">Fiche archivée</p>
-                    ) : (
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => { setEditingAP(ap); setModalMode('edit'); }}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
-                          <Pencil className="w-3.5 h-3.5" />
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => { setEditingAP(ap); setModalMode('edit'); }}
+                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="Modifier">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      {ap.is_active && (
+                        <button onClick={() => handleDeactivate(ap)}
+                          className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
+                          <UserX className="w-3.5 h-3.5" />
                         </button>
-                        {ap.is_active && (
-                          <button onClick={() => handleDeactivate(ap)}
-                            className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600" title="Désactiver">
-                            <UserX className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        <button onClick={() => setArchiveTarget(ap)}
-                          className="p-1.5 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500" title="Désactiver définitivement">
-                          <Ban className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
+                      )}
+                      <button onClick={() => setArchiveTarget(ap)}
+                        className="p-1.5 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500" title="Désactiver définitivement">
+                        <Ban className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
