@@ -92,6 +92,90 @@ function TempPasswordDialog({ name, email, password, onClose }: {
 }
 
 // ─────────────────────────────────────────────────────────────
+// DÉSACTIVATION DÉFINITIVE (départ définitif, décès...) — anonymise la
+// fiche mais ne la supprime pas. Irréversible depuis cet écran :
+// confirmation renforcée (saisir le nom de l'animateur).
+// ─────────────────────────────────────────────────────────────
+function ArchiveModal({ anim, onClose, onArchived }: {
+  anim: Animateur;
+  onClose: () => void;
+  onArchived: (a: Animateur) => void;
+}) {
+  const fullName = `${anim.first_name} ${anim.last_name}`;
+  const [reason, setReason] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const confirmed = confirmText.trim().toLowerCase() === fullName.trim().toLowerCase();
+
+  const handleConfirm = async () => {
+    if (!confirmed) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await api.patch(`/cn/animateurs/${anim.id}/`, { archive: true, archive_reason: reason.trim() });
+      onArchived(res.data);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? 'Erreur lors de la désactivation définitive.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 mx-auto">
+          <Ban className="w-7 h-7 text-red-600" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-base font-bold text-slate-900">Désactiver définitivement {fullName} ?</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Action <strong>irréversible</strong> — pour un animateur qui n'exercera plus jamais (départ définitif, décès).
+            Sa fiche sera anonymisée (nom, email, téléphone effacés) et il disparaîtra des annuaires et des KPI.
+          </p>
+        </div>
+
+        {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>}
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Motif (optionnel)</label>
+          <select value={reason} onChange={e => setReason(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-white">
+            <option value="">— Sélectionner —</option>
+            <option value="Décès">Décès</option>
+            <option value="Départ définitif">Départ définitif</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+            Pour confirmer, saisissez « {fullName} »
+          </label>
+          <input value={confirmText} onChange={e => setConfirmText(e.target.value)}
+            placeholder={fullName}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" />
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all">
+            Annuler
+          </button>
+          <button onClick={handleConfirm} disabled={!confirmed || submitting}
+            className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {submitting ? 'Désactivation…' : 'Désactiver définitivement'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // MODALE CREATE / EDIT
 // ─────────────────────────────────────────────────────────────
 interface EmailCheckResult {
@@ -371,6 +455,7 @@ export function GestionAnimateursNational() {
   } | null>(null);
   const [exporting, setExporting] = useState(false);
   const [restoringId, setRestoringId] = useState<number | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Animateur | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleExport = async () => {
@@ -493,6 +578,14 @@ export function GestionAnimateursNational() {
     } finally {
       setRestoringId(null);
     }
+  };
+
+  const handleArchived = (updated: Animateur) => {
+    const originalName = archiveTarget ? `${archiveTarget.first_name} ${archiveTarget.last_name}` : "L'animateur";
+    setAnimateurs(prev => prev.map(x => x.id === updated.id ? updated : x));
+    setArchiveTarget(null);
+    setSuccessMsg(`${originalName} a été désactivé définitivement.`);
+    setTimeout(() => setSuccessMsg(null), 4000);
   };
 
   return (
@@ -699,6 +792,10 @@ export function GestionAnimateursNational() {
                               <UserCheck className="w-3.5 h-3.5" />
                             </button>
                           )}
+                          <button onClick={() => setArchiveTarget(a)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500" title="Désactiver définitivement">
+                            <Ban className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       )}
                     </td>
@@ -744,6 +841,13 @@ export function GestionAnimateursNational() {
             setSuccessMsg('Compte créé avec succès.');
             setTimeout(() => setSuccessMsg(null), 4000);
           }}
+        />
+      )}
+      {archiveTarget && (
+        <ArchiveModal
+          anim={archiveTarget}
+          onClose={() => setArchiveTarget(null)}
+          onArchived={handleArchived}
         />
       )}
     </div>

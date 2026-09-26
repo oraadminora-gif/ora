@@ -272,6 +272,38 @@ class CNAnimateurDetailView(APIView):
         )
         data = request.data
 
+        # ── Désactivation définitive (départ définitif, décès...) ───────────
+        # Anonymise la fiche : disparaît des annuaires/KPI sans supprimer la
+        # ligne — restaurable via "Restaurer" sur cet écran.
+        if data.get('archive'):
+            if animateur.archived_at:
+                return Response({"error": "Cet animateur est déjà désactivé définitivement."}, status=400)
+            if animateur.mentorats_suivis.filter(status__in=['ACTIVE', 'PENDING']).exists():
+                return Response(
+                    {"error": "Impossible de désactiver cet animateur : il a un mentorat en cours. Clôturez-le d'abord."},
+                    status=400,
+                )
+
+            animateur.archived_original_data = {
+                'first_name': animateur.first_name,
+                'last_name':  animateur.last_name,
+                'email':      animateur.email,
+                'phone':      animateur.phone,
+                'city':       animateur.city,
+            }
+            animateur.archived_reason = (data.get('archive_reason') or '').strip()
+            animateur.archived_at = timezone.now()
+            animateur.first_name = 'Animateur'
+            animateur.last_name = 'archivé'
+            animateur.email = f'animateur-archive-{animateur.id}@ora.invalid'
+            animateur.phone = ''
+            animateur.city = ''
+            animateur.is_active = False
+            animateur.save()
+            if animateur.user_id:
+                User.objects.filter(id=animateur.user_id).update(is_active=False)
+            return Response(_serialize_animateur(animateur))
+
         # Changement de pôle
         if 'pole_id' in data:
             try:
