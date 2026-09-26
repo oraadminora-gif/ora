@@ -1,6 +1,7 @@
 # api/views/pole/mentors.py
 import secrets
 import string
+from datetime import date
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -187,6 +188,13 @@ class PoleMentorsView(APIView):
             except User.DoesNotExist:
                 return Response({"error": f"Aucun compte trouvé pour l'email {link_email}"}, status=400)
 
+        training_date = None
+        if data.get('training_date'):
+            try:
+                training_date = date.fromisoformat(data['training_date'])
+            except (ValueError, TypeError):
+                return Response({"error": "Date de formation invalide"}, status=400)
+
         mentor = Mentor.objects.create(
             pole_id=pole_id,
             association=association,
@@ -201,6 +209,7 @@ class PoleMentorsView(APIView):
             max_capacity=max_capacity,
             disponibilite_reelle=max_capacity,
             is_trained=bool(data.get('is_trained', False)),
+            training_date=training_date,
             is_active=True,
             user=user,
         )
@@ -336,6 +345,16 @@ class PoleMentorDetailView(APIView):
 
         if 'is_trained' in data:
             mentor.is_trained = bool(data['is_trained'])
+
+        if 'training_date' in data:
+            raw = data['training_date']
+            if raw:
+                try:
+                    mentor.training_date = date.fromisoformat(raw)
+                except (ValueError, TypeError):
+                    return Response({"error": "Date de formation invalide"}, status=400)
+            else:
+                mentor.training_date = None
 
         if 'is_active' in data:
             new_active = bool(data['is_active'])
