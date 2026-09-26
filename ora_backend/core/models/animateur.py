@@ -74,4 +74,14 @@ class Animateur(models.Model):
     
     @property
     def full_name(self):
+        # Fiche désactivée définitivement (anonymisée) : réaffiche le nom
+        # d'origine pour les affichages "historiques" (mentorats, dashboards)
+        # — la fiche elle-même (annuaire, édition) reste anonymisée.
+        if self.archived_at and self.archived_original_data:
+            name = (
+                f"{self.archived_original_data.get('first_name', '')} "
+                f"{self.archived_original_data.get('last_name', '')}"
+            ).strip()
+            if name:
+                return name
         return f"{self.first_name} {self.last_name}"

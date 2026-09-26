@@ -157,7 +157,7 @@ def serialize_mesmentorat(m: Mentorat, precomputed_stats: dict | None = None):
         'inactivite':   inactivite,
         'mentor': {
             'id':          mentor.id,
-            'name':        f"{mentor.first_name} {mentor.last_name}",
+            'name':        mentor.full_name,
             'association': mentor.association.name,
             'city':        mentor.city,
             'is_trained':  mentor.is_trained,

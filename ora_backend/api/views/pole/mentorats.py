@@ -24,7 +24,7 @@ def _serialize_mentorat(m):
     return {
         "id":               m.id,
         "mentor_id":        m.mentor_id,
-        "mentor_name":      f"{m.mentor.first_name} {m.mentor.last_name}",
+        "mentor_name":      m.mentor.full_name,
         "mentor_assoc":     m.mentor.association.name,
         "jeune_name":       f"{req.first_name} {req.last_name}",
         "jeune_ville":      req.city,
@@ -53,8 +53,7 @@ def _serialize_mentorat(m):
         "jeune_date_previsionnelle": str(req.date_previsionnelle) if req.date_previsionnelle else '',
         "ap_responsable_id":   m.ap_responsable_id,
         "ap_responsable_name": (
-            f"{m.ap_responsable.first_name} {m.ap_responsable.last_name}"
-            if m.ap_responsable else None
+            m.ap_responsable.full_name if m.ap_responsable else None
         ),
         "ap_responsable_assoc": (
             m.ap_responsable.association.name if m.ap_responsable else None
