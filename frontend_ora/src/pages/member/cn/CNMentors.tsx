@@ -277,7 +277,7 @@ export function CNMentors() {
                   <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mentor</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pôle / Association</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Capacité</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Reste dispo/ max capacité</th>
                   <th className="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Formé</th>
                   <th className="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actif</th>
                 </tr>
