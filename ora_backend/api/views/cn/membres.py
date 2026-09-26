@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from core.models import CNMember, User, Association, Pole
-from api.permissions import IsCN
+from api.permissions import IsCN, IsCNFullAccess
 
 
 def _generate_temp_password(length=12):
@@ -64,7 +64,7 @@ class CNMembresView(APIView):
     GET  /api/cn/membres/  – Liste des membres CN
     POST /api/cn/membres/  – Créer un nouveau membre CN
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         search = request.query_params.get('search', '').strip()
@@ -145,7 +145,7 @@ class CNMembreDetailView(APIView):
     """
     PATCH /api/cn/membres/{pk}/ – Modifier un membre CN
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def patch(self, request, pk):
         try:

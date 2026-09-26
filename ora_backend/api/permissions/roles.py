@@ -11,6 +11,20 @@ class IsCN(BasePermission):
         )
 
 
+class IsCNFullAccess(BasePermission):
+    """
+    CN avec « Accès complet » (CNMember.cn_acces_complet) : gestion
+    mentors/pôles/animateurs, configuration, messages, rétribution.
+    Un CN sans accès complet passe IsCN mais pas celle-ci.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and hasattr(request.user, 'cn_member')
+            and request.user.cn_member.cn_acces_complet
+        )
+
+
 class IsAnimateur(BasePermission):
     """Tout animateur (AP ou ACP)"""
     def has_permission(self, request, view):

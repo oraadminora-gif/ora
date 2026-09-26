@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import Animateur
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 
 HEADERS = [
     'ID', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Ville',
@@ -51,7 +51,7 @@ def _build_rows(animateurs):
 
 
 class ExportAnimateursNationalCsvView(APIView):
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         animateurs = (

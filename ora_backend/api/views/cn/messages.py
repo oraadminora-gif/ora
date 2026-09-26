@@ -6,7 +6,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from core.models import ContactMessage
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 
 
 def _serialize(m):
@@ -25,7 +25,7 @@ def _serialize(m):
 
 class CNMessagesView(APIView):
     """GET /cn/messages/ — liste des messages de contact."""
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         qs = ContactMessage.objects.order_by('is_read', '-created_at')
@@ -50,7 +50,7 @@ class CNMessagesView(APIView):
 
 class CNMessageDetailView(APIView):
     """PATCH /cn/messages/{id}/ — marquer lu/non-lu."""
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def patch(self, request, pk):
         msg = get_object_or_404(ContactMessage, pk=pk)

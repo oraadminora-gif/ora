@@ -1,4 +1,4 @@
-from .roles import IsCN, IsACP, IsAP, IsAnimateur, IsMentor, IsCNOrACP
+from .roles import IsCN, IsACP, IsAP, IsAnimateur, IsMentor, IsCNOrACP, IsCNFullAccess
 from .object_level import IsACPOfPole, IsAPOfAssociation, CanMatchRequest
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     'IsAnimateur',
     'IsMentor',
     'IsCNOrACP',
+    'IsCNFullAccess',
     'IsACPOfPole',
     'IsAPOfAssociation',
     'CanMatchRequest',

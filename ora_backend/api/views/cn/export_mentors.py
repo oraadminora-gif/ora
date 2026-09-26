@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import Mentor
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 
 HEADERS = [
     'Code pôle', 'Pôle', 'ID',
@@ -55,7 +55,7 @@ def _build_rows(mentors):
 
 
 class ExportMentorsNationalCsvView(APIView):
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         from django.db.models import Count, Q

@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from core.models import Mentor, YoungRequest, Mentorat, Animateur, Pole, SuiviMentorat, Financement, MentoratFinancement
-from api.permissions import IsCN, IsACP, IsAP, IsMentor, IsACPOfPole
+from api.permissions import IsCNFullAccess, IsACP, IsAP, IsMentor, IsACPOfPole
 from api.serializers import (
     MentorSerializer, MentorListSerializer, MentorCreateSerializer,
     YoungRequestSerializer, YoungRequestListSerializer, YoungRequestCreateSerializer,
@@ -31,7 +31,7 @@ class PoleViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAuthenticated(), IsCN()]
+            return [IsAuthenticated(), IsCNFullAccess()]
         # list and retrieve are readable by any authenticated user (ACP needs pole list)
         return [IsAuthenticated()]
 

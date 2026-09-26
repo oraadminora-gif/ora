@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from core.models import Mentor, Association
 from core.models.user import User
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 
 PAGE_SIZE_DEFAULT = 25
 PAGE_SIZE_MAX     = 100
@@ -58,7 +58,7 @@ class CNMenteursListView(APIView):
       page, page_size, has_next
       mentors       – page courante
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         search    = request.query_params.get('search', '').strip()
@@ -139,7 +139,7 @@ class CNMenteurDetailView(APIView):
     """
     PATCH /cn/mentors/{mentor_id}/  – activer / désactiver
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def patch(self, request, mentor_id):
         mentor = get_object_or_404(Mentor, id=mentor_id)
@@ -167,7 +167,7 @@ class CNMentorRestaurerView(APIView):
     (snapshot pris au moment de l'archivage), réactive le mentor et son
     éventuel compte de connexion.
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     @transaction.atomic
     def post(self, request, mentor_id):

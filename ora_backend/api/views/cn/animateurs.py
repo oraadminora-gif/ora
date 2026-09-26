@@ -13,7 +13,7 @@ from rest_framework import status
 
 from core.models import Animateur, Association, Pole
 from core.models.user import User
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 
 
 def _generate_temp_password(length=12):
@@ -82,7 +82,7 @@ class CNCheckEmailView(APIView):
     Indique si un compte existe déjà pour cet email, afin de proposer d'y
     rattacher un nouveau rôle Animateur plutôt que d'échouer à la création.
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         email = request.query_params.get('email', '').strip().lower()
@@ -107,7 +107,7 @@ class CNAnimateursView(APIView):
     GET  /api/cn/animateurs/?pole_id=&role=ACP|AP&is_active=true|false&search=&page=&page_size=
     POST /api/cn/animateurs/  – créer un animateur (ACP ou AP) sur n'importe quel pôle
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         pole_id   = request.query_params.get('pole_id', '')
@@ -258,7 +258,7 @@ class CNAnimateurDetailView(APIView):
     GET   /api/cn/animateurs/{pk}/  – détail d'un animateur
     PATCH /api/cn/animateurs/{pk}/  – modifier (pôle, association, rôle, infos, is_active)
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request, pk):
         animateur = get_object_or_404(
@@ -357,7 +357,7 @@ class CNAnimateurRestaurerView(APIView):
     Annule une désactivation définitive : recopie le snapshot pris au
     moment de l'archivage, réactive l'animateur et son compte de connexion.
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     @transaction.atomic
     def post(self, request, pk):

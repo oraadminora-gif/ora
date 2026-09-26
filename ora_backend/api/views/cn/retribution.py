@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.permissions import IsCN
+from api.permissions import IsCNFullAccess
 from core.models import Mentorat, Pole
 
 NIVEAUX_SUP = {'LIC_PRO', 'BUT', 'MASTER', 'DEA', 'DES', 'ING'}
@@ -87,7 +87,7 @@ class RetributionView(APIView):
 
     Résultat groupé par : pôle → association → financeur → segment (sit×niveau)
     """
-    permission_classes = [IsAuthenticated, IsCN]
+    permission_classes = [IsAuthenticated, IsCNFullAccess]
 
     def get(self, request):
         pole_id = request.query_params.get('pole_id')
