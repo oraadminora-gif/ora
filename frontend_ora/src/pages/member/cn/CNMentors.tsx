@@ -7,7 +7,7 @@ import {
   CheckCircle, XCircle,
   Users, UserCheck, GraduationCap,
   ToggleLeft, ToggleRight,
-  ChevronDown, Filter, Download,
+  ChevronDown, Filter, Download, Ban, RotateCcw,
 } from 'lucide-react';
 
 interface Association { id: number; code: string; name: string; }
@@ -26,6 +26,8 @@ interface Mentor {
   is_trained: boolean;
   disponibilite_reelle: number;
   max_capacity: number;
+  archived_at: string | null;
+  archived_reason: string;
 }
 
 interface MentorMeta {
@@ -61,6 +63,7 @@ export function CNMentors() {
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
   const [assocId, setAssocId]           = useState('');
   const [togglingId, setTogglingId]     = useState<number | null>(null);
+  const [restoringId, setRestoringId]   = useState<number | null>(null);
   const [exporting, setExporting]       = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -143,6 +146,21 @@ export function CNMentors() {
       } : prev);
     } catch { /* silencieux */ } finally {
       setTogglingId(null);
+    }
+  };
+
+  // Restaurer un mentor désactivé définitivement
+  const handleRestore = async (mentor: Mentor) => {
+    if (!confirm(`Restaurer ${mentor.first_name} ${mentor.last_name} ?\n\nSes données d'origine (nom, email, téléphone) seront recopiées et il redeviendra actif.`)) return;
+    setRestoringId(mentor.id);
+    try {
+      const res = await api.post(`/cn/mentors/${mentor.id}/restaurer/`, {});
+      setMentors(prev => prev.map(m => m.id === mentor.id ? res.data : m));
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      alert(e?.response?.data?.error ?? 'Erreur lors de la restauration.');
+    } finally {
+      setRestoringId(null);
     }
   };
 
@@ -267,7 +285,9 @@ export function CNMentors() {
                     key={mentor.id}
                     mentor={mentor}
                     toggling={togglingId === mentor.id}
+                    restoring={restoringId === mentor.id}
                     onToggle={() => handleToggleActive(mentor)}
+                    onRestore={() => handleRestore(mentor)}
                   />
                 ))}
               </tbody>
@@ -318,8 +338,8 @@ function StatCard({ icon, label, value, color }: {
   );
 }
 
-function MentorRow({ mentor, toggling, onToggle }: {
-  mentor: Mentor; toggling: boolean; onToggle: () => void;
+function MentorRow({ mentor, toggling, restoring, onToggle, onRestore }: {
+  mentor: Mentor; toggling: boolean; restoring: boolean; onToggle: () => void; onRestore: () => void;
 }) {
   const occupied = mentor.max_capacity - mentor.disponibilite_reelle;
   return (
@@ -335,6 +355,12 @@ function MentorRow({ mentor, toggling, onToggle }: {
               <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
                 <MapPin className="w-3 h-3" />{mentor.city}
               </div>
+            )}
+            {mentor.archived_at && (
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full mt-1"
+                title={`Désactivé définitivement le ${new Date(mentor.archived_at).toLocaleDateString('fr-FR')}${mentor.archived_reason ? ` — ${mentor.archived_reason}` : ''}`}>
+                <Ban className="w-2 h-2" />Désactivé définitivement
+              </span>
             )}
           </div>
         </div>
@@ -373,19 +399,34 @@ function MentorRow({ mentor, toggling, onToggle }: {
       </td>
 
       <td className="px-4 py-3 text-center">
-        <button
-          onClick={onToggle}
-          disabled={toggling}
-          className="flex items-center gap-1 mx-auto transition-colors disabled:opacity-40"
-          title={mentor.is_active ? 'Désactiver' : 'Activer'}
-        >
-          {toggling
-            ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-            : mentor.is_active
-              ? <ToggleRight className="w-7 h-7 text-green-500" />
-              : <ToggleLeft className="w-7 h-7 text-slate-400" />
-          }
-        </button>
+        {mentor.archived_at ? (
+          <button
+            onClick={onRestore}
+            disabled={restoring}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-ora-blue border border-ora-blue/30 hover:bg-ora-blue/5 disabled:opacity-40 transition-colors"
+            title="Restaurer (annule la désactivation définitive)"
+          >
+            {restoring
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <RotateCcw className="w-3.5 h-3.5" />
+            }
+            Restaurer
+          </button>
+        ) : (
+          <button
+            onClick={onToggle}
+            disabled={toggling}
+            className="flex items-center gap-1 mx-auto transition-colors disabled:opacity-40"
+            title={mentor.is_active ? 'Désactiver' : 'Activer'}
+          >
+            {toggling
+              ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              : mentor.is_active
+                ? <ToggleRight className="w-7 h-7 text-green-500" />
+                : <ToggleLeft className="w-7 h-7 text-slate-400" />
+            }
+          </button>
+        )}
       </td>
     </tr>
   );

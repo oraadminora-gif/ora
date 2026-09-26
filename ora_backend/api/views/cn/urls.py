@@ -6,7 +6,7 @@ from .membres       import CNMembresView, CNMembreDetailView, CNMembreMeView
 from .implantations import CNImplantationsView
 from .retribution   import RetributionView
 from .messages      import CNMessagesView, CNMessageDetailView
-from .mentors       import CNMenteursListView, CNMenteurDetailView
+from .mentors       import CNMenteursListView, CNMenteurDetailView, CNMentorRestaurerView
 from .export_mentorats import ExportMentoratsNationalCsvView
 from .export_mentors import ExportMentorsNationalCsvView
 from .export_animateurs import ExportAnimateursNationalCsvView
@@ -31,4 +31,5 @@ urlpatterns = [
     path('messages/<int:pk>/',   CNMessageDetailView.as_view(),   name='cn-message-detail'),
     path('mentors/',             CNMenteursListView.as_view(),    name='cn-mentors'),
     path('mentors/<int:mentor_id>/', CNMenteurDetailView.as_view(), name='cn-mentor-detail'),
+    path('mentors/<int:mentor_id>/restaurer/', CNMentorRestaurerView.as_view(), name='cn-mentor-restaurer'),
 ]

@@ -6,7 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.db import transaction
+from django.utils import timezone
+
 from core.models import Mentor, Association
+from core.models.user import User
 from api.permissions import IsCN
 
 PAGE_SIZE_DEFAULT = 25
@@ -34,6 +38,8 @@ def _serialize_mentor(m):
         "training_date":        m.training_date,
         "disponibilite_reelle": m.disponibilite_reelle,
         "max_capacity":         m.max_capacity,
+        "archived_at":          m.archived_at.isoformat() if m.archived_at else None,
+        "archived_reason":      m.archived_reason,
     }
 
 
@@ -117,6 +123,49 @@ class CNMenteurDetailView(APIView):
     def patch(self, request, mentor_id):
         mentor = get_object_or_404(Mentor, id=mentor_id)
         if 'is_active' in request.data:
-            mentor.is_active = bool(request.data['is_active'])
+            new_active = bool(request.data['is_active'])
+            if mentor.archived_at and new_active:
+                return Response(
+                    {"error": "Ce mentor a été désactivé définitivement — utilisez plutôt \"Restaurer\"."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            mentor.is_active = new_active
             mentor.save(update_fields=['is_active'])
+        return Response(_serialize_mentor(mentor))
+
+
+class CNMentorRestaurerView(APIView):
+    """
+    POST /cn/mentors/{mentor_id}/restaurer/
+    Annule une désactivation définitive : recopie les données d'origine
+    (snapshot pris au moment de l'archivage), réactive le mentor et son
+    éventuel compte de connexion.
+    """
+    permission_classes = [IsAuthenticated, IsCN]
+
+    @transaction.atomic
+    def post(self, request, mentor_id):
+        mentor = get_object_or_404(Mentor, id=mentor_id)
+        if not mentor.archived_at:
+            return Response(
+                {"error": "Ce mentor n'a pas été désactivé définitivement."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        snapshot = mentor.archived_original_data or {}
+        for field in ('first_name', 'last_name', 'email', 'phone', 'city', 'code_postal'):
+            if field in snapshot:
+                setattr(mentor, field, snapshot[field])
+
+        mentor.archived_at = None
+        mentor.archived_reason = ''
+        mentor.archived_original_data = None
+        mentor.is_active = True
+        actifs = mentor.mentorats.filter(status='ACTIVE').count()
+        mentor.disponibilite_reelle = max(0, mentor.max_capacity - actifs)
+        mentor.save()
+
+        if mentor.user_id:
+            User.objects.filter(id=mentor.user_id).update(is_active=True)
+
         return Response(_serialize_mentor(mentor))
