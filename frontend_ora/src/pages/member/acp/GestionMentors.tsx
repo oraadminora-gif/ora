@@ -25,6 +25,8 @@ interface Mentor {
   nb_actifs: number; nb_termines: number;
   // Compte utilisateur
   has_account: boolean; user_id: number | null; user_email: string | null;
+  // Désactivation définitive
+  archived_at: string | null; archived_reason: string;
 }
 
 interface Association { id: number; name: string; code: string; }
@@ -105,6 +107,90 @@ function TempPasswordDialog({ name, email, password, onClose }: {
           className="w-full py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all">
           J'ai noté les identifiants
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DÉSACTIVATION DÉFINITIVE (décès, abandon...) — anonymise la fiche
+// mais conserve les mentorats liés. Irréversible depuis cet écran :
+// confirmation renforcée (saisir le nom du mentor).
+// ─────────────────────────────────────────────────────────────
+function ArchiveModal({ mentor, onClose, onArchived }: {
+  mentor: Mentor;
+  onClose: () => void;
+  onArchived: (m: Mentor) => void;
+}) {
+  const [reason, setReason] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const confirmed = confirmText.trim().toLowerCase() === mentor.name.trim().toLowerCase();
+
+  const handleConfirm = async () => {
+    if (!confirmed) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await api.patch(`/pole/mentors/${mentor.id}/`, { archive: true, archive_reason: reason.trim() });
+      onArchived(res.data);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e?.response?.data?.error ?? 'Erreur lors de la désactivation définitive.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 mx-auto">
+          <Ban className="w-7 h-7 text-red-600" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-base font-bold text-slate-900">Désactiver définitivement {mentor.name} ?</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Action <strong>irréversible</strong> — pour un mentor qui n'exercera plus jamais (décès, abandon).
+            Sa fiche sera anonymisée (nom, email, téléphone effacés) et il disparaîtra des annuaires et du
+            matching. Les mentorats déjà réalisés et leur historique sont conservés.
+          </p>
+        </div>
+
+        {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>}
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Motif (optionnel)</label>
+          <select value={reason} onChange={e => setReason(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-white">
+            <option value="">— Sélectionner —</option>
+            <option value="Décès">Décès</option>
+            <option value="Abandon">Abandon</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+            Pour confirmer, saisissez « {mentor.name} »
+          </label>
+          <input value={confirmText} onChange={e => setConfirmText(e.target.value)}
+            placeholder={mentor.name}
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" />
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all">
+            Annuler
+          </button>
+          <button onClick={handleConfirm} disabled={!confirmed || submitting}
+            className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {submitting ? 'Désactivation…' : 'Désactiver définitivement'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -419,6 +505,7 @@ export function GestionMentors() {
   const [tempPasswordInfo, setTempPasswordInfo] = useState<{
     name: string; email: string; password: string;
   } | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Mentor | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -492,6 +579,14 @@ export function GestionMentors() {
       setSuccessMsg(`${m.name} ${m.is_active ? 'désactivé' : 'réactivé'}.`);
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch { setError(`Erreur lors de la ${m.is_active ? 'désactivation' : 'réactivation'}`); }
+  };
+
+  const handleArchived = (updated: Mentor) => {
+    const originalName = archiveTarget?.name ?? 'Le mentor';
+    setMentors(prev => prev.map(x => x.id === updated.id ? updated : x));
+    setArchiveTarget(null);
+    setSuccessMsg(`${originalName} a été désactivé définitivement.`);
+    setTimeout(() => setSuccessMsg(null), 4000);
   };
 
   const stats = useMemo(() => ({
@@ -648,7 +743,12 @@ export function GestionMentors() {
                                 <Link2 className="w-2 h-2" />Compte
                               </span>
                             )}
-                            {!m.is_active && (
+                            {m.archived_at ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full"
+                                title={`Désactivé définitivement le ${new Date(m.archived_at).toLocaleDateString('fr-FR')}${m.archived_reason ? ` — ${m.archived_reason}` : ''}`}>
+                                <Ban className="w-2 h-2" />Désactivé définitivement
+                              </span>
+                            ) : !m.is_active && (
                               <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">Inactif</span>
                             )}
                           </div>
@@ -674,39 +774,51 @@ export function GestionMentors() {
                       <span className="text-sm font-bold text-violet-600">{m.nb_actifs}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
-                        {(!isAP || m.association_id === myAssociationId) && (
-                          <button onClick={() => openEdit(m)}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
-                            title="Modifier">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {/* Désactiver / Réactiver */}
-                        {(!isAP || m.association_id === myAssociationId) && (
-                          <button onClick={() => handleToggleActive(m)}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              m.is_active
-                                ? 'hover:bg-orange-50 text-slate-400 hover:text-orange-500'
-                                : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
-                            }`}
-                            title={m.is_active ? 'Désactiver' : 'Réactiver'}>
-                            {m.is_active
-                              ? <UserX className="w-3.5 h-3.5" />
-                              : <UserCheck className="w-3.5 h-3.5" />
-                            }
-                          </button>
-                        )}
-                        {/* Supprimer — ACP seulement (action irréversible) */}
-                        {!isAP && (
-                          <button onClick={() => handleDelete(m)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
-                            title="Supprimer définitivement">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
+                      {m.archived_at ? (
+                        <p className="text-center text-[11px] text-slate-300 italic">Fiche archivée</p>
+                      ) : (
+                        <div className="flex items-center justify-center gap-1">
+                          {/* Edit : ACP = tous les mentors ; AP = seulement son association */}
+                          {(!isAP || m.association_id === myAssociationId) && (
+                            <button onClick={() => openEdit(m)}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                              title="Modifier">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {/* Désactiver / Réactiver */}
+                          {(!isAP || m.association_id === myAssociationId) && (
+                            <button onClick={() => handleToggleActive(m)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                m.is_active
+                                  ? 'hover:bg-orange-50 text-slate-400 hover:text-orange-500'
+                                  : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
+                              }`}
+                              title={m.is_active ? 'Désactiver' : 'Réactiver'}>
+                              {m.is_active
+                                ? <UserX className="w-3.5 h-3.5" />
+                                : <UserCheck className="w-3.5 h-3.5" />
+                              }
+                            </button>
+                          )}
+                          {/* Désactiver définitivement — ACP seulement (décès, abandon...) */}
+                          {!isAP && (
+                            <button onClick={() => setArchiveTarget(m)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                              title="Désactiver définitivement">
+                              <Ban className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {/* Supprimer — ACP seulement (action irréversible) */}
+                          {!isAP && (
+                            <button onClick={() => handleDelete(m)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                              title="Supprimer définitivement">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -727,6 +839,15 @@ export function GestionMentors() {
           myAssociationId={myAssociationId}
           onClose={() => setModalMode(null)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {/* Désactivation définitive */}
+      {archiveTarget && (
+        <ArchiveModal
+          mentor={archiveTarget}
+          onClose={() => setArchiveTarget(null)}
+          onArchived={handleArchived}
         />
       )}
 

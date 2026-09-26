@@ -2,6 +2,7 @@
 import secrets
 import string
 from django.db import transaction
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -54,6 +55,9 @@ def _serialize_mentor(m):
         "has_account":     m.user_id is not None,
         "user_id":         m.user_id,
         "user_email":      m.user.email if m.user_id else None,
+        # Désactivation définitive
+        "archived_at":     m.archived_at.isoformat() if m.archived_at else None,
+        "archived_reason": m.archived_reason,
     }
 
 
@@ -253,6 +257,47 @@ class PoleMentorDetailView(APIView):
         data = request.data
         animateur = request.user.animateur
         is_ap = not animateur.is_acp
+
+        # ── Désactivation définitive (décès, abandon...) ────────────────────
+        # Anonymise la fiche mais conserve les Mentorat liés (CASCADE sinon).
+        if data.get('archive'):
+            if is_ap:
+                return Response(
+                    {"error": "Seul l'APC peut désactiver définitivement un mentor."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if mentor.archived_at:
+                return Response({"error": "Ce mentor est déjà désactivé définitivement."}, status=400)
+
+            mentor.archived_original_data = {
+                'first_name':   mentor.first_name,
+                'last_name':    mentor.last_name,
+                'email':        mentor.email,
+                'phone':        mentor.phone,
+                'city':         mentor.city,
+                'code_postal':  mentor.code_postal,
+            }
+            mentor.archived_reason = (data.get('archive_reason') or '').strip()
+            mentor.archived_at = timezone.now()
+            mentor.first_name = 'Mentor'
+            mentor.last_name = 'archivé'
+            mentor.email = f'mentor-archive-{mentor.id}@ora.invalid'
+            mentor.phone = ''
+            mentor.city = ''
+            mentor.code_postal = ''
+            mentor.is_active = False
+            mentor.disponibilite_reelle = 0
+            mentor.save()
+            if mentor.user_id:
+                User.objects.filter(id=mentor.user_id).update(is_active=False)
+            m = _annotated_mentor_qs(mentor_id=mentor.id).first()
+            return Response(_serialize_mentor(m))
+
+        if 'is_active' in data and mentor.archived_at and bool(data['is_active']):
+            return Response(
+                {"error": "Ce mentor a été désactivé définitivement et ne peut pas être réactivé depuis cet écran."},
+                status=400,
+            )
 
         if 'association_id' in data:
             if is_ap and int(data['association_id']) != mentor.association_id:

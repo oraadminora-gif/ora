@@ -63,6 +63,18 @@ class Mentor(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Désactivation définitive (décès, abandon...) : anonymise la fiche tout
+    # en conservant les Mentorat liés (historique jeunes/financements/KPI).
+    archived_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Désactivation définitive : la fiche a été anonymisée à cette date"
+    )
+    archived_reason = models.CharField(max_length=255, blank=True, default='')
+    archived_original_data = models.JSONField(
+        null=True, blank=True,
+        help_text="Snapshot des données personnelles avant anonymisation (restauration CN/admin uniquement)"
+    )
+
     class Meta:
         db_table = 'mentors'
         ordering = ['last_name', 'first_name']
