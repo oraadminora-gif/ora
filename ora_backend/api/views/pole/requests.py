@@ -121,6 +121,10 @@ class RerouterDemandeView(APIView):
         if int(new_pole_id) == user.animateur.pole_id:
             return Response({"error": "Le pôle de destination doit être différent"}, status=400)
 
+        raison = (request.data.get('raison') or '').strip()
+        if not raison:
+            return Response({"error": "Merci de préciser la raison du transfert."}, status=400)
+
         try:
             new_pole = Pole.objects.get(pk=new_pole_id, status='ACTIVE')
         except Pole.DoesNotExist:
@@ -128,7 +132,7 @@ class RerouterDemandeView(APIView):
 
         demande.pole             = new_pole
         demande.status           = 'NEW'
-        demande.raison_transfert = (request.data.get('raison') or '').strip()
+        demande.raison_transfert = raison
         demande.save()
 
         return Response({

@@ -299,6 +299,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
 
   const submit = async () => {
     if (!poleId) { setError('Veuillez sélectionner un pôle'); return; }
+    if (!raison.trim()) { setError('Merci de préciser la raison du transfert.'); return; }
     setLoading(true); setError('');
     try {
       await api.post(`/pole/requests/${demande.id}/rerouter/`, { pole_id: Number(poleId), raison: raison.trim() });
@@ -340,7 +341,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
         </div>
 
         <div className="mt-3">
-          <label className="block text-xs font-semibold text-slate-600 mb-1">Raison du transfert (optionnel)</label>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Raison du transfert *</label>
           <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={3}
             placeholder="Expliquez pourquoi cette demande est transférée…"
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 resize-none" />
@@ -351,7 +352,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
             className="flex-1 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">
             Annuler
           </button>
-          <button onClick={submit} disabled={loading || !poleId}
+          <button onClick={submit} disabled={loading || !poleId || !raison.trim()}
             className="flex-1 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50">
             {loading ? 'Transfert…' : 'Transférer'}
           </button>
