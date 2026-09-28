@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from api.permissions.roles import IsCNOrACP
 from core.models import Animateur, Mentor, Mentorat, MentoratFinancement, Pole, YoungRequest
+from core.models.mentorat import CLOSURE_REASON_SCORE
 
 
 DIPLOME_LABELS = {
@@ -239,12 +240,13 @@ class PoleKPIsView(APIView):
             'sans':     round(fin_sans     / fin_total * 100) if fin_total else 0,
         }
 
-        # Sentiment de clôture (CLOSED uniquement)
-        POSITIF_CODES = ['OBJECTIVE_REACHED']
-        NUL_CODES     = ['NO_CONTACT']
-        pos  = clos_qs.filter(closure_reason_code__in=POSITIF_CODES).count()
-        nul  = clos_qs.filter(closure_reason_code__in=NUL_CODES).count()
-        neg  = clos_qs.exclude(closure_reason_code__in=POSITIF_CODES + NUL_CODES).exclude(closure_reason_code='').count()
+        # Sentiment de clôture (CLOSED + ABORTED : un mentorat "Aucun vrai
+        # contact établi" reste Abandonné mais compte comme neutre ici)
+        POSITIF_CODES = [c for c, s in CLOSURE_REASON_SCORE.items() if s > 0]
+        NUL_CODES     = [c for c, s in CLOSURE_REASON_SCORE.items() if s == 0]
+        pos  = closed_qs.filter(closure_reason_code__in=POSITIF_CODES).count()
+        nul  = closed_qs.filter(closure_reason_code__in=NUL_CODES).count()
+        neg  = closed_qs.exclude(closure_reason_code__in=POSITIF_CODES + NUL_CODES).exclude(closure_reason_code='').count()
         sent_total = pos + nul + neg
         cloture_par_sentiment = {
             'positif': round(pos / sent_total * 100) if sent_total else 0,
@@ -560,11 +562,11 @@ class NationalKPIsView(APIView):
         pct_presentiel_nat  = round(nat_clos_qs.filter(type_mentorat='presentiel').count() / nat_typed_total * 100) if nat_typed_total else 0
         pct_distanciel_nat  = round(nat_clos_qs.filter(type_mentorat='distanciel').count() / nat_typed_total * 100) if nat_typed_total else 0
 
-        POSITIF_CODES_NAT = ['OBJECTIVE_REACHED']
-        NUL_CODES_NAT     = ['NO_CONTACT']
-        pos_nat  = nat_clos_qs.filter(closure_reason_code__in=POSITIF_CODES_NAT).count()
-        nul_nat  = nat_clos_qs.filter(closure_reason_code__in=NUL_CODES_NAT).count()
-        neg_nat  = nat_clos_qs.exclude(closure_reason_code__in=POSITIF_CODES_NAT + NUL_CODES_NAT).exclude(closure_reason_code='').count()
+        POSITIF_CODES_NAT = [c for c, s in CLOSURE_REASON_SCORE.items() if s > 0]
+        NUL_CODES_NAT     = [c for c, s in CLOSURE_REASON_SCORE.items() if s == 0]
+        pos_nat  = m_closed_qs.filter(closure_reason_code__in=POSITIF_CODES_NAT).count()
+        nul_nat  = m_closed_qs.filter(closure_reason_code__in=NUL_CODES_NAT).count()
+        neg_nat  = m_closed_qs.exclude(closure_reason_code__in=POSITIF_CODES_NAT + NUL_CODES_NAT).exclude(closure_reason_code='').count()
         sent_tot_nat = pos_nat + nul_nat + neg_nat
         cloture_par_sentiment_nat = {
             'positif': round(pos_nat / sent_tot_nat * 100) if sent_tot_nat else 0,

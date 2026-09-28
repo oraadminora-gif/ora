@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import date  # ✅ AJOUTÉ pour validation date
 
 from core.models import Mentorat, Department, SuiviMentorat, Etablissement
-from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES
+from core.models.mentorat import CLOSURE_REASON_CHOICES, PROBLEMATIQUES_CHOICES, derive_closure_status
 from api.permissions import IsMentor
 
 
@@ -465,8 +465,7 @@ class MentorCloturerMentoratView(APIView):
                 return Response({"error": "Format de date invalide pour la date de clôture."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Dériver l'action depuis le code de raison
-        POSITIVE_REASONS = {'OBJECTIVE_REACHED', 'MENTEE_STOP'}
-        action = 'CLOSED' if closure_reason_code in POSITIVE_REASONS else 'ABORTED'
+        action = derive_closure_status(closure_reason_code)
 
         # Enregistre aussi les champs de suivi envoyés en même temps que la
         # demande de clôture (si le mentor a saisi sans passer par

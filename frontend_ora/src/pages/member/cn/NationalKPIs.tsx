@@ -439,7 +439,7 @@ function NationalView({
             <p className="text-xs font-semibold text-slate-500 leading-tight">Statut des mentorats clos</p>
             {data.cloture_par_sentiment ? (
               <div className="space-y-1">
-                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Nul', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Neutre', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
                   <div key={lbl}>
                     <div className="flex justify-between text-xs mb-0.5">
                       <span className="text-slate-600">{lbl}</span>
@@ -921,7 +921,7 @@ function PoleDetailView({ data, nationalData, poleName, period }: {
             <p className="text-xs font-semibold text-slate-500 leading-tight">Statut des mentorats clos</p>
             {data.cloture_par_sentiment ? (
               <div className="space-y-1">
-                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Nul', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
+                {([['Positif', data.cloture_par_sentiment.positif, '#10b981'], ['Neutre', data.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', data.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, pct, color]) => (
                   <div key={lbl}>
                     <div className="flex justify-between text-xs mb-0.5">
                       <span className="text-slate-600">{lbl}</span>
@@ -1310,7 +1310,7 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
                 <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Statut clos</div>
                 {pd.cloture_par_sentiment
                   ? <><PTauxBar2 label="Positif"  value={pd.cloture_par_sentiment.positif}  color="#10b981" />
-                     <PTauxBar2 label="Nul"       value={pd.cloture_par_sentiment.nul}       color="#94a3b8" />
+                     <PTauxBar2 label="Neutre"       value={pd.cloture_par_sentiment.nul}       color="#94a3b8" />
                      <PTauxBar2 label="Négatif"   value={pd.cloture_par_sentiment.negatif}   color="#ef4444" /></>
                   : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
               </div>
@@ -1644,7 +1644,7 @@ function PrintContent({ nationalData, poleData, selectedPoleName, period, printS
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 10px' }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', marginBottom: 6, textTransform: 'uppercase' }}>Statut clos</div>
               {nd.cloture_par_sentiment
-                ? ([['Positif', nd.cloture_par_sentiment.positif, '#10b981'], ['Nul', nd.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', nd.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, val, color]) => (
+                ? ([['Positif', nd.cloture_par_sentiment.positif, '#10b981'], ['Neutre', nd.cloture_par_sentiment.nul, '#94a3b8'], ['Négatif', nd.cloture_par_sentiment.negatif, '#ef4444']] as [string, number, string][]).map(([lbl, val, color]) => (
                   <div key={lbl} style={{ marginBottom: 5 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#475569', marginBottom: 2 }}>
                       <span>{lbl}</span><span style={{ fontWeight: 600 }}>{val}%</span>

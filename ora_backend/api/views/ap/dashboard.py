@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
-from core.models.mentorat import CLOSURE_REASON_CHOICES
+from core.models.mentorat import CLOSURE_REASON_CHOICES, derive_closure_status
 from core.models.young_request import validate_birth_date
 from api.permissions import IsAP, IsACP, IsCN
 
@@ -1769,7 +1769,7 @@ class APMentoratSuiviDetailView(APIView):
                 reason_label = dict(CLOSURE_REASON_CHOICES).get(code, code)
                 m.closure_reason_code = code
                 m.save()
-                m.cloturer(reason=reason_label, statut='CLOSED')
+                m.cloturer(reason=reason_label, statut=derive_closure_status(code))
                 # Respecte la date choisie par l'AP
                 Mentorat.objects.filter(pk=m.pk).update(closed_at=closed_at_val)
                 m.refresh_from_db()

@@ -9,17 +9,28 @@ CLOSURE_REASON_CHOICES = [
     ('DIPLOMA_FAIL',      'Échec diplôme'),
     ('MENTEE_STOP',       'Arrêt souhaité par le mentoré'),
     ('OBJECTIVE_REACHED', 'Objectif atteint'),
-    ('OTHER',             'Autre'),
+    ('OTHER',             'Autre motif satisfaisant'),
 ]
 
+# Sentiment de clôture pour les KPI (positif > 0, neutre = 0, négatif < 0).
 CLOSURE_REASON_SCORE = {
     'NO_CONTACT':        0,
     'LOST_CONTACT':     -1,
     'DIPLOMA_FAIL':     -1,
     'MENTEE_STOP':       1,
     'OBJECTIVE_REACHED': 1,
-    'OTHER':             0,
+    'OTHER':             1,
 }
+
+
+def derive_closure_status(reason_code):
+    """
+    Statut final (CLOSED/ABORTED) déduit du motif de clôture.
+    Seul "Aucun vrai contact établi" correspond à un mentorat qui n'a
+    jamais vraiment démarré (Abandonné) ; tout le reste est une clôture
+    réelle — le mentorat a eu lieu, quel qu'en soit le dénouement.
+    """
+    return 'ABORTED' if reason_code == 'NO_CONTACT' else 'CLOSED'
 
 PROBLEMATIQUES_CHOICES = [
     ('AIDE_INFO',       'Aide informatique'),

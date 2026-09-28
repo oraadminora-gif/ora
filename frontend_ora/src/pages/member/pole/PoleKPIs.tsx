@@ -364,7 +364,7 @@ function PrintContent({ poleData, nationalData, period, includedSections }: {
               {poleData.cloture_par_sentiment
                 ? <>
                     <PTauxBar label="Positif"  value={poleData.cloture_par_sentiment.positif}  color="#10b981" />
-                    <PTauxBar label="Nul"      value={poleData.cloture_par_sentiment.nul}       color="#94a3b8" />
+                    <PTauxBar label="Neutre"      value={poleData.cloture_par_sentiment.nul}       color="#94a3b8" />
                     <PTauxBar label="Négatif"  value={poleData.cloture_par_sentiment.negatif}   color="#ef4444" />
                   </>
                 : <div style={{ fontSize: 9, color: '#94a3b8' }}>Aucune donnée</div>}
@@ -960,7 +960,7 @@ export function PoleKPIs() {
                 <div className="space-y-1">
                   {([
                     ['Positif',  poleData.cloture_par_sentiment.positif, '#10b981'],
-                    ['Nul',      poleData.cloture_par_sentiment.nul,     '#94a3b8'],
+                    ['Neutre',      poleData.cloture_par_sentiment.nul,     '#94a3b8'],
                     ['Négatif',  poleData.cloture_par_sentiment.negatif, '#ef4444'],
                   ] as [string, number, string][]).map(([lbl, pct, color]) => (
                     <div key={lbl}>
