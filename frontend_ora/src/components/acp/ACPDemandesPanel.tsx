@@ -343,7 +343,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
             className="flex-1 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">
             Annuler
           </button>
-          <button onClick={submit} disabled={loading}
+          <button onClick={submit} disabled={loading || !poleId}
             className="flex-1 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-50">
             {loading ? 'Transfert…' : 'Transférer'}
           </button>
