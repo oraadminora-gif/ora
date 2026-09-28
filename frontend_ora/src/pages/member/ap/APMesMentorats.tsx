@@ -503,7 +503,7 @@ export function APMesMentorats() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <FilterPill active={statusFilter === 'all'}     onClick={() => setStatusFilter('all')}     label="Tous"       count={counts.all}     colorActive="bg-slate-800 text-white border-slate-800" />
-            <FilterPill active={statusFilter === 'ACTIVE'}  onClick={() => setStatusFilter('ACTIVE')}  label="Actifs"     count={counts.ACTIVE}  colorActive="bg-emerald-600 text-white border-emerald-600" />
+            <FilterPill active={statusFilter === 'ACTIVE'}  onClick={() => setStatusFilter('ACTIVE')}  label="Mentorats en cours" count={counts.ACTIVE}  colorActive="bg-emerald-600 text-white border-emerald-600" />
             <FilterPill active={statusFilter === 'CLOSED'}  onClick={() => setStatusFilter('CLOSED')}  label="Clôturés"   count={counts.CLOSED}  colorActive="bg-slate-600 text-white border-slate-600" />
             <FilterPill active={statusFilter === 'ABORTED'} onClick={() => setStatusFilter('ABORTED')} label="Abandonnés" count={counts.ABORTED} colorActive="bg-red-600 text-white border-red-600" />
           </div>
