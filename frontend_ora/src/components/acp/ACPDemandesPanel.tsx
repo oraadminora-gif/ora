@@ -286,6 +286,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
 }) {
   const [poles, setPoles]     = useState<PoleOption[]>([]);
   const [poleId, setPoleId]   = useState('');
+  const [raison, setRaison]   = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -300,7 +301,7 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
     if (!poleId) { setError('Veuillez sélectionner un pôle'); return; }
     setLoading(true); setError('');
     try {
-      await api.post(`/pole/requests/${demande.id}/rerouter/`, { pole_id: Number(poleId) });
+      await api.post(`/pole/requests/${demande.id}/rerouter/`, { pole_id: Number(poleId), raison: raison.trim() });
       onSuccess();
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } };
@@ -336,6 +337,13 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
               <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
             ))}
           </select>
+        </div>
+
+        <div className="mt-3">
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Raison du transfert (optionnel)</label>
+          <textarea value={raison} onChange={e => setRaison(e.target.value)} rows={3}
+            placeholder="Expliquez pourquoi cette demande est transférée…"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 resize-none" />
         </div>
 
         <div className="flex gap-3 mt-5">
