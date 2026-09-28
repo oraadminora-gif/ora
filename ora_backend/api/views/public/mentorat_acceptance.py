@@ -148,7 +148,14 @@ class PublicMentoratAcceptanceView(APIView):
                 # réapparaît immédiatement sur le tableau de matching pour
                 # être affectée à un autre mentor. La suppression du
                 # mentorat entraîne (CASCADE) celle de cet AcceptanceMentorat.
+                young_request = m.young_request
                 m.delete()
+                # Remet la demande à NEW : sinon son statut reste bloqué sur
+                # PENDING (fixé lors de la proposition) et elle affiche
+                # "En attente" indéfiniment sur le tableau de bord, avec les
+                # boutons Refuser/Transférer désactivés à tort.
+                young_request.status = 'NEW'
+                young_request.save()
 
         threading.Thread(
             target=_send_response_notification,
