@@ -279,7 +279,7 @@ function MentoratModal({
 // ─────────────────────────────────────────────────────────────
 const TABS: { key: TabFilter; label: string }[] = [
   { key: 'all',     label: 'Tous'       },
-  { key: 'ACTIVE',  label: 'Actifs'     },
+  { key: 'ACTIVE',  label: 'Mentorats en cours' },
   { key: 'PENDING', label: 'En attente' },
   { key: 'CLOSED',  label: 'Clôturés'  },
   { key: 'ABORTED', label: 'Abandonnés' },
