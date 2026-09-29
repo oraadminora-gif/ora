@@ -369,12 +369,12 @@ class PoleMentorDetailView(APIView):
                 mentor.training_date = None
 
         if 'is_active' in data:
+            # Désactivation temporaire : le mentor n'est simplement plus
+            # suggéré pour de nouvelles affectations (disponibilité à 0).
+            # Elle ne bloque pas sur un mentorat en cours — celui-ci
+            # continue normalement, seules les nouvelles suggestions
+            # s'arrêtent. Contrairement à l'archivage, qui reste bloqué.
             new_active = bool(data['is_active'])
-            if not new_active and _has_mentorat_en_cours(mentor):
-                return Response(
-                    {"error": "Impossible de désactiver ce mentor : il a un mentorat en cours. Clôturez-le d'abord."},
-                    status=400,
-                )
             if mentor.is_active != new_active:
                 mentor.is_active = new_active
                 if not new_active:
