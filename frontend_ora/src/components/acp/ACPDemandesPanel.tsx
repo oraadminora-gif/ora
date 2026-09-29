@@ -426,7 +426,7 @@ function RefuserModal({ demande, onClose, onSuccess }: {
           <span className="font-semibold text-slate-700">{demande.nom}</span>
         </p>
         <p className="text-sm font-semibold text-red-600 mb-4">
-          Merci de répondre et de motiver votre refus à cette demande en voyant un mail, s'il vous plaît !
+          Merci de répondre et de motiver votre refus à cette demande en envoyant un mail, s'il vous plaît !
         </p>
 
         {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
