@@ -341,6 +341,11 @@ class YoungRequestAdmin(admin.ModelAdmin):
     ordering       = ('-created_at',)
     date_hierarchy = 'created_at'
     list_per_page  = 25
+    # latitude/longitude sont géocodées automatiquement à partir de
+    # commune + code_postal (une seule fois, à l'inscription) — en lecture
+    # seule pour éviter une désynchronisation silencieuse si on les édite
+    # sans que le géocodage ne se redéclenche.
+    readonly_fields = ('latitude', 'longitude')
 
     STATUS_COLORS = {
         'NEW':       ('#0ea5e9', 'Nouveau'),
@@ -352,7 +357,7 @@ class YoungRequestAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Jeune',                    {'fields': ('first_name', 'last_name', 'email', 'phone', 'birth_date', 'gender')}),
-        ('Localisation',             {'fields': ('code_postal', 'city', 'department', 'pole')}),
+        ('Localisation',             {'fields': ('code_postal', 'commune', 'city', 'department', 'pole', 'latitude', 'longitude')}),
         ('Établissement & Formation',{'fields': ('nom_etablissement', 'etablissement', 'diplome_prepare', 'situation', 'date_previsionnelle')}),
         ('Demande',                  {'fields': ('needs_description', 'status', 'raison_refus', 'raison_transfert')}),
     )
