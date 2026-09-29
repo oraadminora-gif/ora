@@ -79,7 +79,7 @@ const testimonials: Testimonial[] = [
   {
     id: 10,
     type: 'cfa',
-    name: "Adjointe à l'accompagnement socio-éducatif, BTP CFA",
+    name: "Philippe, adjointe à l'accompagnement socio-éducatif, BTP CFA",
     city: '',
     content: "ORA est un réel relais dans l'accompagnement de nos jeunes, sur des difficultés pour lesquelles mes actions sont parfois limitées."
   },
