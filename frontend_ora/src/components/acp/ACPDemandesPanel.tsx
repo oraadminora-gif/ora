@@ -17,7 +17,14 @@ interface Props {
   onRefresh?: () => void;
 }
 
-interface PoleOption { id: number; name: string; code: string }
+interface PoleOption { id: number; name: string; code: string; departments?: { id: number; code: string; name: string }[] }
+
+// Département déduit du code postal (cas DOM : 3 premiers chiffres, sinon 2)
+function deptCodeFromCodePostal(codePostal: string): string {
+  const cp = (codePostal || '').trim();
+  if (!cp) return '';
+  return cp.startsWith('97') || cp.startsWith('98') ? cp.slice(0, 3) : cp.slice(0, 2);
+}
 interface DeptOption  { id: number; code: string; name: string; label: string }
 
 // Date de naissance : pas dans le futur, au moins 16 ans
@@ -297,6 +304,16 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
     });
   }, [currentPoleId]);
 
+  // Avertit (sans bloquer) si le pôle choisi ne couvre pas le département
+  // du jeune — pour éviter par erreur qu'une demande de Bordeaux parte
+  // vers un pôle de Lyon.
+  const deptCode = deptCodeFromCodePostal(demande.code_postal);
+  const selectedPole = poles.find(p => String(p.id) === poleId);
+  const deptMismatch = !!(
+    poleId && deptCode && selectedPole?.departments &&
+    !selectedPole.departments.some(d => d.code === deptCode)
+  );
+
   const submit = async () => {
     if (!poleId) { setError('Veuillez sélectionner un pôle'); return; }
     if (!raison.trim()) { setError('Merci de préciser la raison du transfert.'); return; }
@@ -338,6 +355,14 @@ function RerouterModal({ demande, currentPoleId, onClose, onSuccess }: {
               <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
             ))}
           </select>
+          {deptMismatch && selectedPole && (
+            <p className="mt-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+              ⚠️ Ce pôle ne couvre pas le département du jeune ({deptCode}).
+              {selectedPole.departments && selectedPole.departments.length > 0 && (
+                <> Départements couverts : {selectedPole.departments.map(d => d.code).join(', ')}.</>
+              )}
+            </p>
+          )}
         </div>
 
         <div className="mt-3">
