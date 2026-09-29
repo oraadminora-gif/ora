@@ -37,13 +37,6 @@ const testimonials: Testimonial[] = [
     content: "Mon mentor m'a aidé à m'organiser et à gérer mon temps entre le CFA et l'entreprise. Avant, j'étais tout le temps débordé. Maintenant, j'ai trouvé mon rythme et mes notes ont beaucoup progressé !"
   },
   {
-    id: 4,
-    type: 'cfa',
-    name: 'Sophie, maman de Lucas',
-    city: 'Toulouse',
-    content: "Mon fils était perdu et démotivé dans son apprentissage. Son mentor ORA a su le remotiver et l'aider à voir les choses autrement. Je suis reconnaissante pour cet accompagnement qui a sauvé son parcours."
-  },
-  {
     id: 5,
     type: 'mentee',
     name: 'Amélie',
@@ -74,6 +67,35 @@ const testimonials: Testimonial[] = [
     age: 22,
     city: 'Strasbourg',
     content: "Avec ORA, j'ai trouvé quelqu'un qui m'écoute vraiment, sans me juger. Mon mentor comprend mes difficultés et me donne des conseils concrets. C'est un vrai soutien dans mon parcours."
+  },
+  {
+    id: 9,
+    type: 'mentee',
+    name: 'Joa',
+    age: 23,
+    city: 'Nice',
+    content: "J'étais en désespoir pour trouver une nouvelle entreprise. ORA m'a redonné de l'espoir grâce à l'aide précieuse et déterminée de mon mentor."
+  },
+  {
+    id: 10,
+    type: 'cfa',
+    name: "Adjointe à l'accompagnement socio-éducatif, BTP CFA",
+    city: '',
+    content: "ORA est un réel relais dans l'accompagnement de nos jeunes, sur des difficultés pour lesquelles mes actions sont parfois limitées."
+  },
+  {
+    id: 11,
+    type: 'cfa',
+    name: 'Georges, formateur, BTP CFA',
+    city: '',
+    content: "Si on m'avait proposé un mentor quand j'étais à leur place, j'aurais saisi l'occasion."
+  },
+  {
+    id: 12,
+    type: 'cfa',
+    name: 'Eric, formateur en CFA',
+    city: '',
+    content: "Mohamed est un travailleur impliqué, assidu. Sa posture professionnelle et sa volonté de progresser sont remarquables. Grâce à ORA, il a pu poursuivre son BAC MELEC en terminale. Il doit encore progresser en français, mais il est sur la bonne voie."
   }
 ];
 
