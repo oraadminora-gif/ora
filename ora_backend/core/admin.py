@@ -1,6 +1,6 @@
 # core/admin.py
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 
@@ -260,13 +260,41 @@ class AnimateurAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'email')
     ordering      = ('pole__code', 'last_name')
     list_per_page = 30
+    readonly_fields = ('archived_at', 'archived_original_data')
+    actions = ['restaurer_animateurs']
 
     fieldsets = (
         ('Identité',      {'fields': ('first_name', 'last_name', 'email', 'phone', 'city')}),
         ('Organisation',  {'fields': ('pole', 'association', 'is_acp', 'is_ap')}),
         ('Statut',        {'fields': ('is_active',)}),
+        ('Désactivation définitive', {'fields': ('archived_at', 'archived_reason', 'archived_original_data'),
+                                       'classes': ('collapse',)}),
         ('Compte',        {'fields': ('user',), 'classes': ('collapse',)}),
     )
+
+    @admin.action(description="Restaurer (annule la désactivation définitive)")
+    def restaurer_animateurs(self, request, queryset):
+        restored = skipped = 0
+        for animateur in queryset:
+            if not animateur.archived_at:
+                skipped += 1
+                continue
+            snapshot = animateur.archived_original_data or {}
+            for field in ('first_name', 'last_name', 'email', 'phone', 'city'):
+                if field in snapshot:
+                    setattr(animateur, field, snapshot[field])
+            animateur.archived_at = None
+            animateur.archived_reason = ''
+            animateur.archived_original_data = None
+            animateur.is_active = True
+            animateur.save()
+            if animateur.user_id:
+                User.objects.filter(id=animateur.user_id).update(is_active=True)
+            restored += 1
+        if restored:
+            self.message_user(request, f"{restored} animateur(s) restauré(s).", level=messages.SUCCESS)
+        if skipped:
+            self.message_user(request, f"{skipped} animateur(s) ignoré(s) (pas désactivé(s) définitivement).", level=messages.WARNING)
 
     def role_badge(self, obj):
         if obj.is_acp and obj.is_ap:
@@ -285,11 +313,14 @@ class AnimateurAdmin(admin.ModelAdmin):
     role_badge.short_description = 'Rôle'
 
     def statut_badge(self, obj):
-        bg = '#22c55e' if obj.is_active else '#9ca3af'
+        if obj.archived_at:
+            bg, label = '#ef4444', 'Archivé'
+        else:
+            bg, label = ('#22c55e', 'Actif') if obj.is_active else ('#9ca3af', 'Inactif')
         return format_html(
             '<span style="background:{};color:#fff;padding:2px 6px;border-radius:12px;'
             'font-size:0.7rem;font-weight:600;">{}</span>',
-            bg, 'Actif' if obj.is_active else 'Inactif'
+            bg, label
         )
     statut_badge.short_description = 'Statut'
 
@@ -306,6 +337,8 @@ class MentorAdmin(admin.ModelAdmin):
     ordering      = ('pole__code', 'last_name')
     list_per_page = 30
     date_hierarchy = 'training_date'
+    readonly_fields = ('archived_at', 'archived_original_data')
+    actions = ['restaurer_mentors']
 
     fieldsets = (
         ('Informations',  {'fields': ('user', 'first_name', 'last_name', 'email', 'phone')}),
@@ -317,14 +350,45 @@ class MentorAdmin(admin.ModelAdmin):
                                           'dans l\'algorithme de matching.'}),
         ('Statut',        {'fields': ('is_active',)}),
         ('Particularité pour l\'affectation', {'fields': ('observations',)}),
+        ('Désactivation définitive', {'fields': ('archived_at', 'archived_reason', 'archived_original_data'),
+                                       'classes': ('collapse',)}),
     )
 
+    @admin.action(description="Restaurer (annule la désactivation définitive)")
+    def restaurer_mentors(self, request, queryset):
+        restored = skipped = 0
+        for mentor in queryset:
+            if not mentor.archived_at:
+                skipped += 1
+                continue
+            snapshot = mentor.archived_original_data or {}
+            for field in ('first_name', 'last_name', 'email', 'phone', 'city', 'code_postal'):
+                if field in snapshot:
+                    setattr(mentor, field, snapshot[field])
+            mentor.archived_at = None
+            mentor.archived_reason = ''
+            mentor.archived_original_data = None
+            mentor.is_active = True
+            actifs = mentor.mentorats.filter(status='ACTIVE').count()
+            mentor.disponibilite_reelle = max(0, mentor.max_capacity - actifs)
+            mentor.save()
+            if mentor.user_id:
+                User.objects.filter(id=mentor.user_id).update(is_active=True)
+            restored += 1
+        if restored:
+            self.message_user(request, f"{restored} mentor(s) restauré(s).", level=messages.SUCCESS)
+        if skipped:
+            self.message_user(request, f"{skipped} mentor(s) ignoré(s) (pas désactivé(s) définitivement).", level=messages.WARNING)
+
     def statut_badge(self, obj):
-        bg = '#22c55e' if obj.is_active else '#9ca3af'
+        if obj.archived_at:
+            bg, label = '#ef4444', 'Archivé'
+        else:
+            bg, label = ('#22c55e', 'Actif') if obj.is_active else ('#9ca3af', 'Inactif')
         return format_html(
             '<span style="background:{};color:#fff;padding:2px 6px;border-radius:12px;'
             'font-size:0.7rem;font-weight:600;">{}</span>',
-            bg, 'Actif' if obj.is_active else 'Inactif'
+            bg, label
         )
     statut_badge.short_description = 'Statut'
 
