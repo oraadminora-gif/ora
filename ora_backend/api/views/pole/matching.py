@@ -105,7 +105,7 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None,
         ap_info = ""
         if ap:
             ap_info = (
-                f"\nVotre Animateur de Pôle chargé du suivi de ce mentorat :\n"
+                f"\nAnimateur de Pôle chargé du suivi de ce mentorat :\n"
                 f"  {ap.first_name} {ap.last_name}"
                 f"{' — ' + ap.email if ap.email else ''}"
                 f"{' — ' + ap.phone if ap.phone else ''}\n"
@@ -120,17 +120,17 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None,
 
         corps_mentor = (
             f"Bonjour {mentor.first_name} {mentor.last_name},\n\n"
-            f"Voici une demande d'un jeune et les informations qu'il a laissées à l'inscription :\n\n"
+            f"Voici la demande d'un jeune et les informations qu'il a laissées à l'inscription :\n\n"
             f"· {champs_texte}\n"
             f"{supplement_texte}\n"
             f"Je te l'affecte aujourd'hui par ce message. Je te remercie d'en prendre connaissance "
-            f"et de bien vouloir en accuser bonne réception.\n\n"
-            f"Ce présent mail et ta réponse constituent à partir d'aujourd'hui ton contrat de mission "
-            f"pour réaliser ce mentorat dans le respect de la charte ORA et conformément à ta formation Mentor.\n\n"
+            f"et de bien vouloir y répondre via l'un des liens ci-dessous :\n\n"
             f"👉 J'ACCEPTE ce mentorat : {accept_url}\n\n"
-            f"👉 Je REFUSE ce mentorat : {refuse_url}\n"
+            f"👉 Je REFUSE ce mentorat : {refuse_url}\n\n"
+            f"Ta réponse constitue à partir d'aujourd'hui ton contrat de mission, dans le respect "
+            f"de la charte ORA et de ta formation Mentor.\n"
             f"{ap_info}\n"
-            f"Bien sûr ton Animateur de Pôle reste à ta disposition pour toute difficulté ou question.\n\n"
+            f"Il reste à ta disposition pour toute difficulté ou question.\n\n"
             f"Merci pour ton engagement, bon mentorat !\n\n"
             f"Cordialement,\n"
             f"ORA {pole_code}\n"
