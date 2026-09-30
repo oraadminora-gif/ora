@@ -79,23 +79,5 @@ class PublicContactView(APIView):
         except Exception as e:
             logger.error("Échec envoi email contact #%d : %s", msg.id, e)
 
-        # Email de confirmation à l'expéditeur
-        try:
-            send_mail(
-                subject    = "ORA — Nous avons bien reçu votre message",
-                message    = (
-                    f"Bonjour {msg.name},\n\n"
-                    f"Nous avons bien reçu votre message concernant : {sujet_label}.\n\n"
-                    f"Notre équipe vous répondra dans les plus brefs délais.\n\n"
-                    f"Cordialement,\n"
-                    f"L'équipe ORA — Objectif Réussir l'Apprentissage"
-                ),
-                from_email    = settings.DEFAULT_FROM_EMAIL,
-                recipient_list = [msg.email],
-                fail_silently  = True,  # Ne pas bloquer si l'adresse est invalide
-            )
-        except Exception:
-            pass
-
         return Response({'detail': 'Message envoyé avec succès.', 'id': msg.id},
                         status=status.HTTP_201_CREATED)
