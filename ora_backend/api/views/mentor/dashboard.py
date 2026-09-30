@@ -417,7 +417,7 @@ def _notify_ap_cloture_demandee(mentorat_id: int, mentor_id: int, reason_code: s
 
     try:
         msg = EmailMessage(
-            subject=f"[ORA {pole_code}] Demande de clôture de mentorat — {mentor_name}",
+            subject=f"[OPORA] Pôle {pole_code} - Demande de clôture de mentorat — {mentor_name}",
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=recipients,

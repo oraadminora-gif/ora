@@ -1,6 +1,5 @@
 import threading
 import logging
-from datetime import date
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -31,34 +30,6 @@ def _geocode_and_save(young_request_id: int, commune: str, code_postal: str):
         )
 
 
-def _send_confirmation_to_jeune(yr: YoungRequest):
-    """Accusé de réception envoyé au jeune après sa demande."""
-    if not yr.email:
-        return
-    try:
-        msg = EmailMessage(
-            subject="ORA Mentorat — Confirmation de votre demande",
-            body=(
-                f"Bonjour {yr.first_name},\n\n"
-                "Nous avons bien reçu votre demande de mentorat et nous vous en remercions chaleureusement.\n\n"
-                "Votre dossier est en cours de traitement. Un animateur de votre pôle de référence "
-                "vous contactera dans les meilleurs délais afin de vous proposer un accompagnement "
-                "personnalisé adapté à votre situation.\n\n"
-                "En attendant, n'hésitez pas à revenir vers nous si vous avez des questions.\n\n"
-                "Merci de faire confiance à ORA Mentorat pour votre réussite !\n\n"
-                "Bien cordialement,\n"
-                "L'équipe ORA Mentorat\n"
-                "objectifreussirapprentissage.eu"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[yr.email],
-            reply_to=[settings.DEFAULT_FROM_EMAIL],
-        )
-        msg.send(fail_silently=False)
-    except Exception as e:
-        logger.error("Email confirmation jeune failed (id=%s): %s", yr.id, e)
-
-
 def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
     """Notification envoyée à l'ACP (To) et aux AP (Cc) du pôle."""
     animateurs = list(
@@ -73,7 +44,6 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
     if not to_emails and not cc_emails:
         return
 
-    today = date.today().strftime('%d %m %Y')
     pole_code = pole.code or pole.name
 
     # ── Résumé des champs du formulaire ──────────────────────────────────────
@@ -114,17 +84,14 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
 
     corps = (
         f"Bonjour,\n\n"
-        f"Ce mail automatique est pour ton action d'animateur de Pôle coordonnateur "
-        f"selon votre organisation locale au sein de ORA {pole_code}.\n\n"
+        f"Ce mail automatique est pour ton action d'Animateur de Pôle coordonnateur.\n\n"
         f"Voici les informations et la demande laissées par le jeune :\n\n"
         f"· {champs_texte}\n\n"
         f"Merci de te rendre sur OPORA pour y donner une suite dans les meilleurs délais : "
         f"affectation à un des mentors du pôle, éventuelle redistribution vers un autre pôle "
-        f"voisin (suivant localisation Code Postal).\n\n"
+        f"voisin (suivant localisation Code Postal) ou pas de suite à donner (pas de disponibilité Mentor).\n\n"
         f"Si la demande ne provenait pas d'un jeune, merci de la traiter en conséquence "
         f"directement par mail, hors SI, depuis ton adresse mail de pôle.\n\n"
-        f"En cas de difficulté, ne pas hésiter à recontacter le Webmaster OPORA "
-        f"ou l'animateur du Réseau des Pôles.\n\n"
         f"Bien à toi,\n"
         f"OPORA\n"
         f"objectifreussirapprentissage.eu"
@@ -132,7 +99,7 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
 
     try:
         msg = EmailMessage(
-            subject=f"OPORA : nouvelle demande de jeune pour ton pôle en date du {today}",
+            subject=f"[OPORA] Pôle {pole_code}: action requise : nouvelle demande de jeune pour ton pole",
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=to_emails or cc_emails,
@@ -146,10 +113,12 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
 
 def _post_create_tasks(yr: YoungRequest, pole: Pole | None,
                        commune: str, code_postal: str):
-    """Tâches asynchrones après création : géocodage + emails."""
+    """Tâches asynchrones après création : géocodage + email au pôle.
+    Le jeune ne reçoit plus d'accusé de réception par mail (supprimé) —
+    seul le pôle (ACP/AP) est notifié pour traiter la demande.
+    """
     if commune or code_postal:
         _geocode_and_save(yr.id, commune, code_postal)
-    _send_confirmation_to_jeune(yr)
     if pole:
         _send_notification_to_pole(yr, pole)
 

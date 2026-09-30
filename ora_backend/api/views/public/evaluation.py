@@ -65,7 +65,7 @@ def _send_eval_results_to_acp(ev_id: int):
         )
 
         msg = EmailMessage(
-            subject=f"{pole_code} – Évaluation reçue : {jeune.first_name} {jeune.last_name} / {mentor.first_name} {mentor.last_name}",
+            subject=f"[OPORA] Pôle {pole_code} - Évaluation reçue : {jeune.first_name} {jeune.last_name} / {mentor.first_name} {mentor.last_name}",
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[acp.email],

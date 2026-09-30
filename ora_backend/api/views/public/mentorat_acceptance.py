@@ -41,7 +41,7 @@ def _send_response_notification(acc: AcceptanceMentorat):
     if not to_emails and not cc_emails:
         return
 
-    sujet = f"{pole_code} – Le mentor {mentor.first_name} {mentor.last_name} a {action_label} le mentorat"
+    sujet = f"[OPORA] Pôle {pole_code} - Le mentor {mentor.first_name} {mentor.last_name} a {action_label} le mentorat"
 
     if acc.statut == 'ACCEPTE':
         corps = (

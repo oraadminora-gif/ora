@@ -190,7 +190,7 @@ EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 
-DEFAULT_FROM_EMAIL  = env('DEFAULT_FROM_EMAIL', default='ORA Mentorat <noreply@ora.fr>')
+DEFAULT_FROM_EMAIL  = env('DEFAULT_FROM_EMAIL', default='Programme ORA <noreply@ora.fr>')
 
 # URL du frontend (utilisée dans les liens envoyés par email)
 FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
