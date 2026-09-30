@@ -48,7 +48,7 @@ def _send_response_notification(acc: AcceptanceMentorat):
             f"Bonjour,\n\n"
             f"Le mentor {mentor.first_name} {mentor.last_name} a ACCEPTÉ le mentorat "
             f"avec {jeune.first_name} {jeune.last_name}.\n\n"
-            f"Le mentorat est en cours. Vous pouvez en assurer le suivi sur OPORA : "
+            f"Le mentorat est en cours. En assurer le suivi sur OPORA : "
             f"{settings.FRONTEND_URL}\n\n"
             f"Cordialement,\nOPORA\nobjectifreussirapprentissage.eu"
         )
@@ -57,8 +57,7 @@ def _send_response_notification(acc: AcceptanceMentorat):
             f"Bonjour,\n\n"
             f"Le mentor {mentor.first_name} {mentor.last_name} a REFUSÉ le mentorat "
             f"avec {jeune.first_name} {jeune.last_name}.\n\n"
-            f"Merci de prendre les dispositions nécessaires pour trouver un autre mentor "
-            f"ou contacter le jeune directement.\n\n"
+            f"Merci de prendre les dispositions nécessaires pour trouver un autre mentor.\n\n"
             f"Cordialement,\nOPORA\nobjectifreussirapprentissage.eu"
         )
 
