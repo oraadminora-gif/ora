@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
-from core.models import CandidatureMentor, Mentor
+from core.models import CandidatureMentor, Mentor, Association
 from api.permissions import IsAnimateur
 
 
@@ -49,14 +49,17 @@ class PoleCandidaturesMentorsView(APIView):
     permission_classes = [IsAuthenticated, IsAnimateur]
 
     def get(self, request):
+        from django.db.models import Q
+
         anim = request.user.animateur
         qs = CandidatureMentor.objects.filter(
             pole_id=anim.pole_id
         ).select_related('pole', 'association', 'validated_by').order_by('-created_at')
 
-        # AP : uniquement les candidatures de son association
+        # AP : les candidatures de son association, + celles sans association
+        # encore attribuée (à traiter : il peut alors se les attribuer).
         if not anim.is_acp:
-            qs = qs.filter(association_id=anim.association_id)
+            qs = qs.filter(Q(association_id=anim.association_id) | Q(association_id__isnull=True))
 
         statut = request.query_params.get('statut')
         if statut:
@@ -78,8 +81,10 @@ class PoleCandidatureMentorActionView(APIView):
             CandidatureMentor, pk=pk, pole_id=anim.pole_id
         )
 
-        # AP : ne peut agir que sur son association
-        if not anim.is_acp and candidature.association_id != anim.association_id:
+        # AP : ne peut agir que sur son association, ou sur une candidature
+        # qui n'a encore aucune association attribuée (il peut alors se
+        # l'attribuer au moment de la validation).
+        if not anim.is_acp and candidature.association_id not in (None, anim.association_id):
             return Response(
                 {'detail': 'Vous ne pouvez agir que sur les candidatures de votre association.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -105,11 +110,38 @@ class PoleCandidatureMentorActionView(APIView):
         pole = candidature.pole or anim.pole
         association = candidature.association
 
+        # Association pas encore attribuée : l'AP/ACP peut la choisir
+        # maintenant plutôt que d'échouer la validation.
+        if not association:
+            association_id = request.data.get('association_id')
+            if association_id:
+                try:
+                    association = Association.objects.get(id=association_id, is_active=True)
+                except Association.DoesNotExist:
+                    return Response(
+                        {'detail': 'Association invalide.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                # AP : ne peut attribuer que sa propre association
+                if not anim.is_acp and association.id != anim.association_id:
+                    return Response(
+                        {'detail': "Vous ne pouvez attribuer que votre propre association."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif not anim.is_acp:
+                # AP sans choix explicite → sa propre association par défaut
+                association = anim.association
+
         if not association:
             return Response(
-                {'detail': 'Association manquante sur la candidature.'},
+                {
+                    'detail': "Merci de sélectionner l'association du candidat avant de valider.",
+                    'code': 'ASSOCIATION_REQUIRED',
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        candidature.association = association
 
         mentor = Mentor.objects.create(
             pole          = pole,

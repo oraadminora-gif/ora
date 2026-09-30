@@ -42,6 +42,7 @@ const GestionMentors            = lazy(() => import('./pages/member/acp/GestionM
 const GestionAnimateurs         = lazy(() => import('./pages/member/acp/GestionAnimateurs').then(m => ({ default: m.GestionAnimateurs })));
 const GestionMentorats          = lazy(() => import('./pages/member/acp/GestionMentorats').then(m => ({ default: m.GestionMentorats })));
 const AnnuairePole              = lazy(() => import('./pages/member/acp/AnnuairePole').then(m => ({ default: m.AnnuairePole })));
+const CandidaturesMentors       = lazy(() => import('./pages/member/pole/CandidaturesMentors').then(m => ({ default: m.CandidaturesMentors })));
 const CNDashboard               = lazy(() => import('./pages/member/cn/CNDashboard').then(m => ({ default: m.CNDashboard })));
 const CNMentors                 = lazy(() => import('./pages/member/cn/CNMentors').then(m => ({ default: m.CNMentors })));
 const CNPoles                   = lazy(() => import('./pages/member/cn/CNPoles').then(m => ({ default: m.CNPoles })));
@@ -123,6 +124,7 @@ function App() {
                 <Route path="ap/mentorats"  element={<Suspense fallback={<DashboardLoader />}><APMesMentorats /></Suspense>} />
                 <Route path="acp/mentors"   element={<Suspense fallback={<DashboardLoader />}><GestionMentors /></Suspense>} />
                 <Route path="acp/annuaire"  element={<Suspense fallback={<DashboardLoader />}><AnnuairePole /></Suspense>} />
+                <Route path="pole/candidatures-mentors" element={<Suspense fallback={<DashboardLoader />}><CandidaturesMentors /></Suspense>} />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['ACP', 'CN']} />}>
