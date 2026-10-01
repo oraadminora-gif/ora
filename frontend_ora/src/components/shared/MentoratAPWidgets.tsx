@@ -9,6 +9,19 @@ import api from '../../services/api';
 
 interface ApiError { response?: { data?: { error?: string } } }
 
+// Motifs de clôture structurés — mêmes codes/libellés que CLOSURE_REASON_CHOICES
+// côté backend (core/models/mentorat.py), utilisés pour déterminer si le mail
+// d'évaluation au jeune doit partir (motif neutre = aucun mail).
+const CLOSURE_REASON_OPTIONS = [
+  { value: 'NO_CONTACT',        label: 'Aucun vrai contact établi' },
+  { value: 'LOST_CONTACT',      label: 'Perte définitive du contact' },
+  { value: 'DIPLOMA_FAIL',      label: 'Échec diplôme' },
+  { value: 'MENTEE_STOP',       label: 'Arrêt souhaité par le mentoré' },
+  { value: 'OBJECTIVE_REACHED', label: 'Objectif atteint' },
+  { value: 'OTHER',             label: 'Autre motif satisfaisant' },
+  { value: 'OTHER_NEGATIVE',    label: 'Autre motif insatisfaisant' },
+];
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface SuiviRencontre {
   id: number;
@@ -665,17 +678,21 @@ export function CloturerDirectModal({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [action, setAction]   = useState<'CLOSED' | 'ABORTED'>('CLOSED');
-  const [reason, setReason]   = useState('');
-  const [message, setMessage] = useState('');
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [action, setAction]       = useState<'CLOSED' | 'ABORTED'>('CLOSED');
+  const [reasonCode, setReasonCode] = useState('');
+  const [message, setMessage]     = useState('');
+  const [saving, setSaving]       = useState(false);
+  const [error, setError]         = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reasonCode) { setError('Merci de sélectionner un motif de clôture.'); return; }
     setSaving(true); setError(null);
     try {
-      await api.post(`/ap/mentorats/${id}/cloturer-direct/`, { action, reason, message });
+      const reasonLabel = CLOSURE_REASON_OPTIONS.find(o => o.value === reasonCode)?.label ?? '';
+      await api.post(`/ap/mentorats/${id}/cloturer-direct/`, {
+        action, reason: reasonLabel, reason_code: reasonCode, message,
+      });
       onDone();
     } catch (err) {
       setError((err as ApiError).response?.data?.error ?? 'Erreur lors de la clôture');
@@ -734,10 +751,14 @@ export function CloturerDirectModal({
 
           {/* Raison */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Raison</label>
-            <input type="text" value={reason} onChange={e => setReason(e.target.value)}
-              placeholder="Ex : objectifs atteints, départ du jeune…"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Motif *</label>
+            <select value={reasonCode} onChange={e => setReasonCode(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">— Choisir un motif —</option>
+              {CLOSURE_REASON_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
 
           {/* Message au jeune */}
@@ -748,6 +769,11 @@ export function CloturerDirectModal({
             <textarea rows={3} value={message} onChange={e => setMessage(e.target.value)}
               placeholder="Expliquez au jeune les raisons de la clôture…"
               className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+            {reasonCode === 'NO_CONTACT' && (
+              <p className="mt-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                Ce motif est neutre : aucun mail ne sera envoyé au jeune, quel que soit le message saisi ci-dessus.
+              </p>
+            )}
           </div>
 
           <div className="flex gap-2 pt-1">
@@ -755,7 +781,7 @@ export function CloturerDirectModal({
               className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors">
               Annuler
             </button>
-            <button type="submit" disabled={saving}
+            <button type="submit" disabled={saving || !reasonCode}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-white text-sm font-bold transition-colors disabled:opacity-50 ${
                 action === 'CLOSED' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-orange-500 hover:bg-orange-600'
               }`}>
