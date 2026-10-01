@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count, Sum, Max, Q
 from django.utils import timezone
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage
 from django.conf import settings
 from datetime import date, timedelta
 import logging
@@ -846,27 +846,14 @@ class APConfirmerClotureView(APIView):
             )
 
         if action == 'reject':
-            # Annuler la demande — le mentorat reste actif
-            # On conserve cloture_reason_demandee et cloture_message_demandee en base
-            message_jeune = request.data.get('message', mentorat.cloture_message_demandee)
+            # Annuler la demande — le mentorat reste actif. Pas de mail,
+            # ni au jeune ni au mentor : c'est un simple retour à l'état
+            # actif, sans notification automatique.
             mentorat.cloture_en_attente = False
             mentorat.cloture_action_demandee = ''
             mentorat.save(update_fields=[
                 'cloture_en_attente', 'cloture_action_demandee',
             ])
-            # Envoyer le message au jeune même lors du rejet
-            jeune = mentorat.young_request
-            if message_jeune and jeune and jeune.email:
-                try:
-                    send_mail(
-                        subject="Information concernant votre mentorat",
-                        message=message_jeune,
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[jeune.email],
-                        fail_silently=False,
-                    )
-                except Exception as e:
-                    logger.error("Email rejet clôture failed: %s", e)
             return Response({'success': True, 'action': 'rejected'})
 
         # ── Confirmer la clôture ──────────────────────────────
