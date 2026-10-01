@@ -8,6 +8,19 @@ import {
 } from 'lucide-react';
 import { APSuiviMentoratModal } from '../../../components/ap/APSuiviMentoratModal';
 
+// Motifs de clôture structurés — mêmes codes/libellés que CLOSURE_REASON_CHOICES
+// côté backend (core/models/mentorat.py), utilisés pour déterminer si le mail
+// d'évaluation au jeune doit partir (motif neutre = aucun mail).
+const CLOSURE_REASON_OPTIONS = [
+  { value: 'NO_CONTACT',        label: 'Aucun vrai contact établi' },
+  { value: 'LOST_CONTACT',      label: 'Perte définitive du contact' },
+  { value: 'DIPLOMA_FAIL',      label: 'Échec diplôme' },
+  { value: 'MENTEE_STOP',       label: 'Arrêt souhaité par le mentoré' },
+  { value: 'OBJECTIVE_REACHED', label: 'Objectif atteint' },
+  { value: 'OTHER',             label: 'Autre motif satisfaisant' },
+  { value: 'OTHER_NEGATIVE',    label: 'Autre motif insatisfaisant' },
+];
+
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
@@ -84,7 +97,9 @@ function MentoratModal({
   onSaved: (m: Mentorat) => void;
 }) {
   const [status, setStatus]               = useState(mentorat.status);
+  const [closureReasonCode, setClosureReasonCode] = useState('');
   const [closureReason, setClosureReason] = useState(mentorat.closure_reason ?? '');
+  const [messageJeune, setMessageJeune]   = useState('');
   const [apId, setApId]                   = useState<string>(mentorat.ap_responsable_id ? String(mentorat.ap_responsable_id) : '');
   const [mentorId, setMentorId]           = useState<string>(String(mentorat.mentor_id));
   const [assignedPoleId, setAssignedPoleId] = useState<string>(String(mentorat.pole_id));
@@ -107,8 +122,8 @@ function MentoratModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (needClosure && !closureReason.trim()) {
-      setError('Une raison de clôture est requise');
+    if (needClosure && !closureReasonCode) {
+      setError('Un motif de clôture est requis');
       return;
     }
     setSubmitting(true);
@@ -120,7 +135,11 @@ function MentoratModal({
       };
       if (status !== mentorat.status) {
         payload.status = status;
-        if (needClosure) payload.closure_reason = closureReason.trim();
+        if (needClosure) {
+          payload.closure_reason_code = closureReasonCode;
+          payload.closure_reason      = closureReason.trim();
+          payload.message             = messageJeune.trim();
+        }
       }
       if (mentorChanged) payload.mentor_id = Number(mentorId);
       if (poleChanged)   payload.pole_id   = Number(assignedPoleId);
@@ -172,16 +191,44 @@ function MentoratModal({
             </div>
 
             {needClosure && (
-              <Field label="Raison de clôture *">
-                <textarea
-                  required
-                  value={closureReason}
-                  onChange={e => setClosureReason(e.target.value)}
-                  rows={2}
-                  placeholder="Décrivez la raison de la clôture…"
-                  className={`${INPUT} resize-none`}
-                />
-              </Field>
+              <>
+                <Field label="Motif de clôture *">
+                  <select
+                    required
+                    value={closureReasonCode}
+                    onChange={e => setClosureReasonCode(e.target.value)}
+                    className={INPUT}
+                  >
+                    <option value="">— Choisir un motif —</option>
+                    {CLOSURE_REASON_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Détails (optionnel)">
+                  <textarea
+                    value={closureReason}
+                    onChange={e => setClosureReason(e.target.value)}
+                    rows={2}
+                    placeholder="Précisions internes sur la clôture…"
+                    className={`${INPUT} resize-none`}
+                  />
+                </Field>
+                <Field label="Message au jeune (optionnel, envoyé par email)">
+                  <textarea
+                    value={messageJeune}
+                    onChange={e => setMessageJeune(e.target.value)}
+                    rows={2}
+                    placeholder="Expliquez au jeune les raisons de la clôture…"
+                    className={`${INPUT} resize-none`}
+                  />
+                </Field>
+                {closureReasonCode === 'NO_CONTACT' && (
+                  <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                    Motif neutre : aucun mail ne sera envoyé au jeune (y compris ce message).
+                  </p>
+                )}
+              </>
             )}
           </section>
 

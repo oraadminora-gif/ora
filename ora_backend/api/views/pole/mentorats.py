@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from core.models import Mentorat, Animateur, Mentor, Pole, YoungRequest
+from core.models.mentorat import CLOSURE_REASON_CHOICES
 from api.permissions import IsACP
 
 STATUS_LABELS = {
@@ -185,6 +186,8 @@ class PoleMentoratDetailView(APIView):
             return err
 
         data = request.data
+        send_eval_email = False
+        message_jeune   = str(data.get('message', '')).strip()
 
         # ── Changement de statut ─────────────────────────────────
         if 'status' in data:
@@ -205,13 +208,26 @@ class PoleMentoratDetailView(APIView):
             was_pending    = m.status == 'PENDING'
             was_terminated = m.status in ('CLOSED', 'ABORTED')
             if new_status in ('CLOSED', 'ABORTED'):
-                if not data.get('closure_reason', '').strip():
+                reason_code = str(data.get('closure_reason_code', '')).strip()
+                reason_text = str(data.get('closure_reason', '')).strip()
+                if reason_code and reason_code not in dict(CLOSURE_REASON_CHOICES):
                     return Response(
-                        {"error": "Une raison de clôture est requise"},
+                        {"error": "Motif de clôture invalide."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                m.closure_reason = data['closure_reason'].strip()
+                if not reason_code and not reason_text:
+                    return Response(
+                        {"error": "Un motif de clôture est requis"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                m.closure_reason      = reason_text or dict(CLOSURE_REASON_CHOICES).get(reason_code, '')
+                m.closure_reason_code = reason_code
                 m.closed_at = timezone.now().date()
+                # Mail d'évaluation au jeune — seulement pour une clôture
+                # réelle (pas une simple recatégorisation CLOSED↔ABORTED),
+                # et seulement si le motif n'est pas neutre.
+                if not was_terminated:
+                    send_eval_email = True
                 if was_active:
                     # Libère une place uniquement si le mentorat l'occupait
                     # réellement (un PENDING jamais accepté n'en occupait pas)
@@ -411,6 +427,25 @@ class PoleMentoratDetailView(APIView):
             transaction.on_commit(lambda: threading.Thread(
                 target=_send_mentorat_emails,
                 args=(mentorat_id, acp_animateur_id),
+                daemon=True,
+            ).start())
+
+        if send_eval_email:
+            from api.views.ap.dashboard import _send_cloture_eval_email
+            closed_mentorat_id = m.id
+
+            def _dispatch_eval_email():
+                try:
+                    fresh = Mentorat.objects.select_related('young_request', 'pole').get(id=closed_mentorat_id)
+                except Mentorat.DoesNotExist:
+                    return
+                _send_cloture_eval_email(fresh, message_jeune)
+
+            # on_commit : on relit le mentorat après validation de la
+            # transaction, pour ne pas envoyer le mail avec des données
+            # pas encore réellement persistées.
+            transaction.on_commit(lambda: threading.Thread(
+                target=_dispatch_eval_email,
                 daemon=True,
             ).start())
 
