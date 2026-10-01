@@ -135,6 +135,16 @@ class RerouterDemandeView(APIView):
         demande.raison_transfert = raison
         demande.save()
 
+        # Même notification que pour une nouvelle demande : l'ACP/AP du
+        # pôle de destination doit être informé comme si le jeune venait
+        # de la soumettre, sans mail distinct expliquant le transfert.
+        from api.views.public.young_request import _send_notification_to_pole
+        threading.Thread(
+            target=_send_notification_to_pole,
+            args=(demande, new_pole),
+            daemon=True,
+        ).start()
+
         return Response({
             "success": True,
             "message": f"Demande transférée vers le pôle {new_pole.name}",
