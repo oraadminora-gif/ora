@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from core.models import Mentor, Mentorat, SuiviMentorat, YoungRequest, EvaluationMentor, Etablissement, Financement, MentoratFinancement
-from core.models.mentorat import CLOSURE_REASON_CHOICES, derive_closure_status
+from core.models.mentorat import CLOSURE_REASON_CHOICES, CLOSURE_REASON_SCORE, derive_closure_status
 from core.models.young_request import validate_birth_date
 from api.permissions import IsAP, IsACP, IsCN
 
@@ -734,24 +734,19 @@ class APMentoratNotesView(APIView):
 # ─────────────────────────────────────────────────────────────
 # Helper : email clôture + évaluation (un seul message au jeune)
 # ─────────────────────────────────────────────────────────────
-_CLOSURE_REASON_LABELS = {
-    'NO_CONTACT':        'Aucun vrai contact établi',
-    'LOST_CONTACT':      'Perte définitive du contact',
-    'DIPLOMA_FAIL':      'Échec diplôme',
-    'MENTEE_STOP':       'Arrêt souhaité par le mentoré',
-    'OBJECTIVE_REACHED': 'Objectif atteint',
-}
-
-
 def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
     """
-    Envoie UN email au jeune.
-    - Si raison = OBJECTIVE_REACHED : email complet + lien évaluation (3 questions)
-    - Sinon : email d'encouragement simple mentionnant la raison, sans évaluation.
+    Envoie UN email au jeune avec le lien d'évaluation (3 questions), sauf
+    si le motif de clôture est neutre (NO_CONTACT = aucun vrai contact établi :
+    le mentorat n'a jamais réellement démarré, rien à évaluer).
     Reply-To = ACP du pôle.
     """
     jeune = mentorat.young_request
     if not jeune or not jeune.email:
+        return
+
+    reason_code = getattr(mentorat, 'closure_reason_code', '') or ''
+    if CLOSURE_REASON_SCORE.get(reason_code, 1) == 0:
         return
 
     from core.models import Animateur as Anim
@@ -763,52 +758,29 @@ def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
 
     closed_date  = mentorat.closed_at.strftime('%d/%m/%Y') if mentorat.closed_at else '—'
     request_date = jeune.request_date.strftime('%d/%m/%Y') if jeune.request_date else '—'
-    reason_code  = getattr(mentorat, 'closure_reason_code', '') or ''
 
     complement = (
         f"\nMessage de ton animateur de Pôle :\n{message_supplementaire}\n"
         if message_supplementaire else ''
     )
 
-    if reason_code == 'OBJECTIVE_REACHED':
-        # ── Email complet avec lien évaluation ───────────────────
-        evaluation = EvaluationMentor.create_for_mentorat(mentorat)
-        eval_link  = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/evaluer-mentor/{evaluation.token}"
+    evaluation = EvaluationMentor.create_for_mentorat(mentorat)
+    eval_link  = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/evaluer-mentor/{evaluation.token}"
 
-        sujet = "ORA clôture et fin de ton mentorat : ton avis nous intéresse"
-        corps = (
-            f"Bonjour {jeune.first_name},\n\n"
-            f"Ton mentor nous a informé que ce mentorat s'est achevé le {closed_date}.\n\n"
-            f"Tu nous avais adressé ta demande pour bénéficier d'un Mentor à travers notre Programme : "
-            f"Objectif Réussir l'Apprentissage le {request_date}.{complement}\n\n"
-            f"Pour améliorer nos services vis-à-vis d'autres jeunes demain, accepterais-tu de répondre "
-            f"à ces 3 questions et exprimer ton point de vue ?\n\n"
-            f"→ Accède à l'évaluation : {eval_link}\n\n"
-            f"Au nom du Programme ORA, merci de ton retour et bonne suite à toi !\n\n"
-            f"Cordialement,\n"
-            f"pôle {pole_code}\n"
-            f"OPORA\nobjectifreussirapprentissage.eu"
-        )
-    else:
-        # ── Email simple d'encouragement ─────────────────────────
-        reason_label = _CLOSURE_REASON_LABELS.get(reason_code, 'arrêt du mentorat')
-        sujet = "ORA — Fin de ton mentorat"
-        corps = (
-            f"Bonjour {jeune.first_name},\n\n"
-            f"Nous t'informons que ton mentorat, débuté suite à ta demande du {request_date}, "
-            f"s'est malheureusement arrêté le {closed_date}.\n\n"
-            f"Raison : {reason_label}.{complement}\n"
-            f"Nous sommes désolés que ce mentorat n'ait pas pu aller à son terme. "
-            f"Ne te décourage pas ! Chaque expérience est une étape dans ton parcours, "
-            f"et nous te souhaitons toute la réussite possible pour la suite de ta vie "
-            f"personnelle et professionnelle.\n\n"
-            f"Si tu souhaites renouveler une demande de mentorat à l'avenir, "
-            f"n'hésite pas à revenir vers nous sur objectifreussirapprentissage.eu.\n\n"
-            f"Courage et bonne continuation !\n\n"
-            f"Cordialement,\n"
-            f"Le pôle {pole_code}\n"
-            f"OPORA\nobjectifreussirapprentissage.eu"
-        )
+    sujet = "ORA clôture et fin de ton mentorat : ton avis nous intéresse"
+    corps = (
+        f"Bonjour {jeune.first_name},\n\n"
+        f"Ton mentor nous a informé que ce mentorat s'est achevé le {closed_date}.\n\n"
+        f"Tu nous avais adressé ta demande pour bénéficier d'un Mentor à travers notre Programme : "
+        f"Objectif Réussir l'Apprentissage le {request_date}.{complement}\n\n"
+        f"Pour améliorer nos services vis-à-vis d'autres jeunes demain, accepterais-tu de répondre "
+        f"à ces 3 questions et exprimer ton point de vue ?\n\n"
+        f"→ Accède à l'évaluation : {eval_link}\n\n"
+        f"Au nom du Programme ORA, merci de ton retour et bonne suite à toi !\n\n"
+        f"Cordialement,\n"
+        f"pôle {pole_code}\n"
+        f"OPORA\nobjectifreussirapprentissage.eu"
+    )
 
     try:
         msg = EmailMessage(

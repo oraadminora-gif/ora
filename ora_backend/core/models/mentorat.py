@@ -10,6 +10,7 @@ CLOSURE_REASON_CHOICES = [
     ('MENTEE_STOP',       'Arrêt souhaité par le mentoré'),
     ('OBJECTIVE_REACHED', 'Objectif atteint'),
     ('OTHER',             'Autre motif satisfaisant'),
+    ('OTHER_NEGATIVE',    'Autre motif insatisfaisant'),
 ]
 
 # Sentiment de clôture pour les KPI (positif > 0, neutre = 0, négatif < 0).
@@ -20,6 +21,7 @@ CLOSURE_REASON_SCORE = {
     'MENTEE_STOP':       1,
     'OBJECTIVE_REACHED': 1,
     'OTHER':             1,
+    'OTHER_NEGATIVE':   -1,
 }
 
 
