@@ -41,7 +41,7 @@ export function HeaderAP() {
           <NavLink
             to="/member/ap/mentorats"
             icon={<BookOpen className="w-4 h-4" />}
-            label="Suivi mentors"
+            label="Suivi mentors/mentorats"
             active={location.pathname === '/member/ap/mentorats'}
           />
           <NavLink

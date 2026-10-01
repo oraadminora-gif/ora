@@ -168,7 +168,7 @@ const menuItems: MenuItem[] = [
   { label: 'Mes mentorats',  path: '/member/mentor/mentorats', roles: ['MENTOR'], icon: <HandHeart size={18} /> },
   // AP
   { label: 'Tableau de bord',  path: '/member/ap/dashboard',     roles: ['AP'], icon: <LayoutDashboard size={18} /> },
-  { label: 'Suivi mentors',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
+  { label: 'Suivi mentors/mentorats',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
   { label: 'Gestion mentors',  path: '/member/acp/mentors',      roles: ['AP'], icon: <Users size={18} /> },
   { label: 'Candidatures mentors', path: '/member/pole/candidatures-mentors', roles: ['AP'], icon: <UserCheck size={18} /> },
   { label: 'Annuaire',         path: '/member/acp/annuaire',     roles: ['AP'], icon: <MapPin size={18} /> },
@@ -178,7 +178,7 @@ const menuItems: MenuItem[] = [
   // ACP — vue pôle complète (inclut accès aux vues AP)
   { label: 'Tableau de bord',    path: '/member/acp/dashboard',  roles: ['ACP'],       icon: <LayoutDashboard size={18} /> },
   { label: 'Affectation',        path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
-  { label: 'Suivi mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
+  { label: 'Liste mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
   { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },
   { label: 'Candidatures mentors', path: '/member/pole/candidatures-mentors', roles: ['ACP'], icon: <UserCheck size={18} /> },
   { label: 'Gestion APs',        path: '/member/acp/animateurs', roles: ['ACP'],       icon: <Shield size={18} /> },

@@ -47,7 +47,7 @@ export function HeaderACP() {
           <NavLink
             to="/member/acp/mentorats"
             icon={<FileText className="w-4 h-4" />}
-            label="Suivi mentorats"
+            label="Liste mentorats"
             active={location.pathname.startsWith('/member/acp/mentorats')}
           />
           <NavLink
