@@ -164,7 +164,21 @@ class Mentorat(models.Model):
     
     def __str__(self):
         return f"{self.mentor} ↔ {self.young_request} [{self.status}]"
-    
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        # Garde-fou pour l'admin Django : le tableau de matching garantit
+        # déjà ces deux champs à l'activation (activer()) — on bloque ici
+        # toute saisie manuelle incohérente (statut Actif sans date ni AP).
+        if self.status == 'ACTIVE':
+            errors = {}
+            if not self.assigned_at:
+                errors['assigned_at'] = "Une date d'affectation est requise pour un mentorat Actif."
+            if not self.ap_responsable_id:
+                errors['ap_responsable'] = "Un AP responsable est requis pour un mentorat Actif."
+            if errors:
+                raise ValidationError(errors)
+
     def get_duree_mois(self):
         """Calcule la durée en mois"""
         if not self.assigned_at:
