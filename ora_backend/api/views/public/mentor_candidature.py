@@ -11,8 +11,6 @@ from core.models import CandidatureMentor, Pole, Department
 
 logger = logging.getLogger(__name__)
 
-CANDIDATURE_DEST = 'ora-france@outlook.com'
-
 
 def _dept_code_from_cp(code_postal: str) -> str:
     """Extrait le code département depuis un code postal."""
@@ -70,15 +68,16 @@ class PublicMentorCandidatureView(APIView):
             motivation  = motivation,
         )
 
-        # ── Envoi email de notification ──────────────────────────────────
-        pole_info = pole.name if pole else 'Aucun pôle détecté pour ce département'
-        localisation = f"{commune} ({code_postal})" if commune else code_postal
+        # ── Envoi email de notification au pôle (si email renseigné) ──────
+        if pole and pole.contact_email:
+            pole_code = pole.code or pole.name
+            localisation = f"{commune} ({code_postal})" if commune else code_postal
 
-        subject = f"[ORA] Nouvelle candidature mentor — {first_name} {last_name}"
+            subject = f"[OPORA] Pôle {pole_code} - Nouvelle candidature mentor — {first_name} {last_name}"
 
-        body = f"""Bonjour,
+            body = f"""Bonjour,
 
-Une nouvelle candidature mentor vient d'être soumise sur le site ORA.
+Une nouvelle candidature mentor vient d'être soumise sur le site ORA pour ton pôle.
 
 ─────────────────────────────────────────
 COORDONNÉES DU CANDIDAT
@@ -90,11 +89,6 @@ Téléphone    : {phone or 'Non renseigné'}
 Localisation : {localisation}
 
 ─────────────────────────────────────────
-PÔLE DÉTECTÉ
-─────────────────────────────────────────
-{pole_info}
-
-─────────────────────────────────────────
 MOTIVATION
 ─────────────────────────────────────────
 {motivation or 'Non renseignée'}
@@ -103,16 +97,16 @@ MOTIVATION
 Candidature n° {candidature.id}
 """
 
-        try:
-            send_mail(
-                subject       = subject,
-                message       = body,
-                from_email    = settings.DEFAULT_FROM_EMAIL,
-                recipient_list= [CANDIDATURE_DEST],
-                fail_silently = False,
-            )
-        except Exception as exc:
-            logger.error("Échec envoi email candidature mentor #%s : %s", candidature.id, exc)
+            try:
+                send_mail(
+                    subject       = subject,
+                    message       = body,
+                    from_email    = settings.DEFAULT_FROM_EMAIL,
+                    recipient_list= [pole.contact_email],
+                    fail_silently = False,
+                )
+            except Exception as exc:
+                logger.error("Échec envoi email candidature mentor #%s : %s", candidature.id, exc)
 
         return Response({
             'id':           candidature.id,

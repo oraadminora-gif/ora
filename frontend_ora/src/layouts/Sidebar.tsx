@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, BarChart3, Settings,
   Home, LogOut, Shield, Globe, HandHeart, ChevronRight, FileText,
   KeyRound, Eye, EyeOff, Loader2, AlertCircle, CheckCircle, X,
-  BarChart2, BookOpen, MapPin, UserCheck,
+  BarChart2, BookOpen, MapPin,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -170,7 +170,6 @@ const menuItems: MenuItem[] = [
   { label: 'Tableau de bord',  path: '/member/ap/dashboard',     roles: ['AP'], icon: <LayoutDashboard size={18} /> },
   { label: 'Suivi mentors/mentorats',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
   { label: 'Gestion mentors',  path: '/member/acp/mentors',      roles: ['AP'], icon: <Users size={18} /> },
-  { label: 'Candidatures mentors', path: '/member/pole/candidatures-mentors', roles: ['AP'], icon: <UserCheck size={18} /> },
   { label: 'Annuaire',         path: '/member/acp/annuaire',     roles: ['AP'], icon: <MapPin size={18} /> },
   { label: 'KPIs Pôle',        path: '/member/pole/kpi',         roles: ['AP'], icon: <BarChart3 size={18} /> },
   { label: 'KPIs Nationaux',   path: '/member/cn/kpis',          roles: ['AP'], icon: <BarChart2 size={18} /> },
@@ -180,7 +179,6 @@ const menuItems: MenuItem[] = [
   { label: 'Affectation',        path: '/member/matching',       roles: ['ACP'],       icon: <HandHeart size={18} /> },
   { label: 'Liste mentorats',    path: '/member/acp/mentorats',  roles: ['ACP'],       icon: <FileText size={18} /> },
   { label: 'Gestion mentors',    path: '/member/acp/mentors',    roles: ['ACP'],       icon: <Users size={18} /> },
-  { label: 'Candidatures mentors', path: '/member/pole/candidatures-mentors', roles: ['ACP'], icon: <UserCheck size={18} /> },
   { label: 'Gestion APs',        path: '/member/acp/animateurs', roles: ['ACP'],       icon: <Shield size={18} /> },
   { label: 'Annuaire',           path: '/member/acp/annuaire',   roles: ['ACP'],       icon: <BookOpen size={18} /> },
   { label: 'KPIs Pôle',          path: '/member/pole/kpi',       roles: ['ACP'],       icon: <BarChart3 size={18} /> },

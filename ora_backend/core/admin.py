@@ -48,7 +48,7 @@ from core.models import (
     SuiviMentorat, User, Pole, Department, Association,
     Animateur, Mentor, YoungRequest, Mentorat,
     CNMember, MatchingDecision, Etablissement, Financement, MentoratFinancement,
-    ContactMessage, CandidatureMentor,
+    ContactMessage,
 )
 
 # ══════════════════════════════════════════════════════════════════
@@ -668,48 +668,3 @@ class ContactMessageAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Trier les non-lus en premier
         return super().get_queryset(request).order_by('is_read', '-created_at')
-
-
-# ══════════════════════════════════════════════════════════════════
-#  CANDIDATURES MENTORS
-# ══════════════════════════════════════════════════════════════════
-@admin.register(CandidatureMentor)
-class CandidatureMentorAdmin(admin.ModelAdmin):
-    list_display   = ('created_at', 'nom_complet', 'email', 'pole', 'association', 'statut_badge')
-    list_filter    = ('statut', 'pole', 'association', 'created_at')
-    search_fields  = ('first_name', 'last_name', 'email', 'phone', 'commune')
-    ordering       = ('-created_at',)
-    date_hierarchy = 'created_at'
-    list_per_page  = 30
-    autocomplete_fields = ['pole', 'association']
-    readonly_fields = ('validated_by', 'validated_at', 'mentor_created', 'created_at')
-
-    fieldsets = (
-        ('Candidat',            {'fields': ('first_name', 'last_name', 'email', 'phone')}),
-        ('Localisation & Pôle', {'fields': ('code_postal', 'commune', 'pole', 'association')}),
-        ('Profil mentor',       {'fields': ('experience_pro', 'domaines', 'disponibilite', 'motivation')}),
-        ('Traitement',          {'fields': ('statut', 'notes_rejet', 'validated_by', 'validated_at', 'mentor_created')}),
-        ('Métadonnées',         {'fields': ('created_at',), 'classes': ('collapse',)}),
-    )
-
-    def nom_complet(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
-    nom_complet.short_description = 'Candidat'
-
-    STATUT_COLORS = {
-        'PENDING':   '#f59e0b',
-        'VALIDATED': '#22c55e',
-        'REJECTED':  '#ef4444',
-    }
-
-    def statut_badge(self, obj):
-        color = self.STATUT_COLORS.get(obj.statut, '#6b7280')
-        return format_html(
-            '<span style="background:{};color:#fff;padding:2px 8px;border-radius:12px;'
-            'font-size:0.72rem;font-weight:600;">{}</span>',
-            color, obj.get_statut_display()
-        )
-    statut_badge.short_description = 'Statut'
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('pole', 'association', 'validated_by')
