@@ -82,15 +82,37 @@ def _snapshot(instance) -> dict:
     return data
 
 
+def _resolve_pole(instance):
+    """Retrouve le pôle concerné, quel que soit le modèle audité."""
+    from core.models import Pole
+    if isinstance(instance, Pole):
+        return instance
+    pole = getattr(instance, 'pole', None)
+    if pole is not None:
+        return pole
+    # Connexion (instance = User) : dérive via l'animateur ou le mentor.
+    animateur = getattr(instance, 'animateur', None)
+    if animateur is not None:
+        return animateur.pole
+    mentor = getattr(instance, 'mentor', None)
+    if mentor is not None:
+        return mentor.pole
+    return None
+
+
 def write_audit_log(action: str, instance, changes: dict, user=None, ip=None):
     from core.models import AuditLog
 
     if user is None and ip is None:
         user, ip = get_audit_actor()
 
+    pole = _resolve_pole(instance)
+
     AuditLog.objects.create(
         user=user,
         user_repr=_actor_repr(user),
+        pole=pole,
+        pole_name=(pole.code or pole.name) if pole else '',
         action=action,
         model_name=instance.__class__.__name__,
         object_id=str(instance.pk),

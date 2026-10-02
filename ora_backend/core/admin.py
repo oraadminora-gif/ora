@@ -1,7 +1,9 @@
 # core/admin.py
+import io
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.http import HttpResponse
 from django.utils.html import format_html
 
 
@@ -675,14 +677,15 @@ class ContactMessageAdmin(admin.ModelAdmin):
 # ══════════════════════════════════════════════════════════════════
 @admin.register(AuditLog)
 class AuditLogAdmin(admin.ModelAdmin):
-    list_display   = ('created_at', 'user_repr', 'action_badge', 'model_name', 'object_repr', 'ip_address')
-    list_filter    = ('action', 'model_name', 'created_at')
-    search_fields  = ('user_repr', 'object_repr', 'object_id', 'ip_address')
+    list_display   = ('created_at', 'user_repr', 'action_badge', 'model_name', 'object_repr', 'pole_name', 'ip_address')
+    list_filter    = ('action', 'model_name', 'pole', 'created_at')
+    search_fields  = ('user_repr', 'object_repr', 'object_id', 'ip_address', 'pole_name')
     ordering       = ('-created_at',)
     date_hierarchy = 'created_at'
     list_per_page  = 50
+    actions        = ['exporter_pdf']
     readonly_fields = (
-        'user', 'user_repr', 'action', 'model_name', 'object_id',
+        'user', 'user_repr', 'pole', 'pole_name', 'action', 'model_name', 'object_id',
         'object_repr', 'changes', 'ip_address', 'created_at',
     )
 
@@ -707,3 +710,52 @@ class AuditLogAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    @admin.action(description="Exporter la sélection en PDF")
+    def exporter_pdf(self, request, queryset):
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import landscape, A4
+        from reportlab.lib.units import mm
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+        from reportlab.lib.styles import getSampleStyleSheet
+
+        styles = getSampleStyleSheet()
+        cell_style = styles['BodyText']
+        cell_style.fontSize = 7
+        cell_style.leading = 9
+
+        def cell(text):
+            return Paragraph(str(text or '—'), cell_style)
+
+        header = ['Date', 'Utilisateur', 'Action', 'Modèle', 'Objet', 'Pôle', 'IP', 'Détail']
+        rows = [header]
+        for log in queryset.order_by('-created_at'):
+            detail = ', '.join(f"{k}: {v[0]!r}→{v[1]!r}" for k, v in list(log.changes.items())[:4])
+            rows.append([
+                cell(log.created_at.strftime('%d/%m/%Y %H:%M')),
+                cell(log.user_repr),
+                cell(log.get_action_display()),
+                cell(log.model_name),
+                cell(log.object_repr),
+                cell(log.pole_name),
+                cell(log.ip_address),
+                cell(detail),
+            ])
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=10 * mm, bottomMargin=10 * mm)
+        col_widths = [25 * mm, 38 * mm, 20 * mm, 22 * mm, 38 * mm, 18 * mm, 24 * mm, 90 * mm]
+        table = Table(rows, colWidths=col_widths, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor('#cbd5e1')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        doc.build([table])
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="journal_audit.pdf"'
+        return response

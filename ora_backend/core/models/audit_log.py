@@ -25,6 +25,14 @@ class AuditLog(models.Model):
         max_length=255, blank=True,
         help_text="Nom/email de l'utilisateur au moment de l'action (conservé même si le compte est supprimé)",
     )
+    pole = models.ForeignKey(
+        'Pole', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='audit_logs',
+    )
+    pole_name = models.CharField(
+        max_length=100, blank=True,
+        help_text="Code/nom du pôle au moment de l'action (conservé même si le pôle change ou est supprimé)",
+    )
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     model_name = models.CharField(max_length=100)
     object_id = models.CharField(max_length=50, blank=True)
