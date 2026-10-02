@@ -640,7 +640,7 @@ function FinanceurSelector({ value, onChange }: {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-slate-600">Financeur</p>
+      <p className="text-xs font-semibold text-slate-600">Financeur (ce choix unique est local ou national)</p>
 
       {loading ? (
         <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -1349,10 +1349,12 @@ export function MatchingBoard() {
                       onChange={setSelectedFinanceurId}
                     />
 
+                    <p className="text-xs font-semibold text-slate-600">Préciser ici les informations à destination du Mentor.</p>
+
                     <textarea
                       value={justification}
                       onChange={e => setJustification(e.target.value)}
-                      placeholder="Supplément d'information de la demande…"
+                      placeholder="Supplément d'information à la demande du jeune…"
                       rows={2}
                       className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue resize-none"
                     />
