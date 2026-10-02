@@ -190,7 +190,7 @@ const menuItems: MenuItem[] = [
   { label: 'Annuaire',            path: '/member/cn/annuaire',      roles: ['CN'], icon: <BookOpen size={18} /> },
   { label: 'Implantations',       path: '/member/cn/implantations', roles: ['CN'], icon: <MapPin size={18} /> },
   { label: 'Gestion mentors',     path: '/member/cn/mentors',       roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
-  { label: 'Gestion APs',         path: '/member/cn/animateurs',    roles: ['CN'], icon: <Users size={18} />,    requiresFullAccess: true },
+  { label: 'Gestion APs',         path: '/member/cn/animateurs',    roles: ['CN'], icon: <Shield size={18} />,   requiresFullAccess: true },
   { label: 'Configuration',       path: '/member/cn/configuration', roles: ['CN'], icon: <Settings size={18} />, requiresFullAccess: true },
 ];
 
