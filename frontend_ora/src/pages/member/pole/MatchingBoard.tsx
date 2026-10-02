@@ -1354,7 +1354,7 @@ export function MatchingBoard() {
                     <textarea
                       value={justification}
                       onChange={e => setJustification(e.target.value)}
-                      placeholder="Supplément d'information à la demande du jeune…"
+                      placeholder="Supplément d'information à la demande du jeune"
                       rows={2}
                       className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-ora-blue/30 focus:border-ora-blue resize-none"
                     />
