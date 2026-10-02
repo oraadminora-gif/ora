@@ -31,14 +31,14 @@ def _send_response_notification(acc: AcceptanceMentorat):
     action_label = "ACCEPTÉ" if acc.statut == 'ACCEPTE' else "REFUSÉ"
     pole_code    = m.pole.code or m.pole.name
 
-    to_emails = []
-    cc_emails = []
-    if acp and acp.email:
-        to_emails.append(acp.email)
-    if ap and ap.email and ap.email not in to_emails:
-        cc_emails.append(ap.email)
+    # Acceptation -> uniquement l'AP responsable du suivi.
+    # Refus -> uniquement celui qui a fait l'affectation (ACP ou AP).
+    if acc.statut == 'ACCEPTE':
+        to_emails = [ap.email] if ap and ap.email else []
+    else:
+        to_emails = [acp.email] if acp and acp.email else []
 
-    if not to_emails and not cc_emails:
+    if not to_emails:
         return
 
     sujet = f"[OPORA] Pôle {pole_code} - Le mentor {mentor.first_name} {mentor.last_name} a {action_label} le mentorat"
@@ -66,8 +66,7 @@ def _send_response_notification(acc: AcceptanceMentorat):
             subject=sujet,
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=to_emails or cc_emails,
-            cc=cc_emails if to_emails else [],
+            to=to_emails,
             reply_to=[settings.DEFAULT_FROM_EMAIL],
         )
         msg.send(fail_silently=False)

@@ -31,17 +31,12 @@ def _geocode_and_save(young_request_id: int, commune: str, code_postal: str):
 
 
 def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
-    """Notification envoyée à l'ACP (To) et aux AP (Cc) du pôle."""
-    animateurs = list(
-        Animateur.objects.filter(pole=pole, is_active=True).select_related('pole')
-    )
-    acps = [a for a in animateurs if a.is_acp and a.email]
-    aps  = [a for a in animateurs if not a.is_acp and a.is_ap and a.email]
+    """Notification envoyée au(x) ACP du pôle (pas de copie aux AP)."""
+    acps = Animateur.objects.filter(pole=pole, is_active=True, is_acp=True).exclude(email='')
 
     to_emails = [a.email for a in acps]
-    cc_emails = [a.email for a in aps]
 
-    if not to_emails and not cc_emails:
+    if not to_emails:
         return
 
     pole_code = pole.code or pole.name
@@ -102,8 +97,7 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
             subject=f"[OPORA] Pôle {pole_code}: action requise : nouvelle demande de jeune pour ton pole",
             body=corps,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=to_emails or cc_emails,
-            cc=cc_emails if to_emails else [],
+            to=to_emails,
             reply_to=[settings.DEFAULT_FROM_EMAIL],
         )
         msg.send(fail_silently=False)

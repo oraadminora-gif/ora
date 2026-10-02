@@ -145,14 +145,11 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None,
             elif ap and ap.email:
                 reply_to = [ap.email]
 
-            cc_emails = [ap.email] if (ap and ap.email) else []
-
             msg = EmailMessage(
                 subject=f"[OPORA] Pôle {pole_code} - Attention ! Affectation d'un nouveau mentorat !",
                 body=corps_mentor,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[mentor.email],
-                cc=cc_emails,
                 reply_to=reply_to or [settings.DEFAULT_FROM_EMAIL],
             )
             msg.send(fail_silently=False)
