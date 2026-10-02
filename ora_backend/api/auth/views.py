@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import ScopedRateThrottle
 
 from .serializers import CustomTokenObtainPairSerializer
+from core.audit import write_audit_log, get_client_ip
 
 
 class LoginView(TokenObtainPairView):
@@ -15,6 +16,17 @@ class LoginView(TokenObtainPairView):
     # sur les mots de passe sans gêner un utilisateur normal.
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'login'
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            email = str(request.data.get('email', '')).strip()
+            user = User.objects.filter(email__iexact=email).first()
+            if user:
+                write_audit_log('LOGIN', user, {}, user=user, ip=get_client_ip(request))
+        return response
 
 
 class TokenRefreshView(TokenRefreshView):

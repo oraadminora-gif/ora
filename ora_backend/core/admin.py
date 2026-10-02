@@ -48,7 +48,7 @@ from core.models import (
     SuiviMentorat, User, Pole, Department, Association,
     Animateur, Mentor, YoungRequest, Mentorat,
     CNMember, MatchingDecision, Etablissement, Financement, MentoratFinancement,
-    ContactMessage,
+    ContactMessage, AuditLog,
 )
 
 # ══════════════════════════════════════════════════════════════════
@@ -668,3 +668,42 @@ class ContactMessageAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Trier les non-lus en premier
         return super().get_queryset(request).order_by('is_read', '-created_at')
+
+
+# ══════════════════════════════════════════════════════════════════
+#  JOURNAL D'AUDIT
+# ══════════════════════════════════════════════════════════════════
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display   = ('created_at', 'user_repr', 'action_badge', 'model_name', 'object_repr', 'ip_address')
+    list_filter    = ('action', 'model_name', 'created_at')
+    search_fields  = ('user_repr', 'object_repr', 'object_id', 'ip_address')
+    ordering       = ('-created_at',)
+    date_hierarchy = 'created_at'
+    list_per_page  = 50
+    readonly_fields = (
+        'user', 'user_repr', 'action', 'model_name', 'object_id',
+        'object_repr', 'changes', 'ip_address', 'created_at',
+    )
+
+    ACTION_COLORS = {
+        'CREATE': '#22c55e',
+        'UPDATE': '#0ea5e9',
+        'DELETE': '#ef4444',
+        'LOGIN':  '#8b5cf6',
+    }
+
+    def action_badge(self, obj):
+        color = self.ACTION_COLORS.get(obj.action, '#6b7280')
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;border-radius:12px;'
+            'font-size:0.72rem;font-weight:600;">{}</span>',
+            color, obj.get_action_display()
+        )
+    action_badge.short_description = 'Action'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

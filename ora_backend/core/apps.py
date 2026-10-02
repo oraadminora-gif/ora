@@ -7,3 +7,5 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         import core.signals  # noqa: F401 — connecte les signaux post_save/post_delete
+        from core.audit import register_all_audited_models
+        register_all_audited_models()

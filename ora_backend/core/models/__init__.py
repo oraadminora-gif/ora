@@ -15,6 +15,7 @@ from .evaluation_mentor import EvaluationMentor
 from .acceptance_mentorat import AcceptanceMentorat
 from .candidature_mentor import CandidatureMentor
 from .contact_message import ContactMessage
+from .audit_log import AuditLog
 
 __all__ = [
     'User',
@@ -35,4 +36,5 @@ __all__ = [
     'AcceptanceMentorat',
     'CandidatureMentor',
     'ContactMessage',
+    'AuditLog',
 ]
