@@ -1,5 +1,5 @@
 // src/layouts/HeaderACP.tsx
-import { LogOut, Bell, LayoutDashboard, BarChart3, FileText, Crown, Globe, Users } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BarChart3, FileText, HandHeart, Globe, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ export function HeaderACP() {
           />
           <NavLink
             to="/member/matching"
-            icon={<Users className="w-4 h-4" />}
+            icon={<HandHeart className="w-4 h-4" />}
             label="Affectation"
             active={location.pathname === '/member/matching'}
           />
@@ -52,7 +52,7 @@ export function HeaderACP() {
           />
           <NavLink
             to="/member/acp/mentors"
-            icon={<Crown className="w-4 h-4" />}
+            icon={<Users className="w-4 h-4" />}
             label="Gestion mentors"
             active={location.pathname.startsWith('/member/acp/mentors')}
           />

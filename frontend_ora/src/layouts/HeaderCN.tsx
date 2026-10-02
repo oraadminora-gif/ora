@@ -1,8 +1,8 @@
 // src/layouts/HeaderCN.tsx
 import { useState, useRef, useEffect } from 'react';
 import {
-  LogOut, Bell, BarChart3, Settings, Shield,
-  BookOpen, MapPin, TrendingUp, DollarSign, ChevronDown,
+  LogOut, Bell, Settings, Shield,
+  BookOpen, MapPin, BarChart2, DollarSign, ChevronDown,
   Mail,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -76,19 +76,19 @@ export function HeaderCN() {
           <NavLink
             to="/member/cn/implantations"
             icon={<MapPin className="w-4 h-4" />}
-            label="Implantation"
+            label="Implantations"
             active={location.pathname === '/member/cn/implantations'}
           />
           <NavLink
             to="/member/cn/kpis"
-            icon={<TrendingUp className="w-4 h-4" />}
+            icon={<BarChart2 className="w-4 h-4" />}
             label="KPIs Nationaux"
             active={location.pathname === '/member/cn/kpis'}
           />
           {fullAccess && (
             <NavLink
               to="/member/cn/poles"
-              icon={<BarChart3 className="w-4 h-4" />}
+              icon={<Shield className="w-4 h-4" />}
               label="Gestion Pôles"
               active={location.pathname.startsWith('/member/cn/poles')}
             />
