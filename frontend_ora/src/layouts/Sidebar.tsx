@@ -168,7 +168,7 @@ const menuItems: MenuItem[] = [
   { label: 'Mes mentorats',  path: '/member/mentor/mentorats', roles: ['MENTOR'], icon: <HandHeart size={18} /> },
   // AP
   { label: 'Tableau de bord',  path: '/member/ap/dashboard',     roles: ['AP'], icon: <LayoutDashboard size={18} /> },
-  { label: 'Suivi mentors/mentorats',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <BookOpen size={18} /> },
+  { label: 'Suivi mentors/mentorats',    path: '/member/ap/mentorats',     roles: ['AP'], icon: <FileText size={18} /> },
   { label: 'Gestion mentors',  path: '/member/acp/mentors',      roles: ['AP'], icon: <Users size={18} /> },
   { label: 'Annuaire',         path: '/member/acp/annuaire',     roles: ['AP'], icon: <BookOpen size={18} /> },
   { label: 'KPIs Pôle',        path: '/member/pole/kpi',         roles: ['AP'], icon: <BarChart3 size={18} /> },

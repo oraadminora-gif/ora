@@ -1,5 +1,5 @@
 // src/layouts/HeaderAP.tsx
-import { LogOut, Bell, LayoutDashboard, BookOpen, Globe, Users, BarChart3 } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BookOpen, FileText, Globe, Users, BarChart3 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ export function HeaderAP() {
           />
           <NavLink
             to="/member/ap/mentorats"
-            icon={<BookOpen className="w-4 h-4" />}
+            icon={<FileText className="w-4 h-4" />}
             label="Suivi mentors/mentorats"
             active={location.pathname === '/member/ap/mentorats'}
           />
