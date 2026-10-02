@@ -1,5 +1,5 @@
 // src/layouts/HeaderAP.tsx
-import { LogOut, Bell, LayoutDashboard, BookOpen, MapPin, Globe, Users, BarChart3 } from 'lucide-react';
+import { LogOut, Bell, LayoutDashboard, BookOpen, Globe, Users, BarChart3 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -52,7 +52,7 @@ export function HeaderAP() {
           />
           <NavLink
             to="/member/acp/annuaire"
-            icon={<MapPin className="w-4 h-4" />}
+            icon={<BookOpen className="w-4 h-4" />}
             label="Annuaire"
             active={location.pathname === '/member/acp/annuaire'}
           />
