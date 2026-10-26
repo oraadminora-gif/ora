@@ -30,7 +30,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from core.models import YoungRequest
+from core.models import YoungRequest, EvaluationMentor
 
 # Statuts n'ayant jamais débouché sur un mentorat suivi
 STATUTS_SANS_MENTORAT = ['NEW', 'PENDING', 'CANCELLED']
@@ -75,6 +75,19 @@ class Command(BaseCommand):
             yr for yr in qs_sans_mentorat if yr not in qs_avec_mentorat
         ]
 
+        # Rattrapage : commentaires d'évaluation encore présents sur des demandes
+        # déjà anonymisées avant que la purge ne les prenne en compte.
+        commentaires_orphelins = EvaluationMentor.objects.filter(
+            mentorat__young_request__first_name='Anonymisé',
+        ).exclude(comment='')
+        nb_orphelins = commentaires_orphelins.count()
+        if nb_orphelins:
+            if appliquer:
+                commentaires_orphelins.update(comment='')
+                self.stdout.write(f"{nb_orphelins} commentaire(s) d'évaluation effacé(s) sur des demandes déjà anonymisées.")
+            else:
+                self.stdout.write(f"{nb_orphelins} commentaire(s) d'évaluation à effacer sur des demandes déjà anonymisées.")
+
         if not cibles:
             self.stdout.write(self.style.SUCCESS("Aucune donnée périmée à anonymiser."))
             return
@@ -118,3 +131,6 @@ class Command(BaseCommand):
         # department, etablissement (FK), pole, status, request_date — nécessaires
         # aux indicateurs agrégés et bilans, sans être identifiants en eux-mêmes.
         yr.save()
+        # Commentaire libre de l'évaluation : peut contenir des données
+        # personnelles. Les notes (étoiles) sont conservées pour les bilans.
+        EvaluationMentor.objects.filter(mentorat__young_request=yr).update(comment='')

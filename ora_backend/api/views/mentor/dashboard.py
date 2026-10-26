@@ -159,7 +159,7 @@ class MentorDashboardView(APIView):
                                 "rating_objectifs":      m.evaluation.rating_objectifs,
                                 "rating_accompagnement": m.evaluation.rating_accompagnement,
                                 "rating_recommandation": m.evaluation.rating_recommandation,
-                                "comment":               m.evaluation.comment,
+                                # Commentaire libre non transmis au mentor (RGPD) : réservé à l'ACP du pôle.
                                 "submitted_at":          m.evaluation.submitted_at,
                             }
                             if hasattr(m, 'evaluation') and m.evaluation.submitted_at

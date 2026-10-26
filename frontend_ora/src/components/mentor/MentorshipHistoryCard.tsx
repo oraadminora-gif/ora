@@ -173,9 +173,6 @@ function HistoriqueRow({ m }: { m: MentoratHistorique }) {
                     <StarRating rating={val ?? 0} />
                   </div>
                 ))}
-                {m.evaluation.comment && (
-                  <p className="text-sm text-slate-700 leading-relaxed italic whitespace-pre-wrap pt-1">"{m.evaluation.comment}"</p>
-                )}
                 <p className="text-[10px] text-slate-400 pt-1">
                   Soumis le {new Date(m.evaluation.submitted_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>

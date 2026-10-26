@@ -275,7 +275,7 @@ class PoleMentoratDetailView(APIView):
                 m.cloture_message_demandee  = ''
                 # Supprimer l'évaluation envoyée au jeune (jeton invalidé)
                 try:
-                    m.evaluation_mentor.delete()
+                    m.evaluation.delete()
                 except Exception:
                     pass
                 mentor = m.mentor

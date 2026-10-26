@@ -223,6 +223,24 @@ export function EvaluationPage() {
                 />
               </div>
 
+              {/* Information RGPD (art. 13) — au moment de la collecte */}
+              <div className="text-[11px] leading-relaxed text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 space-y-1.5">
+                <p className="font-bold text-slate-600">Tes réponses et ta vie privée</p>
+                <p>
+                  Répondre est facultatif et n'a aucune conséquence sur ton parcours. Tes réponses
+                  (notes et commentaire) sont transmises, pour information, à l'Animateur coordonnateur
+                  du Pôle ORA {info.pole_code}, pour une appréciation interne des mentors et l'amélioration
+                  du Programme ORA. Ton commentaire n'est jamais communiqué à ton mentor : il peut
+                  seulement consulter les notes attribuées. Tes réponses ne sont transmises à aucun tiers.
+                </p>
+                <p>
+                  Elles sont conservées au maximum 3 ans après la fin de ton mentorat. Tu peux à tout
+                  moment demander à y accéder, à les rectifier ou à les supprimer en écrivant à{' '}
+                  <a href="mailto:ora.adminora@gmail.com" className="text-ora-blue hover:underline">ora.adminora@gmail.com</a>.
+                  Tu peux aussi adresser une réclamation à la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-ora-blue hover:underline">cnil.fr</a>).
+                </p>
+              </div>
+
               {submitError && (
                 <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{submitError}</p>
               )}

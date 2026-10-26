@@ -78,7 +78,6 @@ export interface EvaluationRecu {
   rating_objectifs: number | null;
   rating_accompagnement: number | null;
   rating_recommandation: number | null;
-  comment: string;
   submitted_at: string;
 }
 
