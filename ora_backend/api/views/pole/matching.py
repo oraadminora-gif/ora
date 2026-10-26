@@ -127,6 +127,8 @@ def _send_mentorat_emails(mentorat_id: int, acp_animateur_id: int | None = None,
             f"et de bien vouloir y répondre via l'un des liens ci-dessous :\n\n"
             f"👉 J'ACCEPTE ce mentorat : {accept_url}\n\n"
             f"👉 Je REFUSE ce mentorat : {refuse_url}\n\n"
+            f"Si le lien est inactif, le copier et le coller dans la barre d'adresse "
+            f"de votre navigateur Internet\n\n"
             f"Ta réponse constitue à partir d'aujourd'hui ton contrat de mission, dans le respect "
             f"de la charte ORA et de ta formation Mentor.\n"
             f"{ap_info}\n"
