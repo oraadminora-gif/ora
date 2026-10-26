@@ -195,3 +195,38 @@ DEFAULT_FROM_EMAIL  = env('DEFAULT_FROM_EMAIL', default='Programme ORA <noreply@
 
 # URL du frontend (utilisée dans les liens envoyés par email)
 FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
+
+# Délai max (secondes) pour joindre le serveur SMTP : évite qu'un envoi reste bloqué indéfiniment
+EMAIL_TIMEOUT = 20
+
+# ==================== LOGS ====================
+# Les erreurs de l'application (dont les échecs d'envoi de mail) vont dans la
+# console (journalctl -u ora) et, si LOG_FILE est défini, dans ce fichier.
+# Prod : PROD_LOG_FILE=/var/log/ora/app.log
+LOG_FILE = env('LOG_FILE', default='')
+
+_log_handlers = {
+    'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+}
+if LOG_FILE:
+    _log_handlers['file'] = {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': LOG_FILE,
+        'maxBytes': 5 * 1024 * 1024,
+        'backupCount': 5,
+        'formatter': 'simple',
+        'encoding': 'utf-8',
+    }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '{asctime} {levelname} {name} : {message}', 'style': '{'},
+    },
+    'handlers': _log_handlers,
+    'loggers': {
+        'api':  {'handlers': list(_log_handlers), 'level': 'INFO', 'propagate': False},
+        'core': {'handlers': list(_log_handlers), 'level': 'INFO', 'propagate': False},
+    },
+}

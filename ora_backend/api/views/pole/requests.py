@@ -314,6 +314,10 @@ class CreateDemandeView(APIView):
             )
             t.start()
 
+        # ── Mail aux ACP du pôle (comme pour le formulaire public) ──
+        from api.views.public.young_request import notify_pole_new_request
+        notify_pole_new_request(demande)
+
         return Response({
             "success": True,
             "id":      demande.id,

@@ -124,4 +124,8 @@ class YoungRequestCreateSerializer(serializers.ModelSerializer):
             except Department.DoesNotExist:
                 pass
 
-        return YoungRequest.objects.create(**validated_data)
+        yr = YoungRequest.objects.create(**validated_data)
+
+        from api.views.public.young_request import notify_pole_new_request
+        notify_pole_new_request(yr)
+        return yr

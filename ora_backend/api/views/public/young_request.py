@@ -8,6 +8,7 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.db import connection, transaction
 
 from core.models import YoungRequest, Pole, Department, Animateur
 from core.models.young_request import validate_birth_date
@@ -37,6 +38,10 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
     to_emails = [a.email for a in acps]
 
     if not to_emails:
+        logger.warning(
+            "Aucun ACP actif avec email pour le pôle %s : mail nouvelle demande non envoyé (yr=%s)",
+            pole.code or pole.name, yr.id,
+        )
         return
 
     pole_code = pole.code or pole.name
@@ -101,20 +106,48 @@ def _send_notification_to_pole(yr: YoungRequest, pole: Pole):
             reply_to=[settings.DEFAULT_FROM_EMAIL],
         )
         msg.send(fail_silently=False)
-    except Exception as e:
-        logger.error("Email notification pôle failed (pole=%s, yr=%s): %s", pole_code, yr.id, e)
+        logger.info("Email nouvelle demande envoyé (pole=%s, yr=%s, to=%s)", pole_code, yr.id, to_emails)
+    except Exception:
+        logger.exception("Email notification pôle failed (pole=%s, yr=%s, to=%s)", pole_code, yr.id, to_emails)
 
 
-def _post_create_tasks(yr: YoungRequest, pole: Pole | None,
-                       commune: str, code_postal: str):
-    """Tâches asynchrones après création : géocodage + email au pôle.
-    Le jeune ne reçoit plus d'accusé de réception par mail (supprimé) —
-    seul le pôle (ACP/AP) est notifié pour traiter la demande.
+def _notify_pole_task(yr_id: int):
+    """Tâche de fond : recharge la demande et prévient les ACP de son pôle."""
+    try:
+        yr = YoungRequest.objects.select_related('pole').get(id=yr_id)
+        if not yr.pole:
+            logger.warning("Nouvelle demande sans pôle : aucun mail envoyé (yr=%s)", yr_id)
+            return
+        _send_notification_to_pole(yr, yr.pole)
+    except Exception:
+        logger.exception("Notification nouvelle demande impossible (yr=%s)", yr_id)
+    finally:
+        connection.close()
+
+
+def notify_pole_new_request(yr: YoungRequest):
     """
-    if commune or code_postal:
-        _geocode_and_save(yr.id, commune, code_postal)
-    if pole:
-        _send_notification_to_pole(yr, pole)
+    Prévient les ACP du pôle qu'une nouvelle demande est arrivée, quel que soit
+    le moyen de création (formulaire public, espace ACP/AP, admin, API).
+    Envoi en arrière-plan, déclenché seulement une fois la demande enregistrée.
+    """
+    yr_id = yr.id
+    transaction.on_commit(
+        lambda: threading.Thread(target=_notify_pole_task, args=(yr_id,), daemon=True).start()
+    )
+
+
+def _start_geocoding(yr_id: int, commune: str, code_postal: str):
+    if not (commune or code_postal):
+        return
+
+    def _task():
+        try:
+            _geocode_and_save(yr_id, commune, code_postal)
+        finally:
+            connection.close()
+
+    threading.Thread(target=_task, daemon=True).start()
 
 
 class CreateYoungRequestView(APIView):
@@ -197,12 +230,10 @@ class CreateYoungRequestView(APIView):
             status='NEW',
         )
 
-        # Géocodage + emails en arrière-plan (ne bloque pas la réponse)
-        threading.Thread(
-            target=_post_create_tasks,
-            args=(young_request, pole, commune, code_postal),
-            daemon=True,
-        ).start()
+        # Géocodage + email aux ACP en arrière-plan (ne bloque pas la réponse).
+        # Le jeune ne reçoit pas d'accusé de réception.
+        _start_geocoding(young_request.id, commune, code_postal)
+        notify_pole_new_request(young_request)
 
         return Response({
             "success": True,

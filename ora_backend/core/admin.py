@@ -449,6 +449,13 @@ class YoungRequestAdmin(admin.ModelAdmin):
         return '—'
     situation_display.short_description = 'Situation'
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:
+            # Nouvelle demande créée depuis l'admin : mail aux ACP du pôle
+            from api.views.public.young_request import notify_pole_new_request
+            notify_pole_new_request(obj)
+
 
 # ══════════════════════════════════════════════════════════════════
 #  MENTORATS
