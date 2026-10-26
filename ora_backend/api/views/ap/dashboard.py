@@ -776,6 +776,8 @@ def _send_cloture_eval_email(mentorat, message_supplementaire: str = ''):
         f"Pour améliorer nos services vis-à-vis d'autres jeunes demain, accepterais-tu de répondre "
         f"à ces 3 questions et exprimer ton point de vue ?\n\n"
         f"→ Accède à l'évaluation : {eval_link}\n\n"
+        f"Ta réponse personnelle sera communiquée, pour information, à l'Animateur "
+        f"coordonnateur du Pôle ORA {pole_code}, pour une appréciation interne des mentors.\n\n"
         f"Au nom du Programme ORA, merci de ton retour et bonne suite à toi !\n\n"
         f"Cordialement,\n"
         f"pôle {pole_code}\n"
