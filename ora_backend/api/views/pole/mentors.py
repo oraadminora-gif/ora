@@ -274,12 +274,9 @@ class PoleMentorDetailView(APIView):
 
         # ── Désactivation définitive (décès, abandon...) ────────────────────
         # Anonymise la fiche mais conserve les Mentorat liés (CASCADE sinon).
+        # ACP : tous les mentors du pôle ; AP : seulement ceux de son
+        # association (vérifié par _get_mentor_and_pole).
         if data.get('archive'):
-            if is_ap:
-                return Response(
-                    {"error": "Seul l'APC peut désactiver définitivement un mentor."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
             if mentor.archived_at:
                 return Response({"error": "Ce mentor est déjà désactivé définitivement."}, status=400)
             if not (data.get('archive_reason') or '').strip():

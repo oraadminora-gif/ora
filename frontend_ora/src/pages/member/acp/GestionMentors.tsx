@@ -801,8 +801,8 @@ export function GestionMentors() {
                             }
                           </button>
                         )}
-                        {/* Désactiver définitivement — ACP seulement (décès, abandon...) */}
-                        {!isAP && (
+                        {/* Désactiver définitivement (décès, abandon...) — ACP : tous ; AP : son association */}
+                        {(!isAP || m.association_id === myAssociationId) && (
                           <button onClick={() => setArchiveTarget(m)}
                             className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
                             title="Désactiver définitivement">
