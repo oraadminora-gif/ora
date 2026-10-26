@@ -245,7 +245,7 @@ export function MentorRegistration() {
                   </p>
                   <p className="text-xs text-amber-700 mt-1">
                     Écrivez-nous à{' '}
-                    <a href="mailto:ora-france@outlook.com" className="font-bold underline hover:text-amber-900">ora-france@outlook.com</a>
+                    <a href="mailto:ora.adminora@gmail.com" className="font-bold underline hover:text-amber-900">ora.adminora@gmail.com</a>
                     {' '}ou{' '}
                     <Link to="/contact" className="font-bold underline hover:text-amber-900">via notre formulaire de contact</Link>.
                   </p>

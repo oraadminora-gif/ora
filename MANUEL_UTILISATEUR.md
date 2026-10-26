@@ -235,7 +235,7 @@ Le formulaire comprend **6 sections** à remplir dans l'ordre.
 
 > **Bandeau vert** : pôle détecté — ta demande lui est transmise automatiquement.
 >
-> **Bandeau orange** : aucun pôle dans ta zone — contacter `ora-france@outlook.com` ou `/contact`. Le formulaire ne peut pas être soumis dans ce cas.
+> **Bandeau orange** : aucun pôle dans ta zone — contacter `ora.adminora@gmail.com` ou `/contact`. Le formulaire ne peut pas être soumis dans ce cas.
 
 ---
 
@@ -313,7 +313,7 @@ Pour toute question avant ou après l'inscription :
 | Sujet | ✅ | Je suis apprenti(e) / Je veux devenir mentor / Partenariat / Presse-Média / Autre |
 | Message | ✅ | |
 
-Coordonnées affichées : `ora-france@outlook.com` · Lien vers la carte des implantations → `/implantations`
+Coordonnées affichées : `ora.adminora@gmail.com` · Lien vers la carte des implantations → `/implantations`
 
 ---
 

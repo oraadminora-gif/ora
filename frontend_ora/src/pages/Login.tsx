@@ -84,7 +84,7 @@ export function Login() {
                 <p>{error}</p>
                 <p className="mt-1">
                   Si vous avez oublié votre mot de passe, contactez l'administrateur à cette adresse :{' '}
-                  <span className="font-medium">ora-france@outlook.com</span>
+                  <span className="font-medium">ora.adminora@gmail.com</span>
                 </p>
               </div>
             </div>

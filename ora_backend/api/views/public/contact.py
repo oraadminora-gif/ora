@@ -73,7 +73,7 @@ class PublicContactView(APIView):
                 subject        = f"[ORA Contact] {sujet_label} — {msg.name}",
                 message        = body,
                 from_email     = settings.DEFAULT_FROM_EMAIL,
-                recipient_list = ['ora-france@outlook.com'],
+                recipient_list = ['ora.adminora@gmail.com'],
                 fail_silently  = False,
             )
         except Exception as e:

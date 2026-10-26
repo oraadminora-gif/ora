@@ -140,9 +140,9 @@ export function Contact() {
           {/* Infos */}
           <div className="space-y-4">
             <InfoCard icon={<Mail className="w-5 h-5 text-blue-500" />} bg="bg-blue-50" title="Email">
-              <a href="mailto:contact@ora-france.fr"
+              <a href="mailto:ora.adminora@gmail.com"
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                ora-france@outlook.com
+                ora.adminora@gmail.com
               </a>
             </InfoCard>
 
