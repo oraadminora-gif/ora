@@ -260,8 +260,8 @@ export function ApprenticeRegistration() {
 
           <hr className="border-slate-100" />
 
-          {/* ── Localisation ──────────────────────────────────────── */}
-          <Section icon={<MapPin className="w-4 h-4" />} title="Localisation">
+          {/* ── Domicile ──────────────────────────────────────────── */}
+          <Section icon={<MapPin className="w-4 h-4" />} title="Domicile">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Code postal *" hint="Permet de trouver le pôle ORA le plus proche">
                 <input type="text" required maxLength={5} placeholder="Ex : 75013"
