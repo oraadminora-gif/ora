@@ -194,7 +194,7 @@ export function Home() {
 
           <div className="text-center mb-6">
             <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ora-blue bg-ora-blue/10">
-              Implantationss
+              Implantations
             </span>
             <h2 className="text-2xl font-bold text-slate-900">
               Présents
